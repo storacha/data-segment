@@ -1,4 +1,4 @@
-import { Node, Proof, API } from '@web3-storage/data-segment'
+import { Node, Proof, API } from '../src/lib.js'
 import { base16 } from 'multiformats/bases/base16'
 
 /**
