@@ -1,3 +1,47 @@
+/**
+ * Implementers of the `Read` interface are called "readers". Readers
+ * allow for reading bytes from an underlying source.
+ *
+ * Readers are defined by one required method, `read`. Each call to `read`
+ * will attempt to pull bytes from this source into a provided buffer. A
+ * number of high level functions are implemented in terms of `read`, giving
+ * users a number of ways to read bytes while only needing to implement a
+ * single method.
+ *
+ * This based on [std::io::Read] trait in Rust.
+ * [std::io::Read]:https://doc.rust-lang.org/nightly/std/io/trait.Read.html
+ */
+export interface Read {
+  /**
+   * Pull some bytes from this source into the specified buffer, returning how
+   * many bytes were read.
+   *
+   * If the return value of this method is `{ok: n}`, then implementations MUST
+   * guarantee that `0 <= n <= buffer.length`. A nonzero `n` value indicates
+   * that the buffer has been filled in with `n` bytes of data from this source.
+   * If `n` is `0`, then it can indicate one of two scenarios:
+   *
+   * 1. This reader has reached its “end of file” and will likely no longer be
+   *    able to produce bytes. Note that this does not mean that the reader
+   *    will always no longer be able to produce bytes. For example, underlying
+   *    source may be a stream that simply does not currently have more data,
+   *    but once more data is added read may succeed.
+   *
+   * 2. The buffer specified was 0 bytes in length.
+   *
+   * It is not an error if the returned value `n` is smaller than the `buffer`
+   * size, even when the reader is not at the end of the stream yet. This may
+   * happen for example because fewer bytes are actually available right now.
+   */
+  read(buffer: Uint8Array): Poll<number, Error>
+}
+
+type Poll<T, X> = Variant<{
+  ok: T
+  error: X
+  wait: Promise<void>
+}>
+
 export interface Aggregate {
   dealSize: PaddedPieceSize
   index: IndexData
@@ -5,6 +49,8 @@ export interface Aggregate {
 }
 
 export type PaddedPieceSize = New<{ PaddedPieceSize: number }>
+
+export type Fr32 = New<{ Fr32: Uint8Array }, { size: 32 }>
 
 export interface IndexData {
   entries: SegmentDescriptor[]
@@ -39,6 +85,11 @@ export interface MerkleTree {
    * Serialize serializes the MerkleTree into a byte slice
    */
   exportAsBytes(): Result<Uint8Array, Error>
+}
+
+export interface TreeData {
+  nodes: MerkleTreeNode[][]
+  leafs: number
 }
 
 export interface ProofData {

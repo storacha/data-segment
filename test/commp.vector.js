@@ -1,0 +1,58 @@
+export const vector = [
+  {
+    seed: 'hello world',
+    cid: 'baga6ea4seaqpvnu3eavscr3qtovqnjdsvb5wjhr6ssjgm4gydeup4deynrmdkei',
+    size: 1024,
+    paddedSize: 2032,
+    pieceSize: 2048,
+  },
+  {
+    seed: 'hello world',
+    cid: 'baga6ea4seaqhjj7i52uz7ipekhrwketrod5jz4pdudmtog5aw25ixr6666rh4bq',
+    size: 1880,
+    paddedSize: 2032,
+    pieceSize: 2048,
+  },
+  {
+    seed: 'hello world',
+    cid: 'baga6ea4seaqb6zn6xia4lwkatvweaexirjspa2tmovi2pzo27ucnzufdbmlfoii',
+    size: 48890,
+    paddedSize: 65024,
+    pieceSize: 65536,
+  },
+  {
+    seed: 'hello world',
+    cid: 'baga6ea4seaqchky2ohedibgu7yijc55hw5sftoha2pbev6qemhtgxn2jmstaegy',
+    size: 488909,
+    paddedSize: 520192,
+    pieceSize: 524288,
+  },
+  {
+    seed: 'hello world',
+    cid: 'baga6ea4seaqhmws2f3wtnwitnjzpdftcwqrn2fuenyulzv74a6rheskwafdj2gi',
+    size: 489,
+    paddedSize: 508,
+    pieceSize: 512,
+  },
+  {
+    seed: 'hello world',
+    cid: 'baga6ea4seaqcdb7sudl53yirirwpggyqu26jblb3bswdr4z4oztihiwblt7lapy',
+    size: 65,
+    paddedSize: 127,
+    pieceSize: 128,
+  },
+  {
+    seed: 'hello world',
+    cid: 'baga6ea4seaqi5sarmoaw6knhezceliqmebrzptkrsbtcstua3uuyau4yv53syjy',
+    size: 127,
+    paddedSize: 127,
+    pieceSize: 128,
+  },
+  {
+    seed: 'hello world',
+    cid: 'baga6ea4seaqhbljrbjprxprroxwwdum46x6ng7igxd2ydzorlf76wad6djzduay',
+    size: 128,
+    paddedSize: 254,
+    pieceSize: 256,
+  },
+]

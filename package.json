@@ -24,7 +24,6 @@
   "homepage": "https://github.com/web3-storage/data-segment.git",
   "scripts": {
     "build": "tsc --build",
-    "prepare": "tsc --build",
     "test:web": "playwright-test test/**/*.spec.js --cov && nyc report",
     "test:node": "c8 --check-coverage --branches 100 --functions 100 --lines 100 mocha test/**/*.spec.js",
     "test": "c8 --check-coverage --branches 0 --functions 0 --lines 0 mocha test/**/*.spec.js",
@@ -35,8 +34,10 @@
     "multiformats": "^11.0.2"
   },
   "devDependencies": {
+    "@rvagg/fil-utils": "0.0.0",
     "@types/chai": "^4.3.5",
     "@types/mocha": "^10.0.1",
+    "@types/node": "20.2.3",
     "c8": "^7.13.0",
     "chai": "^4.3.7",
     "mocha": "^10.2.0",

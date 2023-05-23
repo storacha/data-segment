@@ -40,4 +40,4 @@ export interface Assert {
 }
 
 export type Test = (assert: Assert) => Promise<unknown>
-export type TestSuite = { [name: string]: Test }
+export type TestSuite = { [name: string]: Test | TestSuite }

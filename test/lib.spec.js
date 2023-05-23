@@ -1,16 +1,8 @@
-import { assert } from 'chai'
-import { test as proofTests } from './proof.js'
+import { test } from './test.js'
+import { test as proof } from './proof.js'
+import { test as commp } from './commp.js'
 
-const suits = {
-  proofTests,
-}
-
-for (const [name, suite] of Object.entries(suits)) {
-  describe(name, () => {
-    for (const [testName, test] of Object.entries(suite)) {
-      it(testName, async () => {
-        await test(assert)
-      })
-    }
-  })
-}
+test({
+  proof,
+  commp,
+})
