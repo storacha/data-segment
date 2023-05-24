@@ -1,21 +1,5 @@
 import * as sha2 from 'multiformats/hashes/sha2'
-
-/**
- * simple sha256 utility function that takes two `Buffer`s and gets the hash of
- * them when combined
- *
- * @param {Uint8Array} a
- * @param {Uint8Array} b
- * @returns {Promise<Uint8Array>}
- */
-const sha256 = async (a, b) => {
-  const buffer = new Uint8Array(a.length + b.length)
-  buffer.set(a, 0)
-  buffer.set(b, a.length)
-  const { digest } = await sha2.sha256.digest(buffer)
-  digest[31] &= 0b00111111 // fr32 compatible, zero out last two bytes
-  return digest
-}
+import { computeNode, split } from './tree.js'
 
 /**
  * merkle tree above layer-0, expects a stream of hashes and will return a
@@ -33,7 +17,7 @@ export async function* merkle(hashstream, level) {
       throw new Error('Hash chunklength is not 32-bytes: ' + h)
     }
     if (last) {
-      const hl = await sha256(last, h)
+      const hl = await computeNode(last, h)
       yield hl
       last = null
     } else {
@@ -48,50 +32,7 @@ export async function* merkle(hashstream, level) {
   }
 }
 
-const empty = new Uint8Array(0)
-
 /**
- * this is the bottom layer, taking a raw byte stream and returning hashes
- * @param {Iterable<Uint8Array>} source
- */
-
-export function* hash(source) {
-  const payload = source
-  let leftover = empty
-  for (const chunk of payload) {
-    const chunkLength = chunk.length
-    for (let offset = 0; offset < chunk.length; offset += 32) {
-      const availableLength = chunkLength - offset
-      if (leftover.length + availableLength < 32) {
-        const buffer = new Uint8Array(leftover.length + availableLength)
-        buffer.set(leftover, 0)
-        buffer.set(chunk.subarray(offset), leftover.length)
-        leftover = buffer
-        break
-      }
-
-      if (leftover.length === 0) {
-        yield chunk.subarray(offset, offset + 32)
-      } else {
-        const buffer = new Uint8Array(32)
-        buffer.set(leftover, 0)
-        buffer.set(
-          chunk.subarray(offset, offset - leftover.length + 32),
-          leftover.length
-        )
-        yield buffer
-        offset -= leftover.length
-        leftover = empty
-      }
-    }
-  }
-  if (leftover.length > 0) {
-    throw new Error(`Unexpected leftover chunk of ${leftover.length} bytes`)
-  }
-}
-
-/**
- *
  * @param {Uint8Array} h1
  * @param {Uint8Array} h2
  * @param {AsyncIterable<Uint8Array>} iter
@@ -112,9 +53,9 @@ async function* primedIterIter(h1, h2, iter) {
  * @returns {Promise<Uint8Array>}
  */
 export async function merkleRoot(source) {
-  const fr32HashStream = hash([source])
+  // const fr32HashStream = hash([source])
   /** @type {AsyncIterable<Uint8Array>|Iterable<Uint8Array>} */
-  let lastIter = fr32HashStream
+  let lastIter = split(source)
   let level = 0
   /* @type {Uint8Array|null} */
   let result = null

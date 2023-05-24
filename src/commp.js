@@ -4,6 +4,7 @@ import * as Fr32 from './fr32.js'
 import { merkleRoot } from './merkle.js'
 import * as Link from 'multiformats/link'
 import * as Digest from 'multiformats/hashes/digest'
+import * as Tree from './tree.js'
 
 /**
  * @see https://github.com/multiformats/go-multihash/blob/dc3bd6897fcd17f6acd8d4d6ffd2cea3d4d3ebeb/multihash.go#L73
@@ -17,7 +18,7 @@ const FilCommitmentUnsealed = 0xf101
 /**
  * @param {Uint8Array} source
  */
-export const compile = async (source) => {
+export const build = async (source) => {
   if (source.byteLength <= 64) {
     throw new RangeError(
       'commP is not defined for inputs shorter than 65 bytes'
@@ -25,7 +26,8 @@ export const compile = async (source) => {
   }
   const zeroPadded = ZeroPad.pad(source)
   const fr32Padded = Fr32.pad(zeroPadded)
-  const root = await merkleRoot(fr32Padded)
+  // const root = await merkleRoot(fr32Padded)
+  const { root } = await Tree.compile(fr32Padded)
 
   return new CommP({ root, size: source.byteLength })
 }

@@ -106,11 +106,11 @@ export function validateProofStructure(proofData) {
 }
 
 /**
- * @param {Uint8Array} data
+ * @param {Uint8Array} payload
  * @returns {Promise<API.Node>}
  */
-export async function truncatedHash(data) {
-  const { digest } = await sha256.digest(data)
+export async function truncatedHash(payload) {
+  const { digest } = await sha256.digest(payload)
   digest[32 - 1] &= 0b00111111
   return digest
 }
@@ -120,20 +120,21 @@ export async function truncatedHash(data) {
  * @param {API.Node} right
  * @returns {Promise<API.Node>}
  */
-export async function computeNode(left, right) {
-  const combined = new Uint8Array([...left, ...right])
-  const { digest } = await sha256.digest(combined)
-  return truncate(digest)
+export const computeNode = (left, right) => {
+  const payload = new Uint8Array(left.length + right.length)
+  payload.set(left, 0)
+  payload.set(right, left.length)
+  return truncatedHash(payload)
 }
 
 /**
  *
- * @param {API.Node} n
+ * @param {API.Node} node
  * @returns {API.Node}
  */
-export function truncate(n) {
-  n[32 - 1] &= 0b00111111
-  return n
+export function truncate(node) {
+  node[32 - 1] &= 0b00111111
+  return node
 }
 
 /**

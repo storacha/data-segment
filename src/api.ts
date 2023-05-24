@@ -68,27 +68,35 @@ export interface MerkleTree {
   leafCount: number
   root: MerkleTreeNode
   leafs: MerkleTreeNode[]
-  /**
-   * ConstructProof constructs a Merkle proof of the subtree (or leaf) at level lvl with index idx.
-   * level 0 is the root and index 0 is the left-most node in a level.
-   */
-  constructProof(level?: number, index?: number): Result<ProofData, Error>
-  /**
-   * ValidateFromLeafs checks that the Merkle tree is correctly constructed based on all the leafData
-   */
-  validateFromLeafs(leafData: Uint8Array[]): Result<Unit, Error>
-  /**
-   * Validate checks that the Merkle tree is correctly constructed, based on the internal nodes
-   */
-  validate(): Result<Unit, Error>
-  /**
-   * Serialize serializes the MerkleTree into a byte slice
-   */
-  exportAsBytes(): Result<Uint8Array, Error>
+  // /**
+  //  * ConstructProof constructs a Merkle proof of the subtree (or leaf) at level lvl with index idx.
+  //  * level 0 is the root and index 0 is the left-most node in a level.
+  //  */
+  // constructProof(level?: number, index?: number): Result<ProofData, Error>
+  // /**
+  //  * ValidateFromLeafs checks that the Merkle tree is correctly constructed based on all the leafData
+  //  */
+  // validateFromLeafs(leafData: Uint8Array[]): Result<Unit, Error>
+  // /**
+  //  * Validate checks that the Merkle tree is correctly constructed, based on the internal nodes
+  //  */
+  // validate(): Result<Unit, Error>
+  // /**
+  //  * Serialize serializes the MerkleTree into a byte slice
+  //  */
+  // exportAsBytes(): Result<Uint8Array, Error>
 }
 
 export interface TreeData {
+  /**
+   * nodes start from root and go down left-to-right
+   * thus `nodes[0].length === 1, nodes[1].length === 2len(nodes[1]) = 2`, etc...
+   */
   nodes: MerkleTreeNode[][]
+  /**
+   * Leafs is the amount of raw leafs being used. I.e. without padding to
+   * nearest two-power
+   */
   leafs: number
 }
 
