@@ -1,6 +1,6 @@
 import { deriveBuffer } from './util.js'
 import * as CommP from '../src/commp.js'
-import vector from './commp/vector.js'
+import vector from './commp/vector.csv.js'
 
 /**
  * @type {import("./api.js").TestSuite}
