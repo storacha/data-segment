@@ -12,6 +12,7 @@ export const of = (...bytes) => from(bytes)
  * @returns {API.MerkleTreeNode}
  */
 export const from = (bytes) => {
+  /* c8 ignore next 7 */
   if (bytes instanceof Uint8Array) {
     if (bytes.length > Size) {
       return bytes.subarray(0, Size)

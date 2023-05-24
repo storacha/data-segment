@@ -1,7 +1,7 @@
+import * as API from './api.js'
 import { zeroPaddedSizeFromRaw, pieceSizeFromRaw } from './zero-padded.js'
 import * as ZeroPad from './zero-padded.js'
 import * as Fr32 from './fr32.js'
-import { merkleRoot } from './merkle.js'
 import * as Link from 'multiformats/link'
 import * as Digest from 'multiformats/hashes/digest'
 import * as Tree from './tree.js'
@@ -26,10 +26,9 @@ export const build = async (source) => {
   }
   const zeroPadded = ZeroPad.pad(source)
   const fr32Padded = Fr32.pad(zeroPadded)
-  // const root = await merkleRoot(fr32Padded)
-  const { root } = await Tree.compile(fr32Padded)
+  const tree = await Tree.compile(fr32Padded)
 
-  return new CommP({ root, size: source.byteLength })
+  return new CommP({ tree, size: source.byteLength })
 }
 
 /**
@@ -51,20 +50,20 @@ class CommP {
   /**
    * @param {object} data
    * @param {number} data.size
-   * @param {Uint8Array} data.root
+   * @param {API.MerkleTree} data.tree
    */
-  constructor({ size, root }) {
+  constructor({ size, tree }) {
     this.size = size
-    this.root = root
+    this.tree = tree
   }
   get paddedSize() {
     return zeroPaddedSizeFromRaw(this.size)
   }
   get pieceSize() {
-    return pieceSizeFromRaw(this.size)
+    return this.tree.leafCount * 32
   }
   link() {
-    return toCID(this.root)
+    return toCID(this.tree.root)
   }
   toJSON() {
     return {

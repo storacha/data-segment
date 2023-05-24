@@ -101,7 +101,7 @@
   "include": [
     "src",
     "test"
-  ],
+, "script/make-fixtures.js", "script/stream-commp.js", "script/stream-commp-cvs.js"  ],
   "exclude": [
     "node_modules",
     "dist"

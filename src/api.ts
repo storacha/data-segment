@@ -68,6 +68,8 @@ export interface MerkleTree {
   leafCount: number
   root: MerkleTreeNode
   leafs: MerkleTreeNode[]
+
+  node(level: number, index: number): MerkleTreeNode | undefined
   // /**
   //  * ConstructProof constructs a Merkle proof of the subtree (or leaf) at level lvl with index idx.
   //  * level 0 is the root and index 0 is the left-most node in a level.
@@ -101,7 +103,7 @@ export interface TreeData {
 }
 
 export interface ProofData {
-  path: Node[]
+  path: MerkleTreeNode[]
   // index indicates the index within the level where the element whose membership to prove is located
   // Leftmost node is index 0
   index: number

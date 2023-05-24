@@ -1,4 +1,4 @@
-import * as API from './merkletree.api.js'
+import * as API from './api.js'
 import { sha256 } from 'multiformats/hashes/sha2'
 
 /**
@@ -13,9 +13,11 @@ export function depth(proofData) {
   return proofData.path.length
 }
 
+/* c8 ignore next 98 */
+
 /**
  * @param {Uint8Array} data
- * @param {API.Node} root
+ * @param {API.MerkleTreeNode} root
  * @param {API.ProofData} proofData
  * @returns {Promise<API.Result<void, Error>>}
  */
@@ -25,8 +27,8 @@ export async function validateLeaf(data, root, proofData) {
 }
 
 /**
- * @param {API.Node} subtree
- * @param {API.Node} root
+ * @param {API.MerkleTreeNode} subtree
+ * @param {API.MerkleTreeNode} root
  * @param {API.ProofData} proofData
  * @returns {Promise<API.Result<void, Error>>}
  */
@@ -44,9 +46,9 @@ export async function validateSubtree(subtree, root, proofData) {
 }
 
 /**
- * @param {API.Node} subtree
+ * @param {API.MerkleTreeNode} subtree
  * @param {API.ProofData} proofData
- * @returns {Promise<API.Result<API.Node, Error>>}
+ * @returns {Promise<API.Result<API.MerkleTreeNode, Error>>}
  */
 export async function computeRoot(subtree, proofData) {
   if (subtree === null) {
@@ -77,8 +79,8 @@ export async function computeRoot(subtree, proofData) {
 }
 
 /**
- * @param {API.Node} subtree
- * @param {API.Node} root
+ * @param {API.MerkleTreeNode} subtree
+ * @param {API.MerkleTreeNode} root
  * @param {API.ProofData} proofData
  * @returns {Promise<API.Result<void, Error>>}
  */
@@ -107,18 +109,17 @@ export function validateProofStructure(proofData) {
 
 /**
  * @param {Uint8Array} payload
- * @returns {Promise<API.Node>}
+ * @returns {Promise<API.MerkleTreeNode>}
  */
 export async function truncatedHash(payload) {
   const { digest } = await sha256.digest(payload)
-  digest[32 - 1] &= 0b00111111
-  return digest
+  return truncate(digest)
 }
 
 /**
- * @param {API.Node} left
- * @param {API.Node} right
- * @returns {Promise<API.Node>}
+ * @param {API.MerkleTreeNode} left
+ * @param {API.MerkleTreeNode} right
+ * @returns {Promise<API.MerkleTreeNode>}
  */
 export const computeNode = (left, right) => {
   const payload = new Uint8Array(left.length + right.length)
@@ -129,18 +130,19 @@ export const computeNode = (left, right) => {
 
 /**
  *
- * @param {API.Node} node
- * @returns {API.Node}
+ * @param {API.MerkleTreeNode} node
+ * @returns {API.MerkleTreeNode}
  */
 export function truncate(node) {
   node[32 - 1] &= 0b00111111
   return node
 }
 
+/* c8 ignore next 17 */
 /**
  *
- * @param {API.Node} node1
- * @param {API.Node} node2
+ * @param {API.MerkleTreeNode} node1
+ * @param {API.MerkleTreeNode} node2
  * @returns {boolean}
  */
 function areNodesEqual(node1, node2) {

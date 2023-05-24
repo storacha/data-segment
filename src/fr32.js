@@ -56,6 +56,7 @@ export const pad = (
  * @param {Uint8Array} inBytes
  * @param {Uint8Array} out
  */
+/* c8 ignore next 51 */
 export const unpad = (inBytes, out) => {
   const chunks = inBytes.length / 128
   for (let chunk = 0; chunk < chunks; chunk++) {

@@ -28,34 +28,8 @@ export function zeroPaddedSizeFromRaw(size) {
 }
 
 /**
- * Adds additional zero-padding to the `source` at the end. See also
- * {@link zeroPaddedSize}.
+ * Adds additional zero-padding to the `source` at the end.
  *
- * @param {Iterable<Uint8Array>} source - The original source content.
- * @param {number} size - The size of the original source content.
- * @returns {Iterable<Uint8Array>}
- */
-export const zeroPad = function* (source, size) {
-  const padSize = zeroPaddedSizeFromRaw(size)
-  let count = 0
-  for (const chunk of source) {
-    count += chunk.length
-    yield chunk
-  }
-
-  // this isn't modified so we can just keep on giving the same chunk
-  const zeros = new Uint8Array(65536).fill(0)
-  while (true) {
-    if (count >= padSize) {
-      return
-    }
-    const sz = Math.min(padSize - count, 65536)
-    yield sz < zeros.length ? zeros.subarray(0, sz) : zeros
-    count += sz
-  }
-}
-
-/**
  * @param {Uint8Array} source
  */
 export const pad = (source) => {
