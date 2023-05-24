@@ -54,3 +54,14 @@ export const zeroPad = function* (source, size) {
     count += sz
   }
 }
+
+/**
+ * @param {Uint8Array} source
+ */
+export const pad = (source) => {
+  const size = zeroPaddedSizeFromRaw(source.byteLength)
+  const output = new Uint8Array(size)
+  output.set(source, 0)
+  output.fill(0, source.byteLength)
+  return output
+}

@@ -106,13 +106,13 @@ async function* primedIterIter(h1, h2, iter) {
  * @description Given a stream or async iterator (of `Buffer`s), return a merkle
  * root as a `Buffer` using a 32-byte chunked sha256 binary tree.
  *
- * @param {Iterable<Uint8Array>} source - a stream or async iterator of
+ * @param {Uint8Array} source - a stream or async iterator of
  * raw bytes. The byte length is expected to be divisible by 64 (pairs of
  * 32-bytes).
  * @returns {Promise<Uint8Array>}
  */
 export async function merkleRoot(source) {
-  const fr32HashStream = hash(source)
+  const fr32HashStream = hash([source])
   /** @type {AsyncIterable<Uint8Array>|Iterable<Uint8Array>} */
   let lastIter = fr32HashStream
   let level = 0

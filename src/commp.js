@@ -1,9 +1,6 @@
-import { fr32Pad } from './fr32.js'
-import {
-  zeroPaddedSizeFromRaw,
-  pieceSizeFromRaw,
-  zeroPad,
-} from './zero-padded.js'
+import { zeroPaddedSizeFromRaw, pieceSizeFromRaw } from './zero-padded.js'
+import * as ZeroPad from './zero-padded.js'
+import * as Fr32 from './fr32.js'
 import { merkleRoot } from './merkle.js'
 import * as Link from 'multiformats/link'
 import * as Digest from 'multiformats/hashes/digest'
@@ -18,15 +15,19 @@ const SHA2_256_TRUNC254_PADDED = 0x1012
 const FilCommitmentUnsealed = 0xf101
 
 /**
- * @param {Iterable<Uint8Array>} source
- * @param {number} size
+ * @param {Uint8Array} source
  */
-export const compile = async (source, size) => {
-  const zeroPadded = zeroPad(source, size)
-  const fr32Padded = fr32Pad(zeroPadded)
+export const compile = async (source) => {
+  if (source.byteLength <= 64) {
+    throw new RangeError(
+      'commP is not defined for inputs shorter than 65 bytes'
+    )
+  }
+  const zeroPadded = ZeroPad.pad(source)
+  const fr32Padded = Fr32.pad(zeroPadded)
   const root = await merkleRoot(fr32Padded)
 
-  return new CommP({ root, size })
+  return new CommP({ root, size: source.byteLength })
 }
 
 /**

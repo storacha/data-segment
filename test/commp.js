@@ -10,7 +10,7 @@ export const test = Object.fromEntries(
     `size: ${data.size} seed: ${data.seed}`,
     async (assert) => {
       const source = await deriveBuffer(data.seed, data.size)
-      const commP = await CommP.compile([source], source.length)
+      const commP = await CommP.compile(source)
       assert.deepEqual(commP.toJSON(), {
         link: {
           '/': data.cid,
