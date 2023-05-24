@@ -48,33 +48,44 @@ export async function* merkle(hashstream, level) {
   }
 }
 
+const empty = new Uint8Array(0)
+
 /**
  * this is the bottom layer, taking a raw byte stream and returning hashes
  * @param {Iterable<Uint8Array>} source
  */
 
 export function* hash(source) {
-  let leftover = null
-  for (const chunk of source) {
-    for (let i = 0; i < chunk.length; i += 32) {
-      if (((leftover && leftover.length) || 0) + chunk.length - i < 32) {
-        leftover = chunk.subarray(i)
+  const payload = source
+  let leftover = empty
+  for (const chunk of payload) {
+    const chunkLength = chunk.length
+    for (let offset = 0; offset < chunk.length; offset += 32) {
+      const availableLength = chunkLength - offset
+      if (leftover.length + availableLength < 32) {
+        const buffer = new Uint8Array(leftover.length + availableLength)
+        buffer.set(leftover, 0)
+        buffer.set(chunk.subarray(offset), leftover.length)
+        leftover = buffer
         break
       }
 
-      if (!leftover) {
-        yield chunk.subarray(i, i + 32)
+      if (leftover.length === 0) {
+        yield chunk.subarray(offset, offset + 32)
       } else {
-        i = -leftover.length
-        const buffer = new Uint8Array(leftover.length + i + 32)
+        const buffer = new Uint8Array(32)
         buffer.set(leftover, 0)
-        buffer.set(chunk.subarray(0, i + 32), leftover.length)
+        buffer.set(
+          chunk.subarray(offset, offset - leftover.length + 32),
+          leftover.length
+        )
         yield buffer
-        leftover = null
+        offset -= leftover.length
+        leftover = empty
       }
     }
   }
-  if (leftover) {
+  if (leftover.length > 0) {
     throw new Error(`Unexpected leftover chunk of ${leftover.length} bytes`)
   }
 }
