@@ -8,7 +8,7 @@
  * users a number of ways to read bytes while only needing to implement a
  * single method.
  *
- * This based on [std::io::Read] trait in Rust.
+ * This is based on [std::io::Read] trait in Rust.
  * [std::io::Read]:https://doc.rust-lang.org/nightly/std/io/trait.Read.html
  */
 export interface Read {
@@ -152,9 +152,7 @@ interface InferenceError<message> {
 }
 
 /**
- * Defines result type as per invocation spec
- *
- * @see https://github.com/ucan-wg/invocation/#6-result
+ * Defines result type in an idiomatic IPLD representation.
  */
 
 export type Result<T extends {} = {}, X extends {} = {}> = Variant<{

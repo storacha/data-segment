@@ -76,7 +76,7 @@ export const slice = (
         byteLength = range.byteLength
         break
       }
-      // If start offeset falls with in current range (but not the end)
+      // If start offset falls with in current range (but not the end)
       // we save matching buffer slice and update byteLength.
       else if (start < nextOffset) {
         const range =

@@ -36,8 +36,6 @@ export const build = async (source) => {
  * @see https://github.com/filecoin-project/go-fil-commcid/blob/d41df56b4f6a934316028e4d4b93fb220674801d/commcid.go#L79-L81
  *
  * @param {Uint8Array} root
- * @param {object} options
- * @param {import('multiformats/codecs/interface').BlockCodec<any, any>} options.codec
  */
 export const toCID = (root) => {
   return Link.create(

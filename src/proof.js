@@ -2,10 +2,6 @@ import * as API from './api.js'
 import { sha256 } from 'multiformats/hashes/sha2'
 
 /**
- * @typedef {API.ProofData} ProofData
- */
-
-/**
  * @param {API.ProofData} proofData
  * @returns {number}
  */
