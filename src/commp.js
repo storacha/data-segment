@@ -5,6 +5,7 @@ import * as Fr32 from './fr32.js'
 import * as Link from 'multiformats/link'
 import * as Digest from 'multiformats/hashes/digest'
 import * as Tree from './tree.js'
+import { Size as NodeSize } from './node.js'
 
 /**
  * @see https://github.com/multiformats/go-multihash/blob/dc3bd6897fcd17f6acd8d4d6ffd2cea3d4d3ebeb/multihash.go#L73
@@ -16,12 +17,17 @@ const SHA2_256_TRUNC254_PADDED = 0x1012
 const FilCommitmentUnsealed = 0xf101
 
 /**
+ * The smallest amount of data for which FR32 padding has a defined result.
+ */
+const MIN_PIECE_SIZE = 65
+
+/**
  * @param {Uint8Array} source
  */
 export const build = async (source) => {
-  if (source.byteLength <= 64) {
+  if (source.byteLength < MIN_PIECE_SIZE) {
     throw new RangeError(
-      'commP is not defined for inputs shorter than 65 bytes'
+      `commP is not defined for inputs shorter than ${MIN_PIECE_SIZE} bytes`
     )
   }
   const zeroPadded = ZeroPad.pad(source)
@@ -58,7 +64,7 @@ class CommP {
     return zeroPaddedSizeFromRaw(this.size)
   }
   get pieceSize() {
-    return this.tree.leafCount * 32
+    return this.tree.leafCount * NodeSize
   }
   link() {
     return toCID(this.tree.root)

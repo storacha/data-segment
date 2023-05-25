@@ -1,5 +1,6 @@
 import * as API from './api.js'
 import { sha256 } from 'multiformats/hashes/sha2'
+import { Size as NodeSize } from './node.js'
 
 /**
  * @param {API.ProofData} proofData
@@ -125,12 +126,11 @@ export const computeNode = (left, right) => {
 }
 
 /**
- *
  * @param {API.MerkleTreeNode} node
  * @returns {API.MerkleTreeNode}
  */
 export function truncate(node) {
-  node[32 - 1] &= 0b00111111
+  node[NodeSize - 1] &= 0b00111111
   return node
 }
 

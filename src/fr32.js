@@ -1,50 +1,93 @@
 /**
+ * Number of bits per byte
+ */
+const BITS_PER_BYTE = 8
+
+/**
+ * The number of Frs per Block.
+ */
+const FRS_PER_QUAD = 4
+/**
+ * The amount of bits in an Fr when not padded.
+ */
+const IN_BITS_FR = 254
+/**
+ * The amount of bits in an Fr when padded.
+ */
+const OUT_BITS_FR = 256
+
+const IN_BYTES_PER_QUAD =
+  /** @type {127} */
+  ((FRS_PER_QUAD * IN_BITS_FR) / BITS_PER_BYTE)
+
+const OUT_BYTES_PER_QUAD =
+  /** @type {128} */
+  ((FRS_PER_QUAD * OUT_BITS_FR) / BITS_PER_BYTE)
+
+const BYTES_PER_FR =
+  /** @type {32} */
+  OUT_BYTES_PER_QUAD / FRS_PER_QUAD
+
+/**
+ * Derives fr32 padded size from the source content size (that MUST be
+ * multiples of {@link IN_BYTES_PER_QUAD}) in bytes.
+ *
+ * @param {number} size
+ */
+const paddedSize = (size) => (size / IN_BYTES_PER_QUAD) * OUT_BYTES_PER_QUAD
+
+/**
+ * Takes source (zero padded) bytes that contain multiple chunks of 127 bytes
+ * each and pads each chunk to 128 bytes.
+ *
+ *
  * @param {Uint8Array} source
  * @param {Uint8Array} output
  * @returns {Uint8Array}
  */
 export const pad = (
   source,
-  output = new Uint8Array((source.length / 127) * 128)
+  output = new Uint8Array(paddedSize(source.length))
 ) => {
-  // Calculate the number of chunks and the size of the output array
-  const chunks = source.length / 127
+  // Calculate number of quads in the given source
+  const quadCount = source.length / IN_BYTES_PER_QUAD
 
-  for (let chunk = 0; chunk < chunks; chunk++) {
-    const inOff = chunk * 127
-    const outOff = chunk * 128
+  // Cycle over four(4) 31-byte groups, leaving 1 byte in between:
+  // 31 + 1 + 31 + 1 + 31 + 1 + 31 = 127
+  for (let n = 0; n < quadCount; n++) {
+    const readOffset = n * IN_BYTES_PER_QUAD
+    const writeOffset = n * OUT_BYTES_PER_QUAD
 
-    output.set(source.subarray(inOff, inOff + 31), outOff)
+    // First 31 bytes + 6 bits are taken as-is (trimmed later)
+    output.set(source.subarray(readOffset, readOffset + 32), writeOffset)
 
-    let t = source[inOff + 31] >> 6
-    output[outOff + 31] = source[inOff + 31] & 0x3f
-    let v = 0
+    // first 2-bit "shim" forced into the otherwise identical output
+    output[writeOffset + 31] &= 0b00111111
 
+    // copy next Fr32 preceded with the last two bits of the previous Fr32
     for (let i = 32; i < 64; i++) {
-      v = source[inOff + i]
-      output[outOff + i] = (v << 2) | t
-      t = v >> 6
+      output[writeOffset + i] =
+        (source[readOffset + i] << 2) | (source[readOffset + i - 1] >> 6)
     }
 
-    t = v >> 4
-    output[outOff + 63] &= 0x3f
+    // next 2-bit shim
+    output[writeOffset + 63] &= 0b00111111
 
     for (let i = 64; i < 96; i++) {
-      v = source[inOff + i]
-      output[outOff + i] = (v << 4) | t
-      t = v >> 4
+      output[writeOffset + i] =
+        (source[readOffset + i] << 4) | (source[readOffset + i - 1] >> 4)
     }
 
-    t = v >> 2
-    output[outOff + 95] &= 0x3f
+    // next 2-bit shim
+    output[writeOffset + 95] &= 0b00111111
 
     for (let i = 96; i < 127; i++) {
-      v = source[inOff + i]
-      output[outOff + i] = (v << 6) | t
-      t = v >> 2
+      output[writeOffset + i] =
+        (source[readOffset + i] << 6) | (source[readOffset + i - 1] >> 2)
     }
 
-    output[outOff + 127] = t & 0x3f
+    // we shim last 2-bits by shifting the last byte by two bits
+    output[writeOffset + 127] = source[readOffset + 126] >> 2
   }
 
   return output

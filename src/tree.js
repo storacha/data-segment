@@ -1,10 +1,7 @@
 import * as API from './api.js'
-import * as Node from './node.js'
+import { Size as NodeSize } from './node.js'
 import * as Proof from './proof.js'
 export { computeNode } from './proof.js'
-
-const nodeSize = Node.Size
-const bytesInInt = 64 / 8
 
 /**
  * `newBareTree` allocates that memory needed to construct a tree with a
@@ -52,11 +49,11 @@ export const root = (tree) => {
  * @returns {Uint8Array[]}
  */
 export const split = (source) => {
-  const count = source.length / 32
+  const count = source.length / NodeSize
   const chunks = new Array(count)
   for (let n = 0; n < count; n++) {
-    const offset = n * 32
-    const chunk = source.subarray(offset, offset + 32)
+    const offset = n * NodeSize
+    const chunk = source.subarray(offset, offset + NodeSize)
     chunks[n] = chunk
   }
   return chunks
