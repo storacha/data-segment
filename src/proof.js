@@ -1,14 +1,14 @@
 import * as API from './api.js'
 import { sha256 } from 'multiformats/hashes/sha2'
 import { Size as NodeSize } from './node.js'
+// MaxLayers is the current maximum height of the rust-fil-proofs proving tree.
+const MaxLayers = uint(31) // result of log2( 64 GiB / 32 )
 
 /**
  * @param {API.ProofData} proofData
  * @returns {number}
  */
-export function depth(proofData) {
-  return proofData.path.length
-}
+export const depth = (proofData) => proofData.path.length
 
 /* c8 ignore next 98 */
 
@@ -42,6 +42,8 @@ export async function validateSubtree(subtree, root, proofData) {
   return await validateProof(subtree, root, proofData)
 }
 
+const MAX_DEPTH = 63
+
 /**
  * @param {API.MerkleTreeNode} subtree
  * @param {API.ProofData} proofData
@@ -51,7 +53,7 @@ export async function computeRoot(subtree, proofData) {
   if (subtree === null) {
     return { error: new Error('nil subtree cannot be used') }
   }
-  if (depth(proofData) > 63) {
+  if (depth(proofData) > MAX_DEPTH) {
     return {
       error: new Error(
         'merkleproofs with depths greater than 63 are not supported'
@@ -100,7 +102,11 @@ export async function validateProof(subtree, root, proofData) {
  * @returns {API.Result<void, Error>}
  */
 export function validateProofStructure(proofData) {
-  // In the Go implementation, this function does not perform any checks and always returns nil error
+  /**
+   * In the Go implementation, this function does not perform any checks and
+   * always returns nil error
+   * @see https://github.com/filecoin-project/go-data-segment/blob/14e4afdb87895d8562142f4f6cf03662ec407237/merkletree/proof.go#L90-L92
+   */
   return { ok: undefined }
 }
 
