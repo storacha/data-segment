@@ -1,8 +1,6 @@
 import * as API from './api.js'
 import { sha256 } from 'multiformats/hashes/sha2'
 import { Size as NodeSize } from './node.js'
-// MaxLayers is the current maximum height of the rust-fil-proofs proving tree.
-const MaxLayers = uint(31) // result of log2( 64 GiB / 32 )
 
 /**
  * @param {API.ProofData} proofData
