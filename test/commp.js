@@ -1,5 +1,9 @@
 import { CommP } from '@web3-storage/data-segment'
 import { deriveBuffer } from './util.js'
+/**
+ * Module is generated from `./commp.csv` using prepare script.
+ * @see https://github.com/hugomrdias/playwright-test/issues/544
+ */
 import vector from './commp/vector.csv.js'
 
 /**
