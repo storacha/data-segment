@@ -1,4 +1,4 @@
-import * as Tree from '../src/tree.js'
+import { Tree } from '@web3-storage/data-segment'
 
 /**
  * @type {import("./api.js").TestSuite}

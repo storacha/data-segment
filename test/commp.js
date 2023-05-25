@@ -1,5 +1,5 @@
+import { CommP } from '@web3-storage/data-segment'
 import { deriveBuffer } from './util.js'
-import * as CommP from '../src/commp.js'
 import vector from './commp/vector.csv.js'
 
 /**
