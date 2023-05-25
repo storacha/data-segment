@@ -70,23 +70,22 @@ export interface MerkleTree {
   leafs: MerkleTreeNode[]
 
   node(level: number, index: number): MerkleTreeNode | undefined
-  // /**
-  //  * ConstructProof constructs a Merkle proof of the subtree (or leaf) at level lvl with index idx.
-  //  * level 0 is the root and index 0 is the left-most node in a level.
-  //  */
-  // constructProof(level?: number, index?: number): Result<ProofData, Error>
-  // /**
-  //  * ValidateFromLeafs checks that the Merkle tree is correctly constructed based on all the leafData
-  //  */
-  // validateFromLeafs(leafData: Uint8Array[]): Result<Unit, Error>
-  // /**
-  //  * Validate checks that the Merkle tree is correctly constructed, based on the internal nodes
-  //  */
-  // validate(): Result<Unit, Error>
-  // /**
-  //  * Serialize serializes the MerkleTree into a byte slice
-  //  */
-  // exportAsBytes(): Result<Uint8Array, Error>
+}
+
+export interface MerkleProof {
+  /**
+   * ConstructProof constructs a Merkle proof of the subtree (or leaf) at level lvl with index idx.
+   * level 0 is the root and index 0 is the left-most node in a level.
+   */
+  constructProof(level?: number, index?: number): Result<ProofData, Error>
+  /**
+   * ValidateFromLeafs checks that the Merkle tree is correctly constructed based on all the leafData
+   */
+  validateFromLeafs(leafData: Uint8Array[]): Result<Unit, Error>
+  /**
+   * Validate checks that the Merkle tree is correctly constructed, based on the internal nodes
+   */
+  validate(): Result<Unit, Error>
 }
 
 export interface TreeData {
