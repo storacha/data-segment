@@ -1,0 +1,67 @@
+{
+  "name": "@web3-storage/data-segment",
+  "description": "Implementation of [FRC-0058](https://github.com/filecoin-project/FIPs/blob/master/FRCs/frc-0058.md) verifiable aggregation scheme",
+  "version": "0.0.1",
+  "keywords": [
+    "FRC-0058",
+    "CommP",
+    "filecoin"
+  ],
+  "files": [
+    "src",
+    "dist/src"
+  ],
+  "prettier": {
+    "trailingComma": "es5",
+    "tabWidth": 2,
+    "semi": false,
+    "singleQuote": true
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/web3-storage/data-segment.git"
+  },
+  "homepage": "https://github.com/web3-storage/data-segment.git",
+  "scripts": {
+    "prepare": "node ./script/compile-csv.js > test/commp/vector.csv.js",
+    "build": "tsc --build",
+    "test:web": "playwright-test test/**/*.spec.js --extension csv --cov && nyc report",
+    "test:node": "c8 --check-coverage --branches 100 --functions 100 --lines 100 mocha test/**/*.spec.js",
+    "test": "c8 --check-coverage --branches 0 --functions 0 --lines 0 mocha test/**/*.spec.js",
+    "coverage": "c8 --reporter=html mocha test/**/*.spec.js && npm_config_yes=true npx st -d coverage -p 8080",
+    "check": "tsc --build"
+  },
+  "dependencies": {
+    "multiformats": "^11.0.2"
+  },
+  "devDependencies": {
+    "@rvagg/fil-utils": "0.0.0",
+    "@types/chai": "^4.3.5",
+    "@types/mocha": "^10.0.1",
+    "@types/node": "20.2.3",
+    "c8": "^7.13.0",
+    "chai": "^4.3.7",
+    "mocha": "^10.2.0",
+    "nyc": "15.1.0",
+    "playwright-test": "^9.1.0",
+    "prettier": "2.8.8",
+    "typescript": "^5.0.4"
+  },
+  "type": "module",
+  "main": "src/lib.js",
+  "module": "src/lib.js",
+  "types": "./dist/src/lib.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/src/lib.d.ts",
+      "import": "./src/lib.js"
+    }
+  },
+  "c8": {
+    "exclude": [
+      "test/**",
+      "dist/**"
+    ]
+  },
+  "license": "(Apache-2.0 AND MIT)"
+}
