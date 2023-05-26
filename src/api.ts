@@ -50,7 +50,7 @@ export interface Aggregate {
 
 export type PaddedPieceSize = New<{ PaddedPieceSize: number }>
 
-export type Fr32 = New<{ Fr32: Uint8Array }, { size: 32 }>
+export type Fr23Padded = New<{ Fr23Padded: Uint8Array }>
 
 export interface IndexData {
   entries: SegmentDescriptor[]

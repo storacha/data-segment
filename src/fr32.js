@@ -1,3 +1,10 @@
+import * as API from './api.js'
+
+/**
+ * The smallest amount of data for which FR32 padding has a defined result.
+ */
+export const MIN_PIECE_SIZE = 65
+
 /**
  * Number of bits per byte
  */
@@ -28,29 +35,56 @@ const BYTES_PER_FR =
   /** @type {32} */
   OUT_BYTES_PER_QUAD / FRS_PER_QUAD
 
+const FR_RATIO = IN_BITS_FR / OUT_BITS_FR
+
+/**
+ * Determine the additional bytes of zeroed padding to append to the
+ * end of a resource of `size` length in order to fit within a pow2 piece while
+ * leaving enough room for Fr32 padding (2 bits per 254).
+ *
+ * @param {number} sourceSize - The size of the original resource
+ * @returns {number}
+ */
+export function toZeroPaddedSize(sourceSize) {
+  const size = Math.max(sourceSize, 65)
+  let highestBit = Math.floor(Math.log2(size))
+
+  const bound = Math.ceil(FR_RATIO * (1 << (highestBit + 1)))
+  // the size is either the closest pow2 number, or the next pow2 number if we don't have space for padding
+  return size <= bound ? bound : Math.ceil(FR_RATIO * (1 << (highestBit + 2)))
+}
+
 /**
  * Derives fr32 padded size from the source content size (that MUST be
  * multiples of {@link IN_BYTES_PER_QUAD}) in bytes.
  *
  * @param {number} size
  */
-const paddedSize = (size) => (size / IN_BYTES_PER_QUAD) * OUT_BYTES_PER_QUAD
+export const toPieceSize = (size) =>
+  (toZeroPaddedSize(size) / IN_BYTES_PER_QUAD) * OUT_BYTES_PER_QUAD
 
 /**
- * Takes source (zero padded) bytes that contain multiple chunks of 127 bytes
- * each and pads each chunk to 128 bytes.
+ * Derives fr32 unpadded size from the Fr32 padded size in bytes.
  *
+ * @param {number} size
+ */
+export const fromPieceSize = (size) =>
+  (size / OUT_BYTES_PER_QUAD) * IN_BYTES_PER_QUAD
+
+/**
+ * Takes source bytes that returns fr32 padded bytes.
  *
  * @param {Uint8Array} source
  * @param {Uint8Array} output
- * @returns {Uint8Array}
+ * @returns {API.Fr23Padded}
  */
 export const pad = (
   source,
-  output = new Uint8Array(paddedSize(source.length))
+  output = new Uint8Array(toPieceSize(source.length))
 ) => {
+  const size = toZeroPaddedSize(source.byteLength)
   // Calculate number of quads in the given source
-  const quadCount = source.length / IN_BYTES_PER_QUAD
+  const quadCount = size / IN_BYTES_PER_QUAD
 
   // Cycle over four(4) 31-byte groups, leaving 1 byte in between:
   // 31 + 1 + 31 + 1 + 31 + 1 + 31 = 127
@@ -94,22 +128,22 @@ export const pad = (
 }
 
 /**
- * Expects `inBytes.length % 128 === 0` and `out.length % 127 === 0`
- *
- * @param {Uint8Array} inBytes
- * @param {Uint8Array} out
+ * @param {API.Fr23Padded} source
+ * @param {Uint8Array} [out]
  */
-/* c8 ignore next 51 */
-export const unpad = (inBytes, out) => {
-  const chunks = inBytes.length / 128
+export const unpad = (
+  source,
+  out = new Uint8Array(fromPieceSize(source.length))
+) => {
+  const chunks = source.length / 128
   for (let chunk = 0; chunk < chunks; chunk++) {
     const inOffNext = chunk * 128 + 1
     const outOff = chunk * 127
 
-    let at = inBytes[chunk * 128]
+    let at = source[chunk * 128]
 
     for (let i = 0; i < 32; i++) {
-      const next = inBytes[i + inOffNext]
+      const next = source[i + inOffNext]
 
       out[outOff + i] = at
 
@@ -119,7 +153,7 @@ export const unpad = (inBytes, out) => {
     out[outOff + 31] |= at << 6
 
     for (let i = 32; i < 64; i++) {
-      const next = inBytes[i + inOffNext]
+      const next = source[i + inOffNext]
 
       out[outOff + i] = at >> 2
       out[outOff + i] |= next << 6
@@ -130,7 +164,7 @@ export const unpad = (inBytes, out) => {
     out[outOff + 63] ^= (at << 6) ^ (at << 4)
 
     for (let i = 64; i < 96; i++) {
-      const next = inBytes[i + inOffNext]
+      const next = source[i + inOffNext]
 
       out[outOff + i] = at >> 4
       out[outOff + i] |= next << 4
@@ -141,7 +175,7 @@ export const unpad = (inBytes, out) => {
     out[outOff + 95] ^= (at << 4) ^ (at << 2)
 
     for (let i = 96; i < 127; i++) {
-      const next = inBytes[i + inOffNext]
+      const next = source[i + inOffNext]
 
       out[outOff + i]
       out[outOff + i] = at >> 6
@@ -150,4 +184,6 @@ export const unpad = (inBytes, out) => {
       at = next
     }
   }
+
+  return out
 }

@@ -46,7 +46,7 @@ export const root = (tree) => {
 
 /**
  * @param {Uint8Array} source
- * @returns {Uint8Array[]}
+ * @returns {API.MerkleTreeNode[]}
  */
 export const split = (source) => {
   const count = source.length / NodeSize
@@ -60,12 +60,12 @@ export const split = (source) => {
 }
 
 /**
- * @param {Uint8Array} source
+ * @param {API.Fr23Padded} source
  */
 export const compile = (source) => buildFromChunks(split(source))
 
 /**
- * @param {Uint8Array[]} chunks
+ * @param {API.MerkleTreeNode[]} chunks
  */
 export const buildFromChunks = async (chunks) => {
   if (chunks.length === 0) {

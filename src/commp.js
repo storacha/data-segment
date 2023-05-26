@@ -1,6 +1,4 @@
 import * as API from './api.js'
-import { zeroPaddedSizeFromRaw, pieceSizeFromRaw } from './zero-padded.js'
-import * as ZeroPad from './zero-padded.js'
 import * as Fr32 from './fr32.js'
 import * as Link from 'multiformats/link'
 import * as Digest from 'multiformats/hashes/digest'
@@ -17,22 +15,32 @@ const SHA2_256_TRUNC254_PADDED = 0x1012
 const FilCommitmentUnsealed = 0xf101
 
 /**
- * The smallest amount of data for which FR32 padding has a defined result.
+ * MaxLayers is the current maximum height of the rust-fil-proofs proving tree.
  */
-const MIN_PIECE_SIZE = 65
+const MAX_LAYERS = 31 // result of log2( 64 GiB / 32 )
+
+/**
+ * Current maximum size of the rust-fil-proofs proving tree.
+ */
+const MAX_PIECE_SIZE = 1 << (MAX_LAYERS + 5)
+
+/**
+ * MaxPiecePayload is the maximum amount of data that one can compute commP for.
+ * Constrained by the value of {@link MAX_LAYERS}.
+ */
+const MAX_PIECE_PAYLOAD = (MAX_PIECE_SIZE / 128) * 127
 
 /**
  * @param {Uint8Array} source
  */
 export const build = async (source) => {
-  if (source.byteLength < MIN_PIECE_SIZE) {
+  if (source.byteLength < Fr32.MIN_PIECE_SIZE) {
     throw new RangeError(
-      `commP is not defined for inputs shorter than ${MIN_PIECE_SIZE} bytes`
+      `commP is not defined for inputs shorter than ${Fr32.MIN_PIECE_SIZE} bytes`
     )
   }
-  const zeroPadded = ZeroPad.pad(source)
-  const fr32Padded = Fr32.pad(zeroPadded)
-  const tree = await Tree.compile(fr32Padded)
+
+  const tree = await Tree.compile(Fr32.pad(source))
 
   return new CommP({ tree, size: source.byteLength })
 }
@@ -61,7 +69,7 @@ class CommP {
     this.tree = tree
   }
   get paddedSize() {
-    return zeroPaddedSizeFromRaw(this.size)
+    return Fr32.toZeroPaddedSize(this.size)
   }
   get pieceSize() {
     return this.tree.leafCount * NodeSize
