@@ -25,6 +25,7 @@
   "scripts": {
     "prepare": "node ./script/compile-csv.js > test/commp/vector.csv.js",
     "build": "tsc --build",
+    "prepublishOnly": "tsc --build",
     "test:web": "playwright-test test/**/*.spec.js --extension csv --cov && nyc report",
     "test:node": "c8 --check-coverage --branches 100 --functions 100 --lines 100 mocha test/**/*.spec.js",
     "test": "c8 --check-coverage --branches 0 --functions 0 --lines 0 mocha test/**/*.spec.js",
