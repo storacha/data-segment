@@ -1,6 +1,6 @@
 import * as Node from '../src/node.js'
 import * as CommP from '../src/commp.js'
-import { sha512, sha256 } from 'multiformats/hashes/sha2'
+import { sha512 } from 'multiformats/hashes/sha2'
 
 const sampleSizes1 = /** @type {const} */ ([
   256 << 20,
