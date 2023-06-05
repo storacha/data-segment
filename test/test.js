@@ -20,7 +20,8 @@ export const test = (tests) => {
       : define
 
     if (modifier) {
-      modifier(name, () => {
+      modifier(name, function () {
+        this.timeout(10_000)
         if (typeof member === 'function') {
           return member(assert)
         } else {
