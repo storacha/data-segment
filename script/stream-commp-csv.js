@@ -15,13 +15,11 @@ const main = async () => {
   const paddedSize = parseInt(padded.split(/\s+/)[2].trim())
   const pieceSize = parseInt(piece.split(/\s+/)[2].trim())
 
-  const seed = 'hello world'
-  const source = await deriveBuffer(seed, size)
+  const source = await deriveBuffer(size)
   const digest = await sha256.digest(source)
+  const link = Link.create(raw.code, digest)
 
-  console.log(
-    `${size},${Link.create(raw.code, digest)},${paddedSize},${pieceSize},${cid}`
-  )
+  console.log(`${size},${link},${paddedSize},${pieceSize},${cid}`)
 }
 
 /**
