@@ -40,17 +40,22 @@ const cidForDeal = (x) => {
 }
 
 /**
- * @param {string} seed
+ * Generates pseudo-random bytes by recursively computing sha512 of the seed
+ * content and concatenating the seed with derived digests.
+ *
  * @param {number} size
+ * @param {string} seed
  */
-export const deriveBuffer = async (seed = 'hello world', size = 1024) => {
+export const deriveBuffer = async (size = 1024, seed = 'hello world') => {
   const source = new TextEncoder().encode(seed)
   const buffer = new Uint8Array(size)
   buffer.set(source.subarray(0, Math.min(source.length, size)), 0)
   let offset = source.length
   while (offset < size) {
     const { digest } = await sha512.digest(
-      buffer.subarray(0, Math.min(offset, size))
+      offset < 64
+        ? buffer.subarray(0, offset)
+        : buffer.subarray(offset - 64, offset)
     )
 
     buffer.set(digest.subarray(0, size - offset), offset)

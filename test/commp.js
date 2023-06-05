@@ -13,7 +13,7 @@ export const test = Object.fromEntries(
   Object.values(vector).map((data) => [
     `size: ${data.in.size}\t\t${data.in.cid}`,
     async (assert) => {
-      const source = await deriveBuffer('hello world', data.in.size)
+      const source = await deriveBuffer(data.in.size)
       const commP = await CommP.build(source)
       assert.deepEqual(commP.toJSON(), {
         link: {
@@ -28,7 +28,7 @@ export const test = Object.fromEntries(
 )
 
 test['size: 0'] = async (assert) => {
-  const source = await deriveBuffer('hello world', 64)
+  const source = await deriveBuffer(64)
   const commP = await CommP.build(source).catch((error) => error.toString())
   assert.ok(commP.includes('not defined for inputs shorter than 65 bytes'))
 }

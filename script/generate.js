@@ -6,7 +6,7 @@ import { deriveBuffer } from '../test/util.js'
  * @param {string} seed
  */
 const main = async (size = 1024, seed = 'hello world') => {
-  const buffer = await deriveBuffer(seed, size)
+  const buffer = await deriveBuffer(size, seed)
   process.stdout.write(buffer)
 }
 
