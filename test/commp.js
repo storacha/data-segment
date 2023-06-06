@@ -36,6 +36,14 @@ export const test = Object.fromEntries(
 
 test['size: 0'] = async (assert) => {
   const source = await deriveBuffer(64)
-  const commP = await CommP.build(source).catch((error) => error.toString())
-  assert.ok(commP.includes('not defined for inputs shorter than 65 bytes'))
+  let commP = null
+  try {
+    commP = await CommP.build(source)
+  } catch (error) {
+    commP = error
+  }
+
+  assert.ok(
+    String(commP).includes('not defined for inputs shorter than 65 bytes')
+  )
 }

@@ -5,9 +5,12 @@ import { Tree } from '@web3-storage/data-segment'
  */
 export const test = {
   'throws on empty tree': async (assert) => {
-    const result = await Tree.buildFromChunks([]).catch((error) => ({
-      catch: error,
-    }))
+    let result = null
+    try {
+      result = Tree.buildFromChunks([])
+    } catch (error) {
+      result = { catch: error }
+    }
 
     assert.ok(String(Object(result).catch).includes('Empty source'))
   },
