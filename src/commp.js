@@ -33,14 +33,14 @@ const MAX_PIECE_PAYLOAD = (MAX_PIECE_SIZE / 128) * 127
 /**
  * @param {Uint8Array} source
  */
-export const build = async (source) => {
+export const build = (source) => {
   if (source.byteLength < Fr32.MIN_PIECE_SIZE) {
     throw new RangeError(
       `commP is not defined for inputs shorter than ${Fr32.MIN_PIECE_SIZE} bytes`
     )
   }
 
-  const tree = await Tree.compile(Fr32.pad(source))
+  const tree = Tree.compile(Fr32.pad(source))
 
   return new CommP({ tree, size: source.byteLength })
 }
