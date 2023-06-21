@@ -86,3 +86,18 @@ class CommP {
     }
   }
 }
+
+/**
+ * @param {Link.Link} cid
+ * @returns {API.MerkleTreeNode}
+ */
+export const fromLink = (cid) => {
+  const { code, multihash } = cid
+  if (code !== FilCommitmentUnsealed) {
+    throw new RangeError(
+      `Invalid CID code ${code}, expected ${FilCommitmentUnsealed}`
+    )
+  }
+
+  return multihash.digest
+}
