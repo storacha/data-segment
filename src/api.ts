@@ -49,6 +49,7 @@ export interface Aggregate {
 }
 
 export type PaddedPieceSize = New<{ PaddedPieceSize: number }>
+export type UnpaddedPieceSize = New<{ UnpaddedPieceSize: number }>
 
 export type Fr23Padded = New<{ Fr23Padded: Uint8Array }>
 
