@@ -73,6 +73,22 @@ export interface MerkleTree {
   node(level: number, index: number): MerkleTreeNode | undefined
 }
 
+/**
+ * Represents a location in a Merkle tree.
+ */
+export interface MerkleTreeLocation {
+  level: number
+  index: number
+}
+
+/**
+ * Represents a commitment and its location in a Merkle tree.
+ */
+export interface MerkleTreeNodeSource {
+  node: MerkleTreeNode
+  location: MerkleTreeLocation
+}
+
 export interface MerkleProof {
   /**
    * ConstructProof constructs a Merkle proof of the subtree (or leaf) at level lvl with index idx.

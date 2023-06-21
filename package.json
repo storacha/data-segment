@@ -23,7 +23,7 @@
   },
   "homepage": "https://github.com/web3-storage/data-segment.git",
   "scripts": {
-    "prepare": "node ./script/compile-csv.js > test/commp/vector.csv.js",
+    "prepare": "node ./script/compile-csv.js > test/commp/vector.csv.js && node ./script/zero-comm.js > ./src/zero-comm/gen.js",
     "build": "tsc --build",
     "prepublishOnly": "tsc --build",
     "test:web": "playwright-test test/**/*.spec.js --extension csv --cov && nyc report",
