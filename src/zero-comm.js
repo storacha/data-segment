@@ -38,9 +38,18 @@ export const fromSize = (size) => {
  *
  * @param {number} value
  */
-const log2Ceil = (value) => {
-  if (value <= 1) {
+export const log2Ceil = (value) => (value <= 1 ? 0 : log2Floor(value - 1) + 1)
+
+/**
+ * @param {number} value
+ */
+const log2Floor = (value) => {
+  if (value === 0) {
     return 0
   }
-  return Math.floor(Math.log2(value - 1)) + 1
+  // Count the number of leading zeros in the 32-bit representation.
+  const zeros =
+    Math.clz32(value / 0x100000000) + Math.clz32(value % 0x100000000)
+
+  return 64 - zeros - 1
 }

@@ -48,20 +48,23 @@ export interface Aggregate {
   tree: MerkleTree
 }
 
+export interface AggreateState {
+  capacity: number
+  offset: number
+  parts: MerkleTreeNodeSource[]
+}
+
+export interface Vector<T> extends Iterable<T> {
+  append(value: T): Vector<T>
+}
+
 export type PaddedPieceSize = New<{ PaddedPieceSize: number }>
 export type UnpaddedPieceSize = New<{ UnpaddedPieceSize: number }>
 
 export type Fr23Padded = New<{ Fr23Padded: Uint8Array }>
 
 export interface IndexData {
-  entries: SegmentDescriptor[]
-}
-
-export interface SegmentDescriptor {
-  commDs: MerkleTreeNode
-  offset: number
-  size: number
-  checksum: Uint8Array
+  entries: SegmentInfo[]
 }
 
 export interface MerkleTree {
@@ -72,6 +75,56 @@ export interface MerkleTree {
 
   node(level: number, index: number): MerkleTreeNode | undefined
 }
+
+export interface PieceInfo {
+  /**
+   * Commitment to the data segment (Merkle node which is the root of the
+   * subtree containing all the nodes making up the data segment)
+   */
+  root: MerkleTreeNode
+
+  /**
+   * Offset is the offset from the start of the deal in padded bytes
+   */
+  size: PaddedPieceSize
+}
+
+export interface Segment {
+  /**
+   * Commitment to the data segment (Merkle node which is the root of the
+   * subtree containing all the nodes making up the data segment)
+   */
+  root: MerkleTreeNode
+  /**
+   * Offset is the offset from the start of the deal in padded bytes
+   */
+  offset: number
+  /**
+   * Size is the number of padded bytes that is contained in the sub-deal
+   * reflected by this segment.
+   */
+  size: number
+}
+
+/**
+ * Segment contains a data segment description to be contained as two Fr32
+ * elements in 2 leaf nodes of the data segment index.
+ */
+export interface SegmentInfo extends Segment {
+  /**
+   * Checksum is a 126 bit checksum (SHA256) computes on `[...root, offset, size]`
+   */
+  checksum: Checksum<Segment, 16>
+}
+
+export type Checksum<Payload = unknown, Size extends number = number> = New<
+  { Checksum: SizedUint8Array<number> },
+  Payload
+>
+
+export type SizedUint8Array<Size extends number> = New<{
+  SizedUint8Array: Uint8Array & { length: Size }
+}>
 
 /**
  * Represents a location in a Merkle tree.

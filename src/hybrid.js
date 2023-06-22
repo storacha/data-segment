@@ -152,6 +152,9 @@ class SparseArray {
      */
     this.subs = subs
   }
+  clear() {
+    this.subs.clear()
+  }
   /**
    * @param {number} index
    * @returns {T | undefined}
@@ -213,6 +216,13 @@ export const batchSet = (tree, values) => {
   } of values) {
     tree.setNode(level, index, node)
   }
+}
+
+/**
+ * @param {Hybrid} tree
+ */
+export const clear = (tree) => {
+  tree.data.clear()
 }
 
 /**

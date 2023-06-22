@@ -7,25 +7,73 @@ import * as API from './api.js'
  */
 
 /**
- * @param {number} s
+ * @param {number} size
  * @returns {API.PaddedPieceSize}
  */
-export const padded = (s) => s + Math.floor(s / 127)
+export const toPaddedSize = (size) => size + Math.floor(size / 127)
 
 /**
- * @param {number} s
- * @returns {Error|null}
+ * @param {number} size
+ * @returns {API.PaddedPieceSize}
  */
-export const validateUnpaddedPieceSize = (s) => {
-  if (s < 127) {
-    return new Error('minimum piece size is 127 bytes')
+export const PaddedPieceSize = (size) => {
+  const result = validatePaddedPieceSize(size)
+  if (result.error) {
+    throw result.error
+  } else {
+    return result.ok
+  }
+}
+
+/**
+ *
+ * @param {number} size
+ */
+export const UnpaddedPieceSize = (size) => {
+  const result = validateUnpaddedPieceSize(size)
+  if (result.error) {
+    throw result.error
+  } else {
+    return result.ok
+  }
+}
+
+/**
+ * @param {number} size
+ * @returns {API.Result<API.UnpaddedPieceSize, Error>}
+ */
+export const validateUnpaddedPieceSize = (size) => {
+  if (size < 127) {
+    return { error: new Error('minimum piece size is 127 bytes') }
   }
 
-  if (s >> Math.clz32(s) !== 127) {
-    return new Error('unpadded piece size must be a power of 2 multiple of 127')
+  if (size >> countTrailingZeros(size) !== 127) {
+    return {
+      error: new Error(
+        'Unpadded piece size must be a power of 2 multiple of 127'
+      ),
+    }
   }
 
-  return null
+  return { ok: size }
+}
+
+/**
+ *
+ * @param {number} value
+ */
+const countTrailingZeros = (value) => {
+  if (value === 0) {
+    return 32
+  }
+
+  let count = 0
+  while ((value & 1) === 0) {
+    value >>= 1
+    count++
+  }
+
+  return count
 }
 
 /**
@@ -35,17 +83,17 @@ export const validateUnpaddedPieceSize = (s) => {
 export const unpadded = (s) => s - Math.floor(s / 128)
 
 /**
- * @param {API.PaddedPieceSize} s
- * @returns {Error|null}
+ * @param {number} size
+ * @returns {API.Result<API.PaddedPieceSize, RangeError>}
  */
-export const validatePaddedPieceSize = (s) => {
-  if (s < 128) {
-    return new Error('minimum padded piece size is 128 bytes')
+export const validatePaddedPieceSize = (size) => {
+  if (size < 128) {
+    return { error: RangeError('minimum padded piece size is 128 bytes') }
   }
 
-  if (Math.clz32(s) !== 1) {
-    return new Error('padded piece size must be a power of 2')
+  if (Math.log2(size) % 1 !== 0) {
+    return { error: Error('padded piece size must be a power of 2') }
   }
 
-  return null
+  return { ok: size }
 }

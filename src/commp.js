@@ -68,6 +68,9 @@ class CommP {
     this.size = size
     this.tree = tree
   }
+  get root() {
+    return this.tree.root
+  }
   get paddedSize() {
     return Fr32.toZeroPaddedSize(this.size)
   }
