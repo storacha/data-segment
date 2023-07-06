@@ -3,16 +3,16 @@ const content = FS.readFileSync('./test/commp/vector.csv', 'utf8')
 
 const [, ...lines] = content.trim().split('\n')
 export default lines.map((line) => {
-  const [size, cid, paddedSize, pieceSize, commP] = line.split(',')
+  const [contentSize, cid, paddedSize, size, commP] = line.split(',')
 
   return {
     in: {
       cid: cid.trim(),
-      size: Number.parseInt(size.trim()),
+      contentSize: Number.parseInt(contentSize.trim()),
     },
     out: {
       paddedSize: Number.parseInt(paddedSize.trim()),
-      pieceSize: Number.parseInt(pieceSize.trim()),
+      size: Number.parseInt(size.trim()),
       cid: commP.trim(),
     },
   }

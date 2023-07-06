@@ -15,9 +15,9 @@ import vector from './commp/vector.csv.js'
  */
 export const test = Object.fromEntries(
   Object.values(vector).map((data) => [
-    `size: ${data.in.size}\t\t${data.in.cid}`,
+    `${data.in.contentSize}\t\t${data.in.cid}`,
     async (assert) => {
-      const source = await deriveBuffer(data.in.size)
+      const source = deriveBuffer(data.in.contentSize)
       const link = createLink(raw.code, SHA256.digest(raw.encode(source)))
       const commP = await CommP.build(source)
       assert.deepEqual(link.toString(), data.in.cid, 'same source content')
@@ -26,9 +26,9 @@ export const test = Object.fromEntries(
         link: {
           '/': data.out.cid,
         },
-        size: data.in.size,
+        contentSize: data.in.contentSize,
         paddedSize: data.out.paddedSize,
-        pieceSize: data.out.pieceSize,
+        size: data.out.size,
       })
     },
   ])

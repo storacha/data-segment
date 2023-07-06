@@ -18,9 +18,9 @@ const main = async (...args) => {
 
     console.log(`
 CommPCid: ${result.link()}
-Payload:                ${result.size} bytes
+Payload:                ${result.contentSize} bytes
 Unpadded piece:         ${result.paddedSize} bytes
-Padded piece:           ${result.pieceSize} bytes`)
+Padded piece:           ${result.size} bytes`)
   } catch (err) {
     console.error(err)
   }

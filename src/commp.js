@@ -65,16 +65,16 @@ class CommP {
    * @param {API.MerkleTree} data.tree
    */
   constructor({ size, tree }) {
-    this.size = size
+    this.contentSize = size
     this.tree = tree
   }
   get root() {
     return this.tree.root
   }
   get paddedSize() {
-    return Fr32.toZeroPaddedSize(this.size)
+    return Fr32.toZeroPaddedSize(this.contentSize)
   }
-  get pieceSize() {
+  get size() {
     return this.tree.leafCount * NodeSize
   }
   link() {
@@ -83,9 +83,9 @@ class CommP {
   toJSON() {
     return {
       link: { '/': this.link().toString() },
-      size: this.size,
+      contentSize: this.contentSize,
       paddedSize: this.paddedSize,
-      pieceSize: this.pieceSize,
+      size: this.size,
     }
   }
 }
