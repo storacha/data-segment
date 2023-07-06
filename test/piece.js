@@ -1,4 +1,4 @@
-import { CommP } from '@web3-storage/data-segment'
+import { Piece } from '@web3-storage/data-segment'
 import { deriveBuffer } from './util.js'
 import * as SHA256 from 'sync-multihash-sha2/sha256'
 import * as raw from 'multiformats/codecs/raw'
@@ -19,10 +19,10 @@ export const test = Object.fromEntries(
     async (assert) => {
       const source = deriveBuffer(data.in.contentSize)
       const link = createLink(raw.code, SHA256.digest(raw.encode(source)))
-      const commP = await CommP.build(source)
+      const piece = await Piece.build(source)
       assert.deepEqual(link.toString(), data.in.cid, 'same source content')
 
-      assert.deepEqual(commP.toJSON(), {
+      assert.deepEqual(piece.toJSON(), {
         link: {
           '/': data.out.cid,
         },
@@ -36,14 +36,14 @@ export const test = Object.fromEntries(
 
 test['size: 0'] = async (assert) => {
   const source = deriveBuffer(64)
-  let commP = null
+  let result = null
   try {
-    commP = await CommP.build(source)
+    result = await Piece.build(source)
   } catch (error) {
-    commP = error
+    result = error
   }
 
   assert.ok(
-    String(commP).includes('not defined for inputs shorter than 65 bytes')
+    String(result).includes('not defined for inputs shorter than 65 bytes')
   )
 }

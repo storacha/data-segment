@@ -7,7 +7,6 @@ import { Size as NodeSize } from './node.js'
 import { EntrySize } from './index.js'
 import { log2Ceil } from './zero-comm.js'
 import { indexAreaStart } from './inclusion.js'
-import { toCID } from './commp.js'
 
 /**
  * @param {number} capacity - Size of the aggregate in bytes.
@@ -90,7 +89,7 @@ class AggregateBuilder {
   }
 
   link() {
-    return toCID(this.tree.root)
+    return Piece.createLink(this.tree.root)
   }
 
   /**

@@ -1,5 +1,5 @@
 import * as Node from '../src/node.js'
-import * as CommP from '../src/commp.js'
+import * as Piece from '../src/piece.js'
 import * as sha512 from 'sync-multihash-sha2/sha512'
 
 const sampleSizes1 = /** @type {const} */ ([
@@ -36,7 +36,7 @@ export const commForDeal = (x) => {
  */
 const cidForDeal = (x) => {
   const node = commForDeal(x)
-  return CommP.toCID(node)
+  return Piece.createLink(node)
 }
 
 /**

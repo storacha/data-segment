@@ -1,3 +1,5 @@
+import type { Link, ToString } from 'multiformats/link'
+
 /**
  * Implementers of the `Read` interface are called "readers". Readers
  * allow for reading bytes from an underlying source.
@@ -48,7 +50,7 @@ export interface Aggregate {
   tree: MerkleTree
 }
 
-export interface AggreateState {
+export interface AggregateState {
   capacity: number
   offset: number
   parts: MerkleTreeNodeSource[]
@@ -84,10 +86,27 @@ export interface PieceInfo {
   root: MerkleTreeNode
 
   /**
-   * Offset is the offset from the start of the deal in padded bytes
+   * Size is the number of padded bytes that is contained in this piece.
    */
   size: PaddedPieceSize
 }
+
+export interface Piece extends PieceInfo {
+  link(): PieceLink
+  contentSize: number
+  paddedSize: number
+
+  size: PaddedPieceSize
+
+  toJSON(): {
+    link: { '/': string }
+    contentSize: number
+    paddedSize: number
+    size: number
+  }
+}
+
+export type PieceLink = Link<MerkleTreeNode, 0xf101, 0x1012>
 
 export interface Segment {
   /**
@@ -95,10 +114,12 @@ export interface Segment {
    * subtree containing all the nodes making up the data segment)
    */
   root: MerkleTreeNode
+
   /**
    * Offset is the offset from the start of the deal in padded bytes
    */
   offset: number
+
   /**
    * Size is the number of padded bytes that is contained in the sub-deal
    * reflected by this segment.

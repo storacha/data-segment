@@ -3,7 +3,6 @@ import * as Tree from '../src/tree.js'
 import * as Node from '../src/node.js'
 import * as ZeroComm from '../src/zero-comm.js'
 import { parse as parseLink } from 'multiformats/link'
-import * as CommP from '../src/commp.js'
 import * as API from '../src/api.js'
 import * as Proof from '../src/proof.js'
 
@@ -45,11 +44,9 @@ export const testHybridTree = {
   },
 
   'hybrid as generate unsealed CID': async (assert) => {
-    const expect = CommP.fromLink(
-      parseLink(
-        'baga6ea4seaqiw3gbmstmexb7sqwkc5r23o3i7zcyx5kr76pfobpykes3af62kca'
-      )
-    )
+    const expect = parseLink(
+      'baga6ea4seaqiw3gbmstmexb7sqwkc5r23o3i7zcyx5kr76pfobpykes3af62kca'
+    ).multihash.digest
 
     /**
      * @type {API.MerkleTreeNodeSource[]}
