@@ -1,7 +1,7 @@
 import process from 'node:process'
 import * as FS from 'node:fs'
 import { deriveBuffer } from '../test/util.js'
-import { sha256 } from 'multiformats/hashes/sha2'
+import SHA256 from 'sync-multihash-sha2/sha256'
 import * as raw from 'multiformats/codecs/raw'
 import * as Link from 'multiformats/link'
 
@@ -15,8 +15,8 @@ const main = async () => {
   const paddedSize = parseInt(padded.split(/\s+/)[2].trim())
   const pieceSize = parseInt(piece.split(/\s+/)[2].trim())
 
-  const source = await deriveBuffer(size)
-  const digest = await sha256.digest(source)
+  const source = deriveBuffer(size)
+  const digest = SHA256.digest(source)
   const link = Link.create(raw.code, digest)
 
   console.log(`${size},${link},${paddedSize},${pieceSize},${cid}`)

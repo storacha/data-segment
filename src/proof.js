@@ -1,6 +1,5 @@
 import * as API from './api.js'
-// import { sha256 } from 'multiformats/hashes/sha2'
-import { sha256 } from '@noble/hashes/sha256'
+import * as SHA256 from 'sync-multihash-sha2/sha256'
 import { Size as NodeSize } from './node.js'
 
 /**
@@ -113,7 +112,7 @@ export function validateProofStructure(proofData) {
  * @returns {API.MerkleTreeNode}
  */
 export function truncatedHash(payload) {
-  const digest = sha256(payload)
+  const { digest } = SHA256.digest(payload)
   return truncate(digest)
 }
 

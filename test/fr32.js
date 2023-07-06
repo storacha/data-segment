@@ -24,7 +24,7 @@ export const test = Object.fromEntries(
   vector.map((size) => [
     `size: ${size}`,
     async (assert) => {
-      const source = await deriveBuffer(size)
+      const source = deriveBuffer(size)
       const padded = Fr32.pad(source)
       const unpadded = Fr32.unpad(padded)
 

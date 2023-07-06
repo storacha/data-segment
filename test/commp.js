@@ -1,6 +1,6 @@
 import { CommP } from '@web3-storage/data-segment'
 import { deriveBuffer } from './util.js'
-import { sha256 } from 'multiformats/hashes/sha2'
+import * as SHA256 from 'sync-multihash-sha2/sha256'
 import * as raw from 'multiformats/codecs/raw'
 import { create as createLink } from 'multiformats/link'
 
@@ -18,7 +18,7 @@ export const test = Object.fromEntries(
     `size: ${data.in.size}\t\t${data.in.cid}`,
     async (assert) => {
       const source = await deriveBuffer(data.in.size)
-      const link = createLink(raw.code, await sha256.digest(raw.encode(source)))
+      const link = createLink(raw.code, SHA256.digest(raw.encode(source)))
       const commP = await CommP.build(source)
       assert.deepEqual(link.toString(), data.in.cid, 'same source content')
 
@@ -35,7 +35,7 @@ export const test = Object.fromEntries(
 )
 
 test['size: 0'] = async (assert) => {
-  const source = await deriveBuffer(64)
+  const source = deriveBuffer(64)
   let commP = null
   try {
     commP = await CommP.build(source)

@@ -1,16 +1,16 @@
-lockfileVersion: '6.1'
+lockfileVersion: '6.0'
 
 settings:
   autoInstallPeers: true
   excludeLinksFromLockfile: false
 
 dependencies:
-  '@noble/hashes':
-    specifier: ^1.3.1
-    version: 1.3.1
   multiformats:
     specifier: ^11.0.2
     version: 11.0.2
+  sync-multihash-sha2:
+    specifier: ^1.0.0
+    version: 1.0.0
 
 devDependencies:
   '@rvagg/fil-utils':
@@ -2617,6 +2617,12 @@ packages:
     resolution: {integrity: sha512-ot0WnXS9fgdkgIcePe6RHNk1WA8+muPa6cSjeR3V8K27q9BB1rTE3R1p7Hv0z1ZyAc8s6Vvv8DIyWf681MAt0w==}
     engines: {node: '>= 0.4'}
     dev: true
+
+  /sync-multihash-sha2@1.0.0:
+    resolution: {integrity: sha512-A5gVpmtKF0ov+/XID0M0QRJqF2QxAsj3x/LlDC8yivzgoYCoWkV+XaZPfVu7Vj1T/hYzYS1tfjwboSbXjqocug==}
+    dependencies:
+      '@noble/hashes': 1.3.1
+    dev: false
 
   /tape@5.6.3:
     resolution: {integrity: sha512-cUDDGSbyoSIpdUAqbqLI/r7i/S4BHuCB9M5j7E/LrLs/x/i4zeAJ798aqo+FGo+kr9seBZwr8AkZW6rjceyAMQ==}

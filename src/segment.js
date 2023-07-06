@@ -1,4 +1,4 @@
-import { sha256 } from '@noble/hashes/sha256'
+import * as SHA256 from 'sync-multihash-sha2/sha256'
 import { Size as NodeSize } from './node.js'
 import * as API from './api.js'
 
@@ -76,7 +76,8 @@ export const toBytes = ({ root, size, offset, checksum }) => {
   view.setBigUint64(NodeSize + Uint64Size, BigInt(size), true)
 
   if (!checksum) {
-    checksum = sha256(buffer).subarray(0, ChecksumSize)
+    const { digest } = SHA256.digest(buffer)
+    checksum = digest.subarray(0, ChecksumSize)
     // Truncate to  126 bits
     checksum[ChecksumSize - 1] &= 0b00111111
   }

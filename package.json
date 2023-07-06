@@ -33,8 +33,8 @@
     "check": "tsc --build"
   },
   "dependencies": {
-    "@noble/hashes": "^1.3.1",
-    "multiformats": "^11.0.2"
+    "multiformats": "^11.0.2",
+    "sync-multihash-sha2": "^1.0.0"
   },
   "devDependencies": {
     "@rvagg/fil-utils": "0.0.0",
