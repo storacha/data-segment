@@ -1,8 +1,37 @@
-import zeroComm from './zero-comm/gen.js'
 import * as API from './api.js'
 import * as Node from './node.js'
+import * as Proof from './proof.js'
 
-const MAX_LEVEL = Math.floor(zeroComm.length / Node.Size)
+const MAX_LEVEL = 64
+const MAX_SIZE = MAX_LEVEL * Node.Size
+
+/**
+ * This is a lazy zero-comm buffer which we fill up on demand.
+ */
+class ZeroComm {
+  constructor() {
+    this.bytes = new Uint8Array(MAX_SIZE)
+    this.bytes.set(Node.empty(), 0)
+    /** @private */
+    this.node = Node.empty()
+    /** @private */
+    this.length = Node.Size
+  }
+  /**
+   * @param {number} start
+   * @param {number} end
+   */
+  slice(start, end) {
+    while (this.length < end) {
+      this.node = Proof.computeNode(this.node, this.node)
+      this.bytes.set(this.node, this.length)
+      this.length += Node.Size
+    }
+
+    return this.bytes.subarray(start, end)
+  }
+}
+const ZERO_COMM = new ZeroComm()
 
 /**
  * simple access by level, only levels between `0` and `64` inclusive are
@@ -18,7 +47,7 @@ export const fromLevel = (level) => {
     )
   }
 
-  return zeroComm.subarray(Node.Size * level, Node.Size * (level + 1))
+  return ZERO_COMM.slice(Node.Size * level, Node.Size * (level + 1))
 }
 
 /**
@@ -30,7 +59,7 @@ export const fromSize = (size) => {
     throw new Error(`zero commitments for size ${size} are not supported`)
   }
 
-  return zeroComm.subarray(Node.Size * level, Node.Size * (level + 1))
+  return ZERO_COMM.slice(Node.Size * level, Node.Size * (level + 1))
 }
 
 /**
