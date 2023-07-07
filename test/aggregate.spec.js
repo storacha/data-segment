@@ -4,7 +4,7 @@ import * as Piece from '../src/piece.js'
 import * as Link from 'multiformats/link'
 
 /**
- * @type {import("./api.js").TestSuite}
+ * @type {import("entail").Suite}
  */
 export const testAggregate = {
   'test empty': async (assert) => {
@@ -12,10 +12,10 @@ export const testAggregate = {
     const build = builder.close()
 
     assert.deepEqual(
-      build.link(),
       Link.parse(
         'baga6ea4seaqao7s73y24kcutaosvacpdjgfe5pw76ooefnyqw4ynr3d2y6x2mpq'
-      )
+      ),
+      build.link()
     )
   },
 
@@ -33,10 +33,10 @@ export const testAggregate = {
     const build = builder.close()
 
     assert.deepEqual(
-      build.link(),
       Link.parse(
         'baga6ea4seaqko3i6w4rij37dqerctuv4kbakbcylpe6weeu3tjp26fqyd6txcjy'
-      )
+      ),
+      build.link()
     )
   },
   'basic with two pieces': async (assert) => {
@@ -57,10 +57,10 @@ export const testAggregate = {
     const build = builder.close()
 
     assert.deepEqual(
-      build.link(),
       Link.parse(
         'baga6ea4seaqnqkeoqevjjjfe46wo2lpfclcbmkyms4wkz5srou3vzmr3w3c72bq'
-      )
+      ),
+      build.link()
     )
   },
   'basic aggregate builder': async (assert) => {
@@ -75,10 +75,10 @@ export const testAggregate = {
     const build = builder.close()
 
     assert.deepEqual(
-      build.link(),
       Link.parse(
         'baga6ea4seaqd6rv4mrnqpi7kfqcpazxzhho7pytj3v3woh46dzq2hi3zpztfcjy'
-      )
+      ),
+      build.link()
     )
   },
 }

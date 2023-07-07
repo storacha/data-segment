@@ -7,7 +7,7 @@ import * as API from '../src/api.js'
 import * as Proof from '../src/proof.js'
 
 /**
- * @type {import("./api.js").TestSuite}
+ * @type {import("entail").Suite}
  */
 export const testHybridTree = {
   'basic hybrid tree test': async (assert) => {

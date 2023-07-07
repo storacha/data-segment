@@ -18,9 +18,9 @@ const vector = [
 ]
 
 /**
- * @type {import("./api.js").TestSuite}
+ * @type {import("entail").Suite}
  */
-export const test = Object.fromEntries(
+export const testFr32 = Object.fromEntries(
   vector.map((size) => [
     `size: ${size}`,
     async (assert) => {

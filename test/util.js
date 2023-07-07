@@ -61,3 +61,23 @@ export const deriveBuffer = (size = 1024) => {
 
   return buffer
 }
+
+/**
+ * @param {URL} url
+ */
+export const load = async (url) => {
+  try {
+    const cwd = process.env.PWD || process.cwd()
+    const path =
+      url.protocol === 'file:' && url.pathname.startsWith(cwd)
+        ? url.pathname.slice(cwd.length)
+        : url
+
+    const response = await fetch(path)
+    return await response.blob()
+  } catch {
+    const importFS = (id = 'node:fs') => import(id)
+    const FS = await importFS()
+    return new Blob([FS.readFileSync(url)])
+  }
+}

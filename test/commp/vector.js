@@ -1,5 +1,9 @@
-import * as FS from 'fs'
-const content = FS.readFileSync('./test/commp/vector.csv', 'utf8')
+import { load } from '../util.js'
+
+const url = new URL('./vector.csv', import.meta.url)
+
+const blob = await load(url)
+const content = await blob.text()
 
 const [, ...lines] = content.trim().split('\n')
 export default lines.map((line) => {

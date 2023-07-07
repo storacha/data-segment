@@ -8,12 +8,12 @@ import { create as createLink } from 'multiformats/link'
  * Module is generated from `./commp.csv` using prepare script.
  * @see https://github.com/hugomrdias/playwright-test/issues/544
  */
-import vector from './commp/vector.csv.js'
+import vector from './commp/vector.js'
 
 /**
- * @type {import("./api.js").TestSuite}
+ * @type {import("entail").Suite}
  */
-export const test = Object.fromEntries(
+export const testPiece = Object.fromEntries(
   Object.values(vector).map((data) => [
     `${data.in.contentSize}\t\t${data.in.cid}`,
     async (assert) => {
@@ -34,7 +34,7 @@ export const test = Object.fromEntries(
   ])
 )
 
-test['size: 0'] = async (assert) => {
+testPiece['size: 0'] = async (assert) => {
   const source = deriveBuffer(64)
   let result = null
   try {

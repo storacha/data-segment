@@ -72,9 +72,9 @@ const testVectors = [
 ]
 
 /**
- * @type {import("./api.js").TestSuite}
+ * @type {import("entail").Suite}
  */
-export const test = {
+export const testProof = {
   'test compute empty node': async (assert) => {
     assert.deepEqual(
       new Uint8Array([

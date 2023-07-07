@@ -1,9 +1,9 @@
 import { Tree } from '@web3-storage/data-segment'
 
 /**
- * @type {import("./api.js").TestSuite}
+ * @type {import("entail").Suite}
  */
-export const test = {
+export const testTree = {
   'throws on empty tree': async (assert) => {
     let result = null
     try {
