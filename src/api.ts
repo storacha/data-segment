@@ -61,6 +61,11 @@ export interface Vector<T> extends Iterable<T> {
 }
 
 export type PaddedPieceSize = New<{ PaddedPieceSize: number }>
+
+/**
+ * `UnpaddedPieceSize` is the size of a piece, in bytes.
+ * @see https://github.com/filecoin-project/go-state-types/blob/ff2ed169ff566458f2acd8b135d62e8ca27e7d0c/abi/piece.go#L10C4-L11
+ */
 export type UnpaddedPieceSize = New<{ UnpaddedPieceSize: number }>
 
 export type Fr23Padded = New<{ Fr23Padded: Uint8Array }>

@@ -11,14 +11,8 @@ import { indexAreaStart } from './inclusion.js'
 /**
  * @param {number} capacity - Size of the aggregate in bytes.
  */
-export const createBuilder = (capacity) => {
-  const result = Piece.validatePaddedPieceSize(capacity)
-  if (result.error) {
-    throw result.error
-  } else {
-    return new AggregateBuilder({ capacity: result.ok })
-  }
-}
+export const createBuilder = (capacity) =>
+  new AggregateBuilder({ capacity: Piece.PaddedSize.from(capacity) })
 
 class AggregateBuilder {
   /**
@@ -137,7 +131,7 @@ class AggregateBuilder {
       }
     }
 
-    const result = Piece.validatePaddedPieceSize(size)
+    const result = Piece.PaddedSize.validate(size)
     if (result.error) {
       return result
     }

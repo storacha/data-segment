@@ -56,6 +56,10 @@
     "./aggregate": {
       "types": "./dist/src/aggregate.d.ts",
       "import": "./src/aggregate.js"
+    },
+    "./piece": {
+      "types": "./dist/src/piece.d.ts",
+      "import": "./src/piece.js"
     }
   },
   "c8": {
