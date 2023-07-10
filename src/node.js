@@ -28,24 +28,5 @@ export const from = (bytes) => {
 
 export const empty = () => EMPTY
 
-/**
- *
- * @param {API.MerkleTreeNode} node
- * @returns
- */
-export const isEmpty = (node) => {
-  if (node === EMPTY) {
-    return true
-  } else if (node.length === Size) {
-    for (const byte of node) {
-      if (byte !== 0) {
-        return false
-      }
-    }
-    return true
-  }
-  return false
-}
-
 const EMPTY = from(new Uint8Array(Size).fill(0))
 Object.freeze(EMPTY.buffer)
