@@ -5,7 +5,7 @@ import * as Index from '../src/index.js'
  */
 export const testIndex = {
   maxIndexEntriesInDeal: async (assert) => {
-    assert.deepEqual(Index.maxIndexEntriesInDeal(0), 4)
+    assert.deepEqual(Index.maxIndexEntriesInDeal(0n), 4)
     assert.deepEqual(Index.maxIndexEntriesInDeal(100_000_000n), 1024)
     assert.deepEqual(Index.maxIndexEntriesInDeal(1_000_000_000n), 8192)
     assert.deepEqual(Index.maxIndexEntriesInDeal(10_000_000_000n), 131072)

@@ -1,5 +1,5 @@
 import * as API from '../api.js'
-import { trailingZeros64 } from '../math.js'
+import { trailingZeros64 } from '../uint64.js'
 
 /**
  * Validates that given `size` is a valid {@link API.UnpaddedPieceSize} and
@@ -9,7 +9,7 @@ import { trailingZeros64 } from '../math.js'
  * This function is a variation on {@link validate} that throws exceptions
  * instead of returning a {@link API.Result}.
  *
- * @param {number|bigint} size
+ * @param {number|API.uint64} size
  * @returns {API.UnpaddedPieceSize}
  */
 export const from = (size) => {
@@ -26,7 +26,7 @@ export const from = (size) => {
  * a power of 2 multiple of 127. Returns {@link API.Result} with
  * `UnpaddedPieceSize` ok case and an Error in the error case.
  *
- * @param {bigint} size
+ * @param {API.uint64} size
  * @returns {API.Result<API.UnpaddedPieceSize, Error>}
  */
 export const validate = (size) => {

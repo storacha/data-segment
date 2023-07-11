@@ -5,7 +5,7 @@ import { base16 } from 'multiformats/bases/base16'
  * @type {{
  * subtree: API.MerkleTreeNode
  * path: API.MerkleTreeNode[]
- * index: bigint
+ * index: API.uint64
  * root?: API.MerkleTreeNode
  * error?: string
  * }[]}

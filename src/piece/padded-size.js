@@ -1,5 +1,5 @@
 import * as API from '../api.js'
-import { onesCount64 } from '../math.js'
+import { onesCount64 } from '../uint64.js'
 
 /**
  * Validates that given `size` is a valid {@link API.PaddedPieceSize} and
@@ -9,7 +9,7 @@ import { onesCount64 } from '../math.js'
  * This function is a variation on {@link validate} that throws exceptions
  * instead of returning a {@link API.Result}.
  *
- * @param {number|bigint} size
+ * @param {number|API.uint64} size
  */
 export const from = (size) => {
   const result = validate(BigInt(size))
@@ -27,7 +27,7 @@ export const from = (size) => {
  *
  * @see https://github.com/filecoin-project/go-state-types/blob/ff2ed169ff566458f2acd8b135d62e8ca27e7d0c/abi/piece.go#L18-L29
  *
- * @param {bigint} size
+ * @param {API.uint64} size
  * @returns {API.Result<API.PaddedPieceSize, RangeError>}
  */
 export const validate = (size) => {

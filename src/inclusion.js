@@ -4,7 +4,7 @@ import { maxIndexEntriesInDeal, EntrySize } from './index.js'
 /**
  *
  * @param {API.PaddedPieceSize} size
- * @returns {bigint}
+ * @returns {API.uint64}
  */
 export const indexAreaStart = (size) =>
-  size - BigInt(maxIndexEntriesInDeal(size) * EntrySize)
+  size - BigInt(maxIndexEntriesInDeal(size)) * EntrySize

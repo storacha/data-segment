@@ -1,7 +1,9 @@
+import * as API from './api.js'
+
 /**
  * Returns the base 2 logarithm of the given `n`, rounded down.
  *
- * @param {bigint} n
+ * @param {API.uint64} n
  * @returns {number}
  */
 export const log2Floor = (n) => {
@@ -13,12 +15,12 @@ export const log2Floor = (n) => {
 /**
  * Return the integer logarithm with ceiling for 64 bit unsigned ints.
  *
- * @param {bigint|number} n
+ * @param {API.uint64} n
  */
 export const log2Ceil = (n) => (n <= 1n ? 0 : log2Floor(BigInt(n) - 1n) + 1)
 
 /**
- * @param {bigint} n
+ * @param {API.uint64} n
  */
 export const trailingZeros64 = (n) => {
   if (n === 0n) {
@@ -35,7 +37,7 @@ export const trailingZeros64 = (n) => {
 }
 
 /**
- * @param {bigint} value
+ * @param {API.uint64} value
  */
 export const onesCount64 = (value) => {
   let count = 0

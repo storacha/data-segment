@@ -41,19 +41,14 @@ class Hybrid {
   }
 
   get root() {
-    try {
-      return this.getNode(this.maxLevel, 0n)
-    } catch (cause) {
-      const error = /** @type {Error} */ (cause)
-      throw new Error('unexpected: ' + error.message)
-    }
+    return this.getNode(this.maxLevel, 0n)
   }
 
   /**
    * Collects a proof from the specified node to the root of the tree.
    *
    * @param {number} level
-   * @param {bigint} index
+   * @param {API.uint64} index
    */
   collectProof(level, index) {
     validateLevelIndex(this.log2Leafs, level, index)
@@ -74,7 +69,7 @@ class Hybrid {
   /**
    *
    * @param {number} level
-   * @param {bigint} index
+   * @param {API.uint64} index
    */
   getNode(level, index) {
     const node = getNodeRaw(this, level, index)
@@ -84,7 +79,7 @@ class Hybrid {
   /**
    *
    * @param {number} level
-   * @param {bigint} index
+   * @param {API.uint64} index
    * @param {API.MerkleTreeNode} node
    */
   setNode(level, index, node) {
@@ -146,7 +141,7 @@ const BigIntSparseBlockSize = BigInt(SparseBlockSize)
  */
 class SparseArray {
   /**
-   * @param {Map<bigint, T[]>} subs
+   * @param {Map<API.uint64, T[]>} subs
    */
   constructor(subs = new Map()) {
     /**
@@ -158,7 +153,7 @@ class SparseArray {
     this.subs.clear()
   }
   /**
-   * @param {bigint} index
+   * @param {API.uint64} index
    * @returns {T | undefined}
    */
   at(index) {
@@ -171,7 +166,7 @@ class SparseArray {
     return sub[Number(index % BigIntSparseBlockSize)]
   }
   /**
-   * @param {bigint} index
+   * @param {API.uint64} index
    * @param {T} value
    */
   set(index, value) {
@@ -186,8 +181,8 @@ class SparseArray {
   }
 
   /**
-   * @param {bigint} start
-   * @param {bigint} end
+   * @param {API.uint64} start
+   * @param {API.uint64} end
    * @returns
    */
   slice(start, end) {
@@ -238,7 +233,7 @@ export const clear = (tree) => {
  *
  * @param {Model} tree
  * @param {number} level
- * @param {bigint} idx
+ * @param {API.uint64} idx
  */
 const getNodeRaw = (tree, level, idx) => {
   validateLevelIndex(tree.log2Leafs, level, idx)
@@ -249,7 +244,7 @@ const getNodeRaw = (tree, level, idx) => {
 /**
  * @param {number} maxLevel
  * @param {number} level
- * @param {bigint} index
+ * @param {API.uint64} index
  */
 const validateLevelIndex = (maxLevel, level, index) => {
   if (level < 0) {
@@ -268,8 +263,8 @@ const validateLevelIndex = (maxLevel, level, index) => {
 /**
  * @param {number} maxLevel
  * @param {number} level
- * @param {bigint} index
- * @returns {bigint}
+ * @param {API.uint64} index
+ * @returns {API.uint64}
  */
 export const idxFor = (maxLevel, level, index) => {
   const depth = maxLevel - level
@@ -291,11 +286,11 @@ export const idxFor = (maxLevel, level, index) => {
 
   const offsetOfSubtreeLayer =
     ((1n << (BigInt(depthOfSubtree + 1) * BigInt(SparseBlockLog2Size))) - 1n) /
-      (BigInt(SparseBlockSize) - 1n) -
+      (BigIntSparseBlockSize - 1n) -
     1n
 
   const offsetOfSubtree =
-    offsetOfSubtreeLayer + BigInt(SparseBlockSize) * indexOfSubtree
+    offsetOfSubtreeLayer + BigIntSparseBlockSize * indexOfSubtree
 
   return offsetOfSubtree + indexInSubtree
 }

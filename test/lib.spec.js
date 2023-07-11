@@ -26,7 +26,9 @@ export const testLib = {
     ]
 
     const dealSize = Lib.Piece.PaddedSize.from(1 << 20)
-    const aggregate = Lib.Aggregate.createBuilder(dealSize)
+    const aggregate = Lib.Aggregate.createBuilder({
+      size: dealSize,
+    })
     for (const piece of pieces) {
       aggregate.write(piece)
     }

@@ -4,11 +4,11 @@ import * as Segment from './segment.js'
 import * as Index from './index.js'
 import * as Piece from './piece.js'
 import * as Node from './node.js'
-import { EntrySize } from './index.js'
-import { log2Ceil } from './math.js'
+import { log2Ceil } from './uint64.js'
 import { indexAreaStart } from './inclusion.js'
 
 const NodeSize = BigInt(Node.Size)
+const EntrySize = Number(Index.EntrySize)
 export const MAX_CAPACITY = 2n ** BigInt(Hybrid.MAX_LOG2_LEAFS) * NodeSize
 
 /**
@@ -53,7 +53,7 @@ class AggregateBuilder {
   /**
    * @param {object} source
    * @param {API.PaddedPieceSize} source.size
-   * @param {bigint} [source.offset]
+   * @param {API.uint64} [source.offset]
    * @param {API.MerkleTreeNodeSource[]} [source.parts]
    * @param {number} [source.limit]
    */
@@ -111,7 +111,13 @@ class AggregateBuilder {
     Hybrid.batchSet(tree, parts)
     Hybrid.batchSet(tree, batch)
 
-    return new Aggregate({ size, tree, parts, limit })
+    return new Aggregate({
+      size,
+      // @ts-expect-error - TODO: Make hybrid compatible with MerkleTree
+      tree,
+      parts,
+      limit,
+    })
   }
 
   /**
@@ -139,7 +145,7 @@ class AggregateBuilder {
    * @param {API.PieceInfo} piece
    * @returns {API.Result<{
    *   parts: [API.MerkleTreeNodeSource]
-   *   offset: bigint
+   *   offset: API.uint64
    * }, RangeError>}
    */
   estimate({ root, size }) {
@@ -188,7 +194,7 @@ class Aggregate {
   /**
    * @param {object} source
    * @param {API.PaddedPieceSize} source.size
-   * @param {bigint} source.offset
+   * @param {API.uint64} source.offset
    * @param {API.MerkleTreeNodeSource[]} source.parts
    * @param {number} source.limit
    * @param {API.MerkleTree} source.tree

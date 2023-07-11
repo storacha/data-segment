@@ -147,7 +147,7 @@ export const testHybridTree = {
       assert.deepEqual(Proof.computeRoot(node, proof), { ok: expect })
     }
 
-    hybrid.setNode(0, 1n << BigInt(30 - 1), Node.from([0x1]))
+    hybrid.setNode(0, 1n << (30n - 1n), Node.from([0x1]))
   },
 
   'hybrid can can have at most 60': (assert) => {
@@ -160,5 +160,9 @@ export const testHybridTree = {
     assert.deepEqual(hybrid.root, Node.empty())
 
     assert.throws(() => hybrid.getNode(61, 0n), /level too high/)
+  },
+
+  'hybrid can not have negative leafs': (assert) => {
+    assert.throws(() => Hybrid.create(-1), /cannot have negative/)
   },
 }

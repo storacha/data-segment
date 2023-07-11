@@ -1,4 +1,4 @@
-import { log2Ceil, log2Floor, trailingZeros64 } from '../src/math.js'
+import { log2Ceil, log2Floor, trailingZeros64 } from '../src/uint64.js'
 
 /** @type {import("entail").Suite} */
 export const testLog2Ceil = Object.fromEntries(
@@ -15,7 +15,7 @@ export const testLog2Ceil = Object.fromEntries(
   ].map(([n, expect]) => [
     `log2Ceil(${n}) === ${expect}`,
     (assert) => {
-      assert.equal(log2Ceil(n), expect)
+      assert.equal(log2Ceil(BigInt(n)), expect)
     },
   ])
 )
