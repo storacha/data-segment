@@ -5,6 +5,7 @@ import * as ZeroComm from '../src/zero-comm.js'
 import { parse as parseLink } from 'multiformats/link'
 import * as API from '../src/api.js'
 import * as Proof from '../src/proof.js'
+import { pow2 } from '../src/uint64.js'
 
 /**
  * @type {import("entail").Suite}
@@ -156,10 +157,10 @@ export const testHybridTree = {
 
   'hybrid with 0 leafs': (assert) => {
     const hybrid = Hybrid.create(0)
-    assert.deepEqual(hybrid.maxLevel, 0)
+    assert.deepEqual(hybrid.depth, 0)
     assert.deepEqual(hybrid.root, Node.empty())
 
-    assert.throws(() => hybrid.getNode(61, 0n), /level too high/)
+    assert.throws(() => hybrid.node(61, 0n), /level too high/)
   },
 
   'hybrid can not have negative leafs': (assert) => {

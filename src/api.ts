@@ -47,7 +47,7 @@ type Poll<T, X> = Variant<{
 export interface Aggregate {
   dealSize: PaddedPieceSize
   index: IndexData
-  tree: MerkleTree
+  tree: AggregateTree
 }
 
 export interface AggregateState {
@@ -76,13 +76,46 @@ export interface IndexData {
   entries: SegmentInfo[]
 }
 
-export interface MerkleTree {
+export interface MerkleTree<I extends uint64 | number = uint64 | number> {
+  /**
+   * The Depth of the tree. A single-node tree has depth of 1
+   */
   depth: number
+  /**
+   * Amount of leafs in this Merkle tree.
+   */
   leafCount: number
+  /**
+   * Root node of this Merkle tree.
+   */
   root: MerkleTreeNode
-  leafs: MerkleTreeNode[]
 
-  node(level: number, index: number): MerkleTreeNode | undefined
+  /**
+   * Returns a node at the given level and index.
+   *
+   * @param level
+   * @param index
+   */
+  node(level: number, index: I): MerkleTreeNode | undefined
+}
+
+export interface MerkleTreeBuilder<
+  I extends uint64 | number = uint64 | number
+> {
+  setNode(level: number, index: I, node: MerkleTreeNode): this
+}
+
+export interface PieceTree extends MerkleTree<number> {
+  /**
+   * All leaf nodes of this Merkle tree.
+   */
+  leafs: MerkleTreeNode[]
+}
+
+export interface AggregateTree
+  extends MerkleTree<uint64>,
+    MerkleTreeBuilder<uint64> {
+  collectProof(level: number, index: uint64): ProofData
 }
 
 export interface PieceInfo {

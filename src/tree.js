@@ -78,7 +78,7 @@ export const buildFromChunks = (chunks) => {
 
 /**
  * @param {API.MerkleTreeNode[]} leafs
- * @returns {API.MerkleTree}
+ * @returns {API.PieceTree}
  */
 export const buildFromLeafs = (leafs) => {
   const tree = newBareTree(leafs.length)

@@ -4,10 +4,16 @@ import * as ZeroComm from './zero-comm.js'
 import * as Proof from './proof.js'
 import { pow2 } from './uint64.js'
 
+/**
+ * We allow up to 2 ** 60 leafs in the tree, with is greater than then
+ * Number.MAX_SAFE_INTEGER ((2 ** 53) - 1) which is why we need to use
+ * uint64s.
+ */
 export const MAX_LOG2_LEAFS = 60
 
 /**
  * @param {number} log2Leafs
+ * @returns {API.AggregateTree}
  */
 export const create = (log2Leafs) => {
   if (log2Leafs > MAX_LOG2_LEAFS) {
@@ -41,8 +47,16 @@ class Hybrid {
     return this.log2Leafs
   }
 
+  get leafCount() {
+    return 2 ** this.log2Leafs
+  }
+
+  get depth() {
+    return this.log2Leafs
+  }
+
   get root() {
-    return this.getNode(this.maxLevel, 0n)
+    return this.node(this.maxLevel, 0n)
   }
 
   /**
@@ -50,6 +64,7 @@ class Hybrid {
    *
    * @param {number} level
    * @param {API.uint64} index
+   * @returns {API.ProofData}
    */
   collectProof(level, index) {
     validateLevelIndex(this.log2Leafs, level, index)
@@ -58,7 +73,7 @@ class Hybrid {
     let currentIndex = index
     while (currentLevel < this.maxLevel) {
       // idx^1 is the sibling index
-      const node = this.getNode(currentLevel, currentIndex ^ 1n)
+      const node = this.node(currentLevel, currentIndex ^ 1n)
       currentIndex = currentIndex / 2n
       path.push(node)
       currentLevel++
@@ -72,7 +87,7 @@ class Hybrid {
    * @param {number} level
    * @param {API.uint64} index
    */
-  getNode(level, index) {
+  node(level, index) {
     const node = getNodeRaw(this, level, index)
     return node || ZeroComm.fromLevel(level)
   }
@@ -122,6 +137,7 @@ class Hybrid {
       currentIndex = nextIndex
       n++
     }
+    return this
   }
 }
 
@@ -207,7 +223,7 @@ class SparseArray {
 }
 
 /**
- * @param {Hybrid} tree
+ * @param {API.MerkleTreeBuilder} tree
  * @param {API.MerkleTreeNodeSource[]} values
  */
 export const batchSet = (tree, values) => {

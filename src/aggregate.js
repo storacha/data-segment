@@ -80,7 +80,7 @@ class AggregateBuilder {
   }
 
   close() {
-    const { size, parts, limit } = this
+    const { size, parts, limit, offset } = this
     const indexStartNodes = indexAreaStart(size) / NodeSize
 
     /** @type {API.MerkleTreeNodeSource[]} */
@@ -113,8 +113,8 @@ class AggregateBuilder {
 
     return new Aggregate({
       size,
-      // @ts-expect-error - TODO: Make hybrid compatible with MerkleTree
       tree,
+      offset,
       parts,
       limit,
     })
