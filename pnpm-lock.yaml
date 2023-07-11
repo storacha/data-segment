@@ -20,14 +20,14 @@ devDependencies:
     specifier: ^7.14.0
     version: 7.14.0
   entail:
-    specifier: ^2.1.0
-    version: 2.1.0
+    specifier: ^2.1.1
+    version: 2.1.1
   nyc:
     specifier: 15.1.0
     version: 15.1.0
   playwright-test:
     specifier: git+https://github.com/Gozala/playwright-test.git#feat/process.stdout
-    version: github.com/Gozala/playwright-test/adc479247204032c86788f2fbbc87a45142bf82d
+    version: github.com/Gozala/playwright-test/067bf8ba7f94eace65d1eb144112be752c84e286
   prettier:
     specifier: 2.8.8
     version: 2.8.8
@@ -964,8 +964,8 @@ packages:
     resolution: {integrity: sha512-MSjYzcWNOA0ewAHpz0MxpYFvwg6yjy1NG3xteoqz644VCo/RPgnr1/GGt+ic3iJTzQ8Eu3TdM14SawnVUmGE6A==}
     dev: true
 
-  /entail@2.1.0:
-    resolution: {integrity: sha512-IahnIeLYgkVdEm4PnZPRewaqL+v72In9KcZ2F+KiS6jBiBPymp1GuaNGB9T4mQZ7ytsJCFETrAWoWHMod9Fudg==}
+  /entail@2.1.1:
+    resolution: {integrity: sha512-gF0oq4AOVm/3cyBvp8y1jOFc7DGRlatJQnGWkwyAxdNGle0UjtRTwaIUNiTZ88a7Q+wKZb0vtdqc5O7L5W7H/A==}
     hasBin: true
     dependencies:
       dequal: 2.0.3
@@ -1052,17 +1052,6 @@ packages:
       onetime: 6.0.0
       signal-exit: 3.0.7
       strip-final-newline: 3.0.0
-    dev: true
-
-  /fast-glob@3.2.12:
-    resolution: {integrity: sha512-DVj4CQIYYow0BlaelwK1pHl5n5cRSJfM60UA0zK891sVInoPri2Ekj7+e1CT3/3qxXenpI+nBBmQAcJPJgaj4w==}
-    engines: {node: '>=8.6.0'}
-    dependencies:
-      '@nodelib/fs.stat': 2.0.5
-      '@nodelib/fs.walk': 1.2.8
-      glob-parent: 5.1.2
-      merge2: 1.4.1
-      micromatch: 4.0.5
     dev: true
 
   /fast-glob@3.3.0:
@@ -1205,7 +1194,7 @@ packages:
     engines: {node: ^12.20.0 || ^14.13.1 || >=16.0.0}
     dependencies:
       dir-glob: 3.0.1
-      fast-glob: 3.2.12
+      fast-glob: 3.3.0
       ignore: 5.2.4
       merge2: 1.4.1
       slash: 4.0.0
@@ -2411,10 +2400,10 @@ packages:
     engines: {node: '>=10'}
     dev: true
 
-  github.com/Gozala/playwright-test/adc479247204032c86788f2fbbc87a45142bf82d:
-    resolution: {tarball: https://codeload.github.com/Gozala/playwright-test/tar.gz/adc479247204032c86788f2fbbc87a45142bf82d}
+  github.com/Gozala/playwright-test/067bf8ba7f94eace65d1eb144112be752c84e286:
+    resolution: {tarball: https://codeload.github.com/Gozala/playwright-test/tar.gz/067bf8ba7f94eace65d1eb144112be752c84e286}
     name: playwright-test
-    version: 11.0.2
+    version: 11.0.3
     engines: {node: '>=16.0.0'}
     hasBin: true
     prepare: true

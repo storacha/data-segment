@@ -17,7 +17,7 @@ export const testPieceSize = {
     vector.map(([size]) => [
       `UnpaddedSize.from(${size})`,
       (assert) => {
-        assert.deepEqual(UnpaddedSize.from(size), size)
+        assert.deepEqual(UnpaddedSize.from(size), BigInt(size))
       },
     ])
   ),
@@ -25,7 +25,7 @@ export const testPieceSize = {
     vector.map(([, size]) => [
       `PaddedSize.from(${size})`,
       (assert) => {
-        assert.deepEqual(PaddedSize.from(size), size)
+        assert.deepEqual(PaddedSize.from(size), BigInt(size))
       },
     ])
   ),
@@ -36,7 +36,7 @@ export const testPieceSize = {
       (assert) => {
         assert.deepEqual(
           PaddedSize.toUnpaddedSize(PaddedSize.from(padded)),
-          unpadded
+          BigInt(unpadded)
         )
       },
     ])
@@ -47,7 +47,7 @@ export const testPieceSize = {
       (assert) => {
         assert.deepEqual(
           UnpaddedSize.toPaddedSize(UnpaddedSize.from(unpadded)),
-          padded
+          BigInt(padded)
         )
       },
     ])
@@ -61,7 +61,7 @@ export const testPieceSize = {
           PaddedSize.toUnpaddedSize(
             UnpaddedSize.toPaddedSize(UnpaddedSize.from(size))
           ),
-          size
+          BigInt(size)
         )
       },
     ])
@@ -74,7 +74,7 @@ export const testPieceSize = {
           UnpaddedSize.toPaddedSize(
             PaddedSize.toUnpaddedSize(PaddedSize.from(size))
           ),
-          size
+          BigInt(size)
         )
       },
     ])

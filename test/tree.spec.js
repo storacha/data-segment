@@ -1,4 +1,5 @@
 import { Tree } from '@web3-storage/data-segment'
+import { base16 } from 'multiformats/bases/base16'
 
 /**
  * @type {import("entail").Suite}
@@ -20,5 +21,6 @@ export const testTree = {
     assert.equal(tree.depth, 3)
     assert.equal(tree.leafs.length, 4)
     assert.equal(tree.node(0, 0), tree.root)
+    assert.equal(tree.leafCount, 4)
   },
 }

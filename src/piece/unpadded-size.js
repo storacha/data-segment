@@ -1,4 +1,5 @@
 import * as API from '../api.js'
+import { trailingZeros64 } from '../math.js'
 
 /**
  * Validates that given `size` is a valid {@link API.UnpaddedPieceSize} and
@@ -8,11 +9,11 @@ import * as API from '../api.js'
  * This function is a variation on {@link validate} that throws exceptions
  * instead of returning a {@link API.Result}.
  *
- * @param {number} size
+ * @param {number|bigint} size
  * @returns {API.UnpaddedPieceSize}
  */
 export const from = (size) => {
-  const result = validate(size)
+  const result = validate(BigInt(size))
   if (result.error) {
     throw result.error
   } else {
@@ -25,7 +26,7 @@ export const from = (size) => {
  * a power of 2 multiple of 127. Returns {@link API.Result} with
  * `UnpaddedPieceSize` ok case and an Error in the error case.
  *
- * @param {number} size
+ * @param {bigint} size
  * @returns {API.Result<API.UnpaddedPieceSize, Error>}
  */
 export const validate = (size) => {
@@ -33,7 +34,7 @@ export const validate = (size) => {
     return { error: new Error('Minimum piece size is 127 bytes') }
   }
 
-  if (Math.log2(size / 127) % 1 !== 0) {
+  if (size >> BigInt(trailingZeros64(size)) !== 127n) {
     return {
       error: new Error(
         `Unpadded piece size must be a power of 2 multiple of 127, got ${size} instead`
@@ -58,4 +59,4 @@ export const validate = (size) => {
  * @param {API.UnpaddedPieceSize} size
  * @returns {API.PaddedPieceSize}
  */
-export const toPaddedSize = (size) => size + Math.floor(size / 127)
+export const toPaddedSize = (size) => size + size / 127n

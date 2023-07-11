@@ -1,6 +1,7 @@
 import * as API from './api.js'
 import * as Node from './node.js'
 import * as Segment from './segment.js'
+import { log2Ceil, log2Floor } from './math.js'
 
 export const { Uint64Size, ChecksumSize } = Segment
 
@@ -26,28 +27,14 @@ export const EntrySize = Node.Size + Uint64Size + Uint64Size + ChecksumSize
  * the size of an entry (in bytes), rounded up to the nearest power of 2. The minimum
  * return value is 4.
  *
- * @param {number} size - The size of the deal in bytes.
+ * @param {bigint|number} size - The size of the deal in bytes.
  * @returns {number} - The maximum number of index entries for a given deal size.
  */
 export const maxIndexEntriesInDeal = (size) => {
   // The raw result is the size of the deal divided by 2048 times the size of an
   // entry, rounded up to the nearest power of 2.
-  const n = 1 << Math.ceil(Math.log2(size / 2048 / EntrySize))
+  const n = Math.pow(2, log2Ceil(BigInt(size) / 2048n / BigInt(EntrySize)))
 
   // If the number is less than 4, return 4, otherwise return actual number.
   return n < 4 ? 4 : n
-}
-
-/**
- *
- * @param {API.MerkleTreeNodeSource[]} source
- * @returns {API.IndexData}
- */
-export const fromSourceNodes = (source) => {
-  const entries = new Array(source.length)
-  for (const [index, node] of source.entries()) {
-    entries[index] = Segment.fromSourceWithChecksum(node)
-  }
-
-  return { entries }
 }

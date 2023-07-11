@@ -60,13 +60,13 @@ export interface Vector<T> extends Iterable<T> {
   append(value: T): Vector<T>
 }
 
-export type PaddedPieceSize = New<{ PaddedPieceSize: number }>
+export type PaddedPieceSize = New<{ PaddedPieceSize: bigint }>
 
 /**
  * `UnpaddedPieceSize` is the size of a piece, in bytes.
  * @see https://github.com/filecoin-project/go-state-types/blob/ff2ed169ff566458f2acd8b135d62e8ca27e7d0c/abi/piece.go#L10C4-L11
  */
-export type UnpaddedPieceSize = New<{ UnpaddedPieceSize: number }>
+export type UnpaddedPieceSize = New<{ UnpaddedPieceSize: bigint }>
 
 export type Fr23Padded = New<{ Fr23Padded: Uint8Array }>
 
@@ -113,6 +113,12 @@ export interface Piece extends PieceInfo {
 
 export type PieceLink = Link<MerkleTreeNode, 0xf101, 0x1012>
 
+/**
+ * Contains a data segment description to be contained as two Fr32 elements in
+ * 2 leaf nodes of the data segment index.
+ *
+ * @see https://github.com/filecoin-project/go-data-segment/blob/41a48065383eca6f52efc4ee78a9902a9d25293b/datasegment/index.go#L146C16-L156
+ */
 export interface Segment {
   /**
    * Commitment to the data segment (Merkle node which is the root of the
@@ -123,13 +129,13 @@ export interface Segment {
   /**
    * Offset is the offset from the start of the deal in padded bytes
    */
-  offset: number
+  offset: bigint
 
   /**
    * Size is the number of padded bytes that is contained in the sub-deal
    * reflected by this segment.
    */
-  size: number
+  size: bigint
 }
 
 /**
@@ -156,8 +162,11 @@ export type SizedUint8Array<Size extends number> = New<{
  * Represents a location in a Merkle tree.
  */
 export interface MerkleTreeLocation {
+  /**
+   * Level is counted from the leaf layer, with 0 being leaf layer.
+   */
   level: number
-  index: number
+  index: bigint
 }
 
 /**
@@ -201,7 +210,7 @@ export interface ProofData {
   path: MerkleTreeNode[]
   // index indicates the index within the level where the element whose membership to prove is located
   // Leftmost node is index 0
-  index: number
+  index: bigint
 }
 
 export type MerkleTreeNode = New<{ Node: Uint8Array }, { size: 32 }>

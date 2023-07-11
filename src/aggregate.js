@@ -3,13 +3,16 @@ import * as Hybrid from './hybrid.js'
 import * as Segment from './segment.js'
 import * as Index from './index.js'
 import * as Piece from './piece.js'
-import { Size as NodeSize } from './node.js'
+import * as Node from './node.js'
 import { EntrySize } from './index.js'
-import { log2Ceil } from './zero-comm.js'
+import { log2Ceil } from './math.js'
 import { indexAreaStart } from './inclusion.js'
 
+const NodeSize = BigInt(Node.Size)
+export const MAX_CAPACITY = 2n ** BigInt(Hybrid.MAX_LOG2_LEAFS) * NodeSize
+
 /**
- * @param {number} capacity - Size of the aggregate in bytes.
+ * @param {number|bigint} capacity - Size of the aggregate in bytes.
  */
 export const createBuilder = (capacity) =>
   new AggregateBuilder({ capacity: Piece.PaddedSize.from(capacity) })
@@ -18,14 +21,14 @@ class AggregateBuilder {
   /**
    * @param {object} source
    * @param {API.PaddedPieceSize} source.capacity
-   * @param {number} [source.offset]
+   * @param {bigint} [source.offset]
    * @param {API.MerkleTreeNodeSource[]} [source.parts]
    * @param {number} [source.limit]
    */
   constructor({
     capacity,
     limit = Index.maxIndexEntriesInDeal(capacity),
-    offset = 0,
+    offset = 0n,
     parts = [],
   }) {
     this.capacity = capacity
@@ -41,19 +44,30 @@ class AggregateBuilder {
    * Size of the index in bytes.
    */
   get indexSize() {
-    return this.parts.length * EntrySize
+    return this.limit * EntrySize
   }
   get size() {
-    return this.offset + this.limit * EntrySize
+    return (
+      2n ** BigInt(log2Ceil(this.offset * NodeSize + BigInt(this.indexSize)))
+    )
   }
 
+  /**
+   * Expected starting position where the index should be placed
+   * in the unpadded units.
+   */
   get indexStartNodes() {
     return indexAreaStart(this.capacity) / NodeSize
+  }
+
+  get indexByteOffset() {
+    return this.size - BigInt(this.indexSize)
   }
 
   close() {
     const { indexStartNodes, parts } = this
 
+    /** @type {API.MerkleTreeNodeSource[]} */
     const batch = new Array(2 * parts.length)
 
     for (const [n, part] of parts.entries()) {
@@ -64,7 +78,7 @@ class AggregateBuilder {
         node: segment.root,
         location: {
           level: 0,
-          index: indexStartNodes + index,
+          index: indexStartNodes + BigInt(index),
         },
       }
 
@@ -72,7 +86,7 @@ class AggregateBuilder {
         node,
         location: {
           level: 0,
-          index: indexStartNodes + index + 1,
+          index: indexStartNodes + BigInt(index + 1),
         },
       }
     }
@@ -117,10 +131,11 @@ class AggregateBuilder {
    * @param {API.PieceInfo} piece
    * @returns {API.Result<{
    *   parts: [API.MerkleTreeNodeSource]
-   *   offset: number
+   *   offset: bigint
    * }, RangeError>}
    */
   estimate({ root, size }) {
+    console.log('estimate', { root, size })
     if (this.parts.length >= this.limit) {
       return {
         error: new RangeError(
@@ -139,10 +154,10 @@ class AggregateBuilder {
     const sizeInNodes = size / NodeSize
     const level = log2Ceil(sizeInNodes)
 
-    const index = Math.floor((this.offset + sizeInNodes - 1) / sizeInNodes)
-    const offset = (index + 1) * sizeInNodes
+    const index = (this.offset + sizeInNodes - 1n) / sizeInNodes
+    const offset = (index + 1n) * sizeInNodes
 
-    const total = offset * NodeSize + this.limit * EntrySize
+    const total = offset * NodeSize + BigInt(this.limit) * BigInt(EntrySize)
     if (total > this.capacity) {
       return {
         error: new RangeError(

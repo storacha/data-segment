@@ -52,7 +52,7 @@ class Piece {
     return Fr32.toZeroPaddedSize(this.contentSize)
   }
   get size() {
-    return this.tree.leafCount * NodeSize
+    return BigInt(this.tree.leafCount) * BigInt(NodeSize)
   }
   link() {
     return createLink(this.tree.root)
@@ -62,7 +62,7 @@ class Piece {
       link: { '/': this.link().toString() },
       contentSize: this.contentSize,
       paddedSize: this.paddedSize,
-      size: this.size,
+      size: Number(this.size),
     }
   }
 }

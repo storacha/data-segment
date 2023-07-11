@@ -35,8 +35,8 @@ export const withChecksum = (segment) => ({
  */
 export const fromSource = ({ node, location }) => ({
   root: node,
-  offset: toLeafIndex(location) * NodeSize,
-  size: (1 << location.level) * NodeSize,
+  offset: toLeafIndex(location) * BigInt(NodeSize),
+  size: (1n << BigInt(location.level)) * BigInt(NodeSize),
 })
 
 /**
@@ -55,7 +55,7 @@ export const toLeafIndex = ({ index, level }) =>
   // This is done by bit shifting Index to the left by `level` places.
   // In the context of a binary tree, this operation essentially corresponds to
   // descending `level` levels down from the current node.
-  index << level
+  index << BigInt(level)
 
 /**
  * @param {API.Segment} segment
@@ -92,11 +92,8 @@ export const toBytes = ({ root, size, offset, checksum }) => {
  * @returns {API.Result<API.Segment, Error>}
  */
 export const validate = (segment) => {
-  if (segment.offset % 128 !== 0) {
+  if (segment.offset % 128n !== 0n) {
     return { error: Error('offset is not aligned in padded data') }
-  }
-  if (segment.size % 128 !== 0) {
-    return { error: Error('size is not aligned in padded data') }
   }
 
   return { ok: segment }

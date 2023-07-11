@@ -58,17 +58,17 @@ export function computeRoot(subtree, proofData) {
       ),
     }
   }
-  if (proofData.index >> depth(proofData) !== 0) {
+  if (proofData.index >> BigInt(depth(proofData)) !== 0n) {
     return { error: new Error('index greater than width of the tree') }
   }
 
   let carry = subtree
   let index = proofData.index
-  let right = 0
+  let right = 0n
 
   for (const p of proofData.path) {
-    ;[right, index] = [index & 1, index >> 1]
-    carry = right === 1 ? computeNode(p, carry) : computeNode(carry, p)
+    ;[right, index] = [index & 1n, index >> 1n]
+    carry = right === 1n ? computeNode(p, carry) : computeNode(carry, p)
   }
 
   return { ok: carry }

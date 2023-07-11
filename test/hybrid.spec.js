@@ -21,11 +21,11 @@ export const testHybridTree = {
     const hybrid = Hybrid.create(2)
 
     // set first leaf and assert root
-    hybrid.setNode(0, 0, Node.of(0x1))
+    hybrid.setNode(0, 0n, Node.of(0x1))
     assert.deepEqual(hybrid.root, merkle.root)
 
     // update 0
-    hybrid.setNode(0, 0, Node.empty())
+    hybrid.setNode(0, 0n, Node.empty())
     assert.deepEqual(hybrid.root, ZeroComm.fromLevel(2))
   },
 
@@ -38,7 +38,7 @@ export const testHybridTree = {
     ])
     const hybrid = Hybrid.create(2)
 
-    hybrid.setNode(0, 3, Node.of(0x1))
+    hybrid.setNode(0, 3n, Node.of(0x1))
 
     assert.deepEqual(hybrid.root, merkle.root)
   },
@@ -60,7 +60,7 @@ export const testHybridTree = {
         ]),
         location: {
           level: 23,
-          index: 0,
+          index: 0n,
         },
       },
       {
@@ -69,7 +69,7 @@ export const testHybridTree = {
           0x91, 0x1b, 0xe0, 0xd7, 0x2b, 0x3e, 0x31, 0xea, 0x6d, 0x23, 0x4, 0xc1,
           0x43, 0xb, 0x98, 0x56, 0x1a, 0xd3, 0xa2, 0x19,
         ]),
-        location: { level: 25, index: 0x1 },
+        location: { level: 25, index: 0x1n },
       },
       {
         node: Node.from([
@@ -77,7 +77,7 @@ export const testHybridTree = {
           0x3e, 0x9e, 0x3c, 0x65, 0xae, 0x16, 0x3, 0x4e, 0x37, 0xca, 0xb7, 0x42,
           0x81, 0x6c, 0x2f, 0xa1, 0x36, 0x8f, 0xce, 0x32,
         ]),
-        location: { level: 24, index: 0x4 },
+        location: { level: 24, index: 0x4n },
       },
       {
         node: Node.from([
@@ -85,7 +85,7 @@ export const testHybridTree = {
           0x35, 0x7c, 0x2f, 0x4, 0x2a, 0xdd, 0x60, 0xec, 0x54, 0xc0, 0xc0, 0xb9,
           0x6d, 0x3c, 0x91, 0xa2, 0xf0, 0x4d, 0x90, 0x26,
         ]),
-        location: { level: 24, index: 0x5 },
+        location: { level: 24, index: 0x5n },
       },
       {
         node: Node.from([
@@ -93,7 +93,7 @@ export const testHybridTree = {
           0x1c, 0xde, 0x39, 0x3f, 0x81, 0x82, 0xe2, 0x33, 0x3e, 0xe9, 0x8b,
           0x74, 0xe0, 0x46, 0xd8, 0x4c, 0x6e, 0x95, 0x80, 0x1,
         ]),
-        location: { level: 25, index: 0x3 },
+        location: { level: 25, index: 0x3n },
       },
       {
         node: Node.from([
@@ -101,7 +101,7 @@ export const testHybridTree = {
           0x4a, 0x52, 0xe6, 0x11, 0x90, 0xdf, 0x40, 0xaf, 0x29, 0xa9, 0x6a,
           0x89, 0xa1, 0x5a, 0xff, 0x4c, 0xd5, 0x76, 0x8d, 0x0,
         ]),
-        location: { level: 23, index: 0x10 },
+        location: { level: 23, index: 0x10n },
       },
       {
         node: Node.from([
@@ -109,7 +109,7 @@ export const testHybridTree = {
           0xfc, 0x8c, 0xc9, 0xd8, 0x43, 0xa3, 0x15, 0x4d, 0xdf, 0x2b, 0x5b,
           0x5f, 0xe1, 0x7c, 0x54, 0x63, 0x67, 0xe6, 0x5, 0x30, 0xf,
         ]),
-        location: { level: 24, index: 0x9 },
+        location: { level: 24, index: 0x9n },
       },
       {
         node: Node.from([
@@ -117,7 +117,7 @@ export const testHybridTree = {
           0x33, 0xff, 0x2, 0x47, 0xaf, 0x26, 0xa2, 0xe6, 0x70, 0x31, 0x9a, 0xd2,
           0x68, 0x4e, 0x64, 0xd0, 0x15, 0x25, 0x97, 0x15,
         ]),
-        location: { level: 25, index: 0x5 },
+        location: { level: 25, index: 0x5n },
       },
       {
         node: Node.from([
@@ -125,7 +125,7 @@ export const testHybridTree = {
           0xca, 0x0, 0x42, 0xb1, 0x6d, 0xc7, 0x8e, 0xf, 0x69, 0xfd, 0xfb, 0x79,
           0xfe, 0x44, 0x4, 0x5e, 0x15, 0x2c, 0x24, 0x2d, 0x25,
         ]),
-        location: { level: 23, index: 0x18 },
+        location: { level: 23, index: 0x18n },
       },
       {
         node: Node.from([
@@ -133,7 +133,7 @@ export const testHybridTree = {
           0x76, 0xab, 0xeb, 0xbd, 0x9e, 0x4, 0x44, 0x30, 0xea, 0x66, 0xd2, 0x55,
           0x5c, 0xff, 0x10, 0x3b, 0x9c, 0x34, 0x5d, 0xbf, 0x3d,
         ]),
-        location: { level: 24, index: 0xd },
+        location: { level: 24, index: 0xdn },
       },
     ]
 
@@ -147,6 +147,18 @@ export const testHybridTree = {
       assert.deepEqual(Proof.computeRoot(node, proof), { ok: expect })
     }
 
-    hybrid.setNode(0, 1 << (30 - 1), Node.from([0x1]))
+    hybrid.setNode(0, 1n << BigInt(30 - 1), Node.from([0x1]))
+  },
+
+  'hybrid can can have at most 60': (assert) => {
+    assert.throws(() => Hybrid.create(61), /too many leafs/)
+  },
+
+  'hybrid with 0 leafs': (assert) => {
+    const hybrid = Hybrid.create(0)
+    assert.deepEqual(hybrid.maxLevel, 0)
+    assert.deepEqual(hybrid.root, Node.empty())
+
+    assert.throws(() => hybrid.getNode(61, 0n), /level too high/)
   },
 }

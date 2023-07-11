@@ -1,4 +1,5 @@
 import * as API from '../api.js'
+import { onesCount64 } from '../math.js'
 
 /**
  * Validates that given `size` is a valid {@link API.PaddedPieceSize} and
@@ -8,10 +9,10 @@ import * as API from '../api.js'
  * This function is a variation on {@link validate} that throws exceptions
  * instead of returning a {@link API.Result}.
  *
- * @param {number} size
+ * @param {number|bigint} size
  */
 export const from = (size) => {
-  const result = validate(size)
+  const result = validate(BigInt(size))
   if (result.error) {
     throw result.error
   } else {
@@ -26,7 +27,7 @@ export const from = (size) => {
  *
  * @see https://github.com/filecoin-project/go-state-types/blob/ff2ed169ff566458f2acd8b135d62e8ca27e7d0c/abi/piece.go#L18-L29
  *
- * @param {number} size
+ * @param {bigint} size
  * @returns {API.Result<API.PaddedPieceSize, RangeError>}
  */
 export const validate = (size) => {
@@ -34,7 +35,7 @@ export const validate = (size) => {
     return { error: RangeError('minimum padded piece size is 128 bytes') }
   }
 
-  if (Math.log2(size) % 1 !== 0) {
+  if (onesCount64(size) !== 1) {
     return { error: Error('padded piece size must be a power of 2') }
   }
 
@@ -46,4 +47,4 @@ export const validate = (size) => {
  * @param {API.PaddedPieceSize} size
  * @returns {API.UnpaddedPieceSize}
  */
-export const toUnpaddedSize = (size) => size - Math.floor(size / 128)
+export const toUnpaddedSize = (size) => size - size / 128n

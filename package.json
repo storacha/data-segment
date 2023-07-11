@@ -42,7 +42,7 @@
     "playwright-test": "git+https://github.com/Gozala/playwright-test.git#feat/process.stdout",
     "prettier": "2.8.8",
     "typescript": "^5.1.3",
-    "entail": "^2.1.0"
+    "entail": "^2.1.1"
   },
   "type": "module",
   "main": "src/lib.js",
