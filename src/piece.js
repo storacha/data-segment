@@ -82,7 +82,7 @@ export const createLink = (root) =>
 
 /**
  * @param {Uint8Array} source
- * @returns {API.Piece}
+ * @returns {API.ContentPiece}
  */
 export const build = (source) => {
   if (source.byteLength < Fr32.MIN_PIECE_SIZE) {

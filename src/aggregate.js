@@ -12,26 +12,58 @@ const NodeSize = BigInt(Node.Size)
 export const MAX_CAPACITY = 2n ** BigInt(Hybrid.MAX_LOG2_LEAFS) * NodeSize
 
 /**
- * @param {number|bigint} capacity - Size of the aggregate in bytes.
+ * Our default aggregate size is 32GiB. 16GiB might be an option smaller pieces
+ *
+ * but our current
+ * average rate is 30 GiB per hour
  */
-export const createBuilder = (capacity) =>
-  new AggregateBuilder({ capacity: Piece.PaddedSize.from(capacity) })
+export const DEFAULT_DEAL_SIZE = Piece.PaddedSize.from(2n ** 35n) // 32 GiB
+
+export const { PaddedSize, UnpaddedSize } = Piece
+
+/**
+ * @param {object} [options]
+ * @param {API.PaddedPieceSize} [options.size] - Size of the aggregate in
+ * (fr32 padded) bytes. If omitted default to 32 GiB which is a good
+ * default because deals 8GiB and smaller are too expensive for service
+ * providers to bother. The 16GiB deals may be an option, however our
+ * current average rate of 30 GiB per hour suggests that 32 GiB is a
+ * better default.
+ */
+export const createBuilder = ({ size = DEFAULT_DEAL_SIZE } = {}) =>
+  new AggregateBuilder({ size })
+
+/**
+ * @param {object} options
+ * @param {API.PieceInfo[]} options.pieces - Pieces to add to the aggregate
+ * @param {API.PaddedPieceSize} [options.size] - Size of the aggregate in
+ * (fr32 padded) bytes. If omitted default to 32 GiB
+ */
+export const build = ({ pieces, size = DEFAULT_DEAL_SIZE }) => {
+  const builder = createBuilder({ size })
+
+  for (const piece of pieces) {
+    builder.write(piece)
+  }
+
+  return builder.close()
+}
 
 class AggregateBuilder {
   /**
    * @param {object} source
-   * @param {API.PaddedPieceSize} source.capacity
+   * @param {API.PaddedPieceSize} source.size
    * @param {bigint} [source.offset]
    * @param {API.MerkleTreeNodeSource[]} [source.parts]
    * @param {number} [source.limit]
    */
   constructor({
-    capacity,
-    limit = Index.maxIndexEntriesInDeal(capacity),
+    size,
+    limit = Index.maxIndexEntriesInDeal(size),
     offset = 0n,
     parts = [],
   }) {
-    this.capacity = capacity
+    this.size = PaddedSize.from(size)
     this.offset = offset
     this.parts = parts
 
@@ -46,26 +78,10 @@ class AggregateBuilder {
   get indexSize() {
     return this.limit * EntrySize
   }
-  get size() {
-    return (
-      2n ** BigInt(log2Ceil(this.offset * NodeSize + BigInt(this.indexSize)))
-    )
-  }
-
-  /**
-   * Expected starting position where the index should be placed
-   * in the unpadded units.
-   */
-  get indexStartNodes() {
-    return indexAreaStart(this.capacity) / NodeSize
-  }
-
-  get indexByteOffset() {
-    return this.size - BigInt(this.indexSize)
-  }
 
   close() {
-    const { indexStartNodes, parts } = this
+    const { size, parts, limit } = this
+    const indexStartNodes = indexAreaStart(size) / NodeSize
 
     /** @type {API.MerkleTreeNodeSource[]} */
     const batch = new Array(2 * parts.length)
@@ -91,13 +107,11 @@ class AggregateBuilder {
       }
     }
 
-    Hybrid.batchSet(this.tree, batch)
+    const tree = Hybrid.create(log2Ceil(this.size / NodeSize))
+    Hybrid.batchSet(tree, parts)
+    Hybrid.batchSet(tree, batch)
 
-    return this
-  }
-
-  link() {
-    return Piece.createLink(this.tree.root)
+    return new Aggregate({ size, tree, parts, limit })
   }
 
   /**
@@ -110,12 +124,6 @@ class AggregateBuilder {
     } else {
       const { parts, offset } = result.ok
       const [part] = parts
-      // If we have a tree we update it with the new node, otherwise we
-      // just defer the update until we need the tree.
-      if (this._tree) {
-        const { node, location } = part
-        this._tree.setNode(location.level, location.index, node)
-      }
 
       this.offset += offset
       this.parts.push(part)
@@ -135,18 +143,17 @@ class AggregateBuilder {
    * }, RangeError>}
    */
   estimate({ root, size }) {
-    console.log('estimate', { root, size })
     if (this.parts.length >= this.limit) {
       return {
         error: new RangeError(
-          `Too many pieces for a ${this.capacity} sized aggregate: ${
+          `Too many pieces for a ${this.size} sized aggregate: ${
             this.parts.length + 1
           } > ${this.limit}`
         ),
       }
     }
 
-    const result = Piece.PaddedSize.validate(size)
+    const result = PaddedSize.validate(size)
     if (result.error) {
       return result
     }
@@ -158,12 +165,12 @@ class AggregateBuilder {
     const offset = (index + 1n) * sizeInNodes
 
     const total = offset * NodeSize + BigInt(this.limit) * BigInt(EntrySize)
-    if (total > this.capacity) {
+    if (total > this.size) {
       return {
         error: new RangeError(
           `"Pieces are too large to fit in the index: ${total} (packed pieces) + ${
             this.limit * EntrySize
-          } (index) > ${this.capacity} (dealSize)"`
+          } (index) > ${this.size} (dealSize)"`
         ),
       }
     }
@@ -175,16 +182,43 @@ class AggregateBuilder {
       },
     }
   }
+}
 
-  get tree() {
-    const { _tree } = this
-    if (_tree) {
-      return _tree
-    } else {
-      const tree = Hybrid.create(log2Ceil(this.capacity / NodeSize))
-      Hybrid.batchSet(tree, this.parts)
-      this._tree = tree
-      return tree
+class Aggregate {
+  /**
+   * @param {object} source
+   * @param {API.PaddedPieceSize} source.size
+   * @param {bigint} source.offset
+   * @param {API.MerkleTreeNodeSource[]} source.parts
+   * @param {number} source.limit
+   * @param {API.MerkleTree} source.tree
+   */
+  constructor({ tree, parts, limit, size, offset }) {
+    this.tree = tree
+    this.parts = parts
+    this.limit = limit
+    this.size = size
+    this.offset = offset
+  }
+  /**
+   * Size of the index in bytes.
+   */
+  get indexSize() {
+    return this.limit * EntrySize
+  }
+  link() {
+    return Piece.createLink(this.tree.root)
+  }
+  toJSON() {
+    return {
+      link: { '/': this.link().toString() },
+      // Note that currently our aggregate size is always 32GiB and that is
+      // below the `Number.MAX_SAFE_INTEGER` so we can safely convert it to
+      // a number. Even if we were to use larger aggregates, we could still
+      // serialize them as number it's just it would be unsafe to use perform
+      // any arithmetic on them, they would have to be converted to back to
+      // bigint first.
+      size: Number(this.size),
     }
   }
 }

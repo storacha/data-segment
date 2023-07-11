@@ -98,10 +98,15 @@ export interface PieceInfo {
 
 export interface Piece extends PieceInfo {
   link(): PieceLink
+  toJSON(): {
+    link: { '/': string }
+    size: number
+  }
+}
+
+export interface ContentPiece extends Piece {
   contentSize: number
   paddedSize: number
-
-  size: PaddedPieceSize
 
   toJSON(): {
     link: { '/': string }

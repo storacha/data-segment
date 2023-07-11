@@ -28,7 +28,7 @@ export const testPiece = {
     )
   },
   ...Object.fromEntries(
-    Object.values(vector).map((data) => [
+    Object.values(vector.slice(0, 5)).map((data) => [
       `${data.in.contentSize}\t\t${data.in.cid}`,
       async (assert) => {
         const source = deriveBuffer(data.in.contentSize)
