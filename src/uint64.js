@@ -51,3 +51,9 @@ export const onesCount64 = (value) => {
 
   return count
 }
+
+/**
+ * @param {API.uint64} n
+ * @returns {API.uint64}
+ */
+export const pow2 = (n) => 1n << n

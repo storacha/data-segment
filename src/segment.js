@@ -1,6 +1,7 @@
 import * as SHA256 from 'sync-multihash-sha2/sha256'
 import { Size as NodeSize } from './node.js'
 import * as API from './api.js'
+import { pow2 } from './uint64.js'
 
 /**
  * The size of the checksum in bytes
@@ -36,7 +37,7 @@ export const withChecksum = (segment) => ({
 export const fromSource = ({ node, location }) => ({
   root: node,
   offset: toLeafIndex(location) * BigInt(NodeSize),
-  size: (1n << BigInt(location.level)) * BigInt(NodeSize),
+  size: pow2(BigInt(location.level)) * BigInt(NodeSize),
 })
 
 /**

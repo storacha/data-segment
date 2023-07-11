@@ -2,6 +2,7 @@ import * as API from './api.js'
 import * as Node from './node.js'
 import * as ZeroComm from './zero-comm.js'
 import * as Proof from './proof.js'
+import { pow2 } from './uint64.js'
 
 export const MAX_LOG2_LEAFS = 60
 
@@ -278,14 +279,14 @@ export const idxFor = (maxLevel, level, index) => {
   const depthInSubtree = depth % SubtreeDepth
 
   // how wide is the subtree for given depth
-  const widthOfSubtreeAtDepth = 1n << BigInt(depthInSubtree)
+  const widthOfSubtreeAtDepth = pow2(BigInt(depthInSubtree))
   // what is the index of the subtree we should write to
   const indexOfSubtree = index / widthOfSubtreeAtDepth
   // what is the index in subtree
   const indexInSubtree = widthOfSubtreeAtDepth + (index % widthOfSubtreeAtDepth)
 
   const offsetOfSubtreeLayer =
-    ((1n << (BigInt(depthOfSubtree + 1) * BigInt(SparseBlockLog2Size))) - 1n) /
+    (pow2(BigInt(depthOfSubtree + 1) * BigInt(SparseBlockLog2Size)) - 1n) /
       (BigIntSparseBlockSize - 1n) -
     1n
 
