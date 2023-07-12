@@ -28,6 +28,12 @@ export const testHybridTree = {
     // update 0
     hybrid.setNode(0, 0n, Node.empty())
     assert.deepEqual(hybrid.root, ZeroComm.fromLevel(2))
+
+    // leaf count is the same
+    assert.deepEqual(hybrid.leafCount, BigInt(merkle.leafCount))
+    // depth is the same
+
+    assert.deepEqual(hybrid.depth, merkle.depth)
   },
 
   'hybrid tree with left padding': async (assert) => {
@@ -157,7 +163,7 @@ export const testHybridTree = {
 
   'hybrid with 0 leafs': (assert) => {
     const hybrid = Hybrid.create(0)
-    assert.deepEqual(hybrid.depth, 0)
+    assert.deepEqual(hybrid.depth, 1)
     assert.deepEqual(hybrid.root, Node.empty())
 
     assert.throws(() => hybrid.node(61, 0n), /level too high/)
@@ -165,5 +171,76 @@ export const testHybridTree = {
 
   'hybrid can not have negative leafs': (assert) => {
     assert.throws(() => Hybrid.create(-1), /cannot have negative/)
+  },
+
+  'fail when left subtree is not empty': (assert) => {
+    const tree = Hybrid.create(8)
+
+    tree.setNode(4, 0n, Node.from([0x1]))
+
+    assert.throws(
+      () => tree.setNode(5, 0n, Node.from([0x2])),
+      /left subtree is not empty/
+    )
+  },
+
+  'fail when right subtree is not empty': (assert) => {
+    const tree = Hybrid.create(8)
+
+    tree.setNode(4, 1n, Node.from([0x1]))
+
+    assert.throws(
+      () => tree.setNode(5, 0n, Node.from([0x2])),
+      /right subtree is not empty/
+    )
+  },
+
+  'fail when setting node in invalid location': (assert) => {
+    const tree = Hybrid.create(8)
+
+    assert.throws(
+      () => tree.setNode(-5, 0n, Node.from([0x2])),
+      /level can not be negative/
+    )
+  },
+
+  'fail when node index is too large': (assert) => {
+    const tree = Hybrid.create(8)
+
+    assert.throws(
+      () => tree.setNode(4, 16n, Node.from([0x1])),
+      /index too large/
+    )
+  },
+
+  'can clear tree': (assert) => {
+    const merkle = Tree.buildFromLeafs([
+      Node.empty(),
+      Node.empty(),
+      Node.empty(),
+      Node.of(0x1),
+    ])
+
+    const empty = Tree.buildFromLeafs([
+      Node.empty(),
+      Node.empty(),
+      Node.empty(),
+      Node.empty(),
+    ])
+
+    const hybrid = Hybrid.create(2)
+
+    assert.deepEqual(hybrid.root, empty.root)
+
+    hybrid.setNode(0, 3n, Node.of(0x1))
+
+    assert.deepEqual(hybrid.root, merkle.root)
+    hybrid.clear()
+
+    assert.deepEqual(hybrid.root, empty.root)
+
+    hybrid.setNode(0, 3n, Node.of(0x1))
+
+    assert.deepEqual(hybrid.root, merkle.root)
   },
 }

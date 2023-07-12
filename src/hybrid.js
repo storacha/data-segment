@@ -17,11 +17,11 @@ export const MAX_LOG2_LEAFS = 60
  */
 export const create = (log2Leafs) => {
   if (log2Leafs > MAX_LOG2_LEAFS) {
-    throw new Error(`too many leafs: 2 ** ${log2Leafs}`)
+    throw new RangeError(`too many leafs: 2 ** ${log2Leafs}`)
   }
 
   if (log2Leafs < 0) {
-    throw new Error(`cannot have negative log2Leafs`)
+    throw new RangeError(`cannot have negative log2Leafs`)
   }
 
   return new Hybrid(log2Leafs)
@@ -48,11 +48,11 @@ class Hybrid {
   }
 
   get leafCount() {
-    return 2 ** this.log2Leafs
+    return 2n ** BigInt(this.log2Leafs)
   }
 
   get depth() {
-    return this.log2Leafs
+    return this.log2Leafs + 1
   }
 
   get root() {
@@ -106,11 +106,11 @@ class Hybrid {
       let right = getNodeRaw(this, level - 1, 2n * index + 1n)
 
       if (left) {
-        throw new Error('left subtree not empty')
+        throw new RangeError('left subtree is not empty')
       }
 
       if (right) {
-        throw new Error('right subtree not empty')
+        throw new RangeError('right subtree is not empty')
       }
     }
 
@@ -126,7 +126,8 @@ class Hybrid {
       const right = getNodeRaw(this, n, currentIndex | 1n)
 
       const node =
-        left === null && right === null
+        /* c8 ignore next 2 */ // TODO: make test to cover this code path
+        left == null && right == null
           ? Node.empty()
           : Proof.computeNode(
               left || ZeroComm.fromLevel(n),
@@ -137,6 +138,11 @@ class Hybrid {
       currentIndex = nextIndex
       n++
     }
+    return this
+  }
+
+  clear() {
+    clear(this)
     return this
   }
 }
@@ -197,10 +203,12 @@ class SparseArray {
     sub[Number(index % BigIntSparseBlockSize)] = value
   }
 
+  // ignore fon now it will be used by inclusion code
+  /* c8 ignore next 25 */
   /**
    * @param {API.uint64} start
    * @param {API.uint64} end
-   * @returns
+   * @private
    */
   slice(start, end) {
     const startSub = start / BigIntSparseBlockSize
@@ -265,15 +273,19 @@ const getNodeRaw = (tree, level, idx) => {
  */
 const validateLevelIndex = (maxLevel, level, index) => {
   if (level < 0) {
-    throw new Error('level is negative')
+    throw new RangeError('level can not be negative')
   }
 
   if (level > maxLevel) {
-    throw new Error(`level too high: ${level} >= ${maxLevel}`)
+    throw new RangeError(`level too high: ${level} >= ${maxLevel}`)
   }
 
   if (index > (1 << (maxLevel - level)) - 1) {
-    throw new Error(`index too large for level: idx ${index}, level ${level}`)
+    throw new RangeError(
+      `index too large for level: idx ${index}, level ${level} : ${
+        (1 << (maxLevel - level)) - 1
+      }`
+    )
   }
 }
 

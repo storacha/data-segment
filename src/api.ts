@@ -84,7 +84,7 @@ export interface MerkleTree<I extends uint64 | number = uint64 | number> {
   /**
    * Amount of leafs in this Merkle tree.
    */
-  leafCount: number
+  leafCount: I
   /**
    * Root node of this Merkle tree.
    */
@@ -102,6 +102,7 @@ export interface MerkleTree<I extends uint64 | number = uint64 | number> {
 export interface MerkleTreeBuilder<
   I extends uint64 | number = uint64 | number
 > {
+  clear(): this
   setNode(level: number, index: I, node: MerkleTreeNode): this
 }
 
