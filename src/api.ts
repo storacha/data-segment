@@ -116,6 +116,10 @@ export interface PieceTree extends MerkleTree<number> {
 export interface AggregateTree
   extends MerkleTree<uint64>,
     MerkleTreeBuilder<uint64> {
+  /**
+   * Maximum number of segments this aggregate can contain.
+   */
+  limit: number
   collectProof(level: number, index: uint64): ProofData
 }
 
