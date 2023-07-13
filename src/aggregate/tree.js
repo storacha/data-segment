@@ -1,8 +1,8 @@
-import * as API from './api.js'
-import * as Node from './node.js'
-import * as ZeroComm from './zero-comm.js'
-import * as Proof from './proof.js'
-import { pow2 } from './uint64.js'
+import * as API from '../api.js'
+import * as Node from '../node.js'
+import * as ZeroComm from '../zero-comm.js'
+import * as Proof from '../proof.js'
+import { pow2 } from '../uint64.js'
 
 /**
  * We allow up to 2 ** 60 leafs in the tree, with is greater than then
@@ -24,10 +24,10 @@ export const create = (log2Leafs) => {
     throw new RangeError(`cannot have negative log2Leafs`)
   }
 
-  return new Hybrid(log2Leafs)
+  return new AggregateTree(log2Leafs)
 }
 
-class Hybrid {
+class AggregateTree {
   /**
    * The sparse array contains the data of the tree. Levels of the tree are
    * counted from the leaf layer (layer 0).
@@ -244,7 +244,7 @@ export const batchSet = (tree, values) => {
 }
 
 /**
- * @param {Hybrid} tree
+ * @param {AggregateTree} tree
  */
 export const clear = (tree) => {
   tree.data.clear()

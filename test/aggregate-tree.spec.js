@@ -1,56 +1,55 @@
-import * as Hybrid from '../src/hybrid.js'
-import * as Tree from '../src/tree.js'
+import * as AggregateTree from '../src/aggregate/tree.js'
+import * as PieceTree from '../src/piece/tree.js'
 import * as Node from '../src/node.js'
 import * as ZeroComm from '../src/zero-comm.js'
 import { parse as parseLink } from 'multiformats/link'
 import * as API from '../src/api.js'
 import * as Proof from '../src/proof.js'
-import { pow2 } from '../src/uint64.js'
 
 /**
  * @type {import("entail").Suite}
  */
-export const testHybridTree = {
-  'basic hybrid tree test': async (assert) => {
-    const merkle = Tree.buildFromLeafs([
+export const testAggregateTree = {
+  'basic aggregate tree test': async (assert) => {
+    const piece = PieceTree.buildFromLeafs([
       Node.of(0x1),
       Node.empty(),
       Node.empty(),
       Node.empty(),
     ])
 
-    const hybrid = Hybrid.create(2)
+    const aggregate = AggregateTree.create(2)
 
     // set first leaf and assert root
-    hybrid.setNode(0, 0n, Node.of(0x1))
-    assert.deepEqual(hybrid.root, merkle.root)
+    aggregate.setNode(0, 0n, Node.of(0x1))
+    assert.deepEqual(aggregate.root, piece.root)
 
     // update 0
-    hybrid.setNode(0, 0n, Node.empty())
-    assert.deepEqual(hybrid.root, ZeroComm.fromLevel(2))
+    aggregate.setNode(0, 0n, Node.empty())
+    assert.deepEqual(aggregate.root, ZeroComm.fromLevel(2))
 
     // leaf count is the same
-    assert.deepEqual(hybrid.leafCount, BigInt(merkle.leafCount))
+    assert.deepEqual(aggregate.leafCount, BigInt(piece.leafCount))
     // depth is the same
 
-    assert.deepEqual(hybrid.depth, merkle.depth)
+    assert.deepEqual(aggregate.depth, piece.depth)
   },
 
-  'hybrid tree with left padding': async (assert) => {
-    const merkle = Tree.buildFromLeafs([
+  'aggregate tree with left padding': async (assert) => {
+    const piece = PieceTree.buildFromLeafs([
       Node.empty(),
       Node.empty(),
       Node.empty(),
       Node.of(0x1),
     ])
-    const hybrid = Hybrid.create(2)
+    const aggregate = AggregateTree.create(2)
 
-    hybrid.setNode(0, 3n, Node.of(0x1))
+    aggregate.setNode(0, 3n, Node.of(0x1))
 
-    assert.deepEqual(hybrid.root, merkle.root)
+    assert.deepEqual(aggregate.root, piece.root)
   },
 
-  'hybrid as generate unsealed CID': async (assert) => {
+  'aggregate as generate unsealed CID': async (assert) => {
     const expect = parseLink(
       'baga6ea4seaqiw3gbmstmexb7sqwkc5r23o3i7zcyx5kr76pfobpykes3af62kca'
     ).multihash.digest
@@ -144,8 +143,8 @@ export const testHybridTree = {
       },
     ]
 
-    const hybrid = Hybrid.create(30)
-    Hybrid.batchSet(hybrid, source)
+    const hybrid = AggregateTree.create(30)
+    AggregateTree.batchSet(hybrid, source)
 
     assert.deepEqual(hybrid.root, expect)
 
@@ -158,11 +157,11 @@ export const testHybridTree = {
   },
 
   'hybrid can can have at most 60': (assert) => {
-    assert.throws(() => Hybrid.create(61), /too many leafs/)
+    assert.throws(() => AggregateTree.create(61), /too many leafs/)
   },
 
   'hybrid with 0 leafs': (assert) => {
-    const hybrid = Hybrid.create(0)
+    const hybrid = AggregateTree.create(0)
     assert.deepEqual(hybrid.depth, 1)
     assert.deepEqual(hybrid.root, Node.empty())
 
@@ -170,11 +169,11 @@ export const testHybridTree = {
   },
 
   'hybrid can not have negative leafs': (assert) => {
-    assert.throws(() => Hybrid.create(-1), /cannot have negative/)
+    assert.throws(() => AggregateTree.create(-1), /cannot have negative/)
   },
 
   'fail when left subtree is not empty': (assert) => {
-    const tree = Hybrid.create(8)
+    const tree = AggregateTree.create(8)
 
     tree.setNode(4, 0n, Node.from([0x1]))
 
@@ -185,7 +184,7 @@ export const testHybridTree = {
   },
 
   'fail when right subtree is not empty': (assert) => {
-    const tree = Hybrid.create(8)
+    const tree = AggregateTree.create(8)
 
     tree.setNode(4, 1n, Node.from([0x1]))
 
@@ -196,7 +195,7 @@ export const testHybridTree = {
   },
 
   'fail when setting node in invalid location': (assert) => {
-    const tree = Hybrid.create(8)
+    const tree = AggregateTree.create(8)
 
     assert.throws(
       () => tree.setNode(-5, 0n, Node.from([0x2])),
@@ -205,7 +204,7 @@ export const testHybridTree = {
   },
 
   'fail when node index is too large': (assert) => {
-    const tree = Hybrid.create(8)
+    const tree = AggregateTree.create(8)
 
     assert.throws(
       () => tree.setNode(4, 16n, Node.from([0x1])),
@@ -214,33 +213,33 @@ export const testHybridTree = {
   },
 
   'can clear tree': (assert) => {
-    const merkle = Tree.buildFromLeafs([
+    const nonEmpty = PieceTree.buildFromLeafs([
       Node.empty(),
       Node.empty(),
       Node.empty(),
       Node.of(0x1),
     ])
 
-    const empty = Tree.buildFromLeafs([
+    const empty = PieceTree.buildFromLeafs([
       Node.empty(),
       Node.empty(),
       Node.empty(),
       Node.empty(),
     ])
 
-    const hybrid = Hybrid.create(2)
+    const tree = AggregateTree.create(2)
 
-    assert.deepEqual(hybrid.root, empty.root)
+    assert.deepEqual(tree.root, empty.root)
 
-    hybrid.setNode(0, 3n, Node.of(0x1))
+    tree.setNode(0, 3n, Node.of(0x1))
 
-    assert.deepEqual(hybrid.root, merkle.root)
-    hybrid.clear()
+    assert.deepEqual(tree.root, nonEmpty.root)
+    tree.clear()
 
-    assert.deepEqual(hybrid.root, empty.root)
+    assert.deepEqual(tree.root, empty.root)
 
-    hybrid.setNode(0, 3n, Node.of(0x1))
+    tree.setNode(0, 3n, Node.of(0x1))
 
-    assert.deepEqual(hybrid.root, merkle.root)
+    assert.deepEqual(tree.root, nonEmpty.root)
   },
 }

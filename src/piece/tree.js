@@ -1,7 +1,7 @@
-import * as API from './api.js'
-import { Size as NodeSize } from './node.js'
-import * as Proof from './proof.js'
-export { computeNode } from './proof.js'
+import * as API from '../api.js'
+import { Size as NodeSize } from '../node.js'
+import * as Proof from '../proof.js'
+export { computeNode } from '../proof.js'
 
 /**
  * `newBareTree` allocates that memory needed to construct a tree with a
@@ -62,7 +62,7 @@ export const split = (source) => {
 /**
  * @param {API.Fr23Padded} source
  */
-export const compile = (source) => buildFromChunks(split(source))
+export const build = (source) => buildFromChunks(split(source))
 
 /**
  * @param {API.MerkleTreeNode[]} chunks
@@ -101,7 +101,7 @@ export const buildFromLeafs = (leafs) => {
     parentNodes = currentLevel
   }
 
-  return new MerkleTree(tree)
+  return new PieceTree(tree)
 }
 
 /**
@@ -116,7 +116,7 @@ export const padLeafs = (leafs) => {
   return [...leafs, ...paddingLeafs]
 }
 
-class MerkleTree {
+class PieceTree {
   /**
    * @param {API.TreeData} model
    */

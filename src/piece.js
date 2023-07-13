@@ -3,9 +3,11 @@ import * as Fr32 from './fr32.js'
 import { Size as NodeSize } from './node.js'
 import * as Digest from 'multiformats/hashes/digest'
 import * as Link from 'multiformats/link'
-import * as Tree from './tree.js'
+import * as Tree from './piece/tree.js'
 import * as UnpaddedSize from './piece/unpadded-size.js'
 import * as PaddedSize from './piece/padded-size.js'
+
+export { Tree }
 
 /**
  * @see https://github.com/multiformats/go-multihash/blob/dc3bd6897fcd17f6acd8d4d6ffd2cea3d4d3ebeb/multihash.go#L73
@@ -91,7 +93,7 @@ export const build = (source) => {
     )
   }
 
-  const tree = Tree.compile(Fr32.pad(source))
+  const tree = Tree.build(Fr32.pad(source))
 
   return new Piece({ tree, size: source.byteLength })
 }

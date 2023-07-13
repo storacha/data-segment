@@ -17,7 +17,7 @@ export const testTree = {
   },
 
   'builds from chunks': async (assert) => {
-    const tree = await Tree.compile(new Uint8Array(128))
+    const tree = await Tree.build(new Uint8Array(128))
     assert.equal(tree.depth, 3)
     assert.equal(tree.leafs.length, 4)
     assert.equal(tree.node(0, 0), tree.root)

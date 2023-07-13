@@ -20,7 +20,7 @@ export const testAggregate = {
     const builder = Aggregate.createBuilder({
       size: Aggregate.PaddedSize.from(34359738368),
     })
-    const build = builder.close()
+    const build = builder.build()
 
     assert.deepEqual(
       Link.parse(
@@ -44,7 +44,7 @@ export const testAggregate = {
 
     builder.write(piece)
 
-    const build = builder.close()
+    const build = builder.build()
 
     assert.deepEqual(
       Link.parse(
@@ -69,7 +69,7 @@ export const testAggregate = {
       Link.parse(
         'baga6ea4seaqko3i6w4rij37dqerctuv4kbakbcylpe6weeu3tjp26fqyd6txcjy'
       ),
-      builder.close().link()
+      builder.build().link()
     )
 
     builder.write({
@@ -79,7 +79,7 @@ export const testAggregate = {
       size: Piece.UnpaddedSize.toPaddedSize(Piece.UnpaddedSize.from(260096)),
     })
 
-    const build = builder.close()
+    const build = builder.build()
 
     assert.deepEqual(
       Link.parse(
@@ -167,7 +167,7 @@ export const testAggregate = {
       builder.write(piece)
     }
 
-    const build = builder.close()
+    const build = builder.build()
 
     assert.deepEqual(
       Link.parse(

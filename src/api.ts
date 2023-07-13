@@ -170,13 +170,13 @@ export interface Segment {
   /**
    * Offset is the offset from the start of the deal in padded bytes
    */
-  offset: bigint
+  offset: uint64
 
   /**
    * Number of padded bytes in this segment
    * reflected by this segment.
    */
-  size: bigint
+  size: uint64
 }
 
 /**
@@ -207,7 +207,7 @@ export interface MerkleTreeLocation {
    * Level is counted from the leaf layer, with 0 being leaf layer.
    */
   level: number
-  index: bigint
+  index: uint64
 }
 
 /**
@@ -251,7 +251,7 @@ export interface ProofData {
   path: MerkleTreeNode[]
   // index indicates the index within the level where the element whose membership to prove is located
   // Leftmost node is index 0
-  index: bigint
+  index: uint64
 }
 
 export type MerkleTreeNode = New<{ Node: Uint8Array }, { size: 32 }>

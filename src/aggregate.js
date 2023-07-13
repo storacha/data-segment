@@ -1,5 +1,5 @@
 import * as API from './api.js'
-import * as Hybrid from './hybrid.js'
+import * as Tree from './aggregate/tree.js'
 import * as Segment from './segment.js'
 import * as Index from './index.js'
 import * as Piece from './piece.js'
@@ -9,7 +9,7 @@ import { indexAreaStart } from './inclusion.js'
 
 const NodeSize = BigInt(Node.Size)
 const EntrySize = Number(Index.EntrySize)
-export const MAX_CAPACITY = 2n ** BigInt(Hybrid.MAX_LOG2_LEAFS) * NodeSize
+export const MAX_CAPACITY = 2n ** BigInt(Tree.MAX_LOG2_LEAFS) * NodeSize
 
 /**
  * Default aggregate size (32GiB).
@@ -20,6 +20,7 @@ export const MAX_CAPACITY = 2n ** BigInt(Hybrid.MAX_LOG2_LEAFS) * NodeSize
 export const DEFAULT_DEAL_SIZE = Piece.PaddedSize.from(2n ** 35n)
 
 export const { PaddedSize, UnpaddedSize } = Piece
+export { Tree }
 
 /**
  * @param {object} [options]
@@ -44,7 +45,7 @@ export const build = ({ pieces, size = DEFAULT_DEAL_SIZE }) => {
     builder.write(piece)
   }
 
-  return builder.close()
+  return builder.build()
 }
 
 class AggregateBuilder {
@@ -69,8 +70,6 @@ class AggregateBuilder {
      * Maximum number of pieces that could be added to this aggregate.
      */
     this.limit = limit
-
-    this._tree = null
   }
 
   /**
@@ -80,7 +79,7 @@ class AggregateBuilder {
     return this.limit * EntrySize
   }
 
-  close() {
+  build() {
     const { size, parts, limit, offset } = this
     const indexStartNodes = indexAreaStart(size) / NodeSize
 
@@ -108,9 +107,9 @@ class AggregateBuilder {
       }
     }
 
-    const tree = Hybrid.create(log2Ceil(size / NodeSize))
-    Hybrid.batchSet(tree, parts)
-    Hybrid.batchSet(tree, batch)
+    const tree = Tree.create(log2Ceil(size / NodeSize))
+    Tree.batchSet(tree, parts)
+    Tree.batchSet(tree, batch)
 
     return new Aggregate({
       size,
@@ -221,10 +220,8 @@ class Aggregate {
       link: { '/': this.link().toString() },
       // Note that currently our aggregate size is always 32GiB and that is
       // below the `Number.MAX_SAFE_INTEGER` so we can safely convert it to
-      // a number. Even if we were to use larger aggregates, we could still
-      // serialize them as number it's just it would be unsafe to use perform
-      // any arithmetic on them, they would have to be converted to back to
-      // bigint first.
+      // a number.
+      // ⚠️ We must revisit this to support larger aggregates in the future.
       size: Number(this.size),
     }
   }
