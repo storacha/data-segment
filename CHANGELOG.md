@@ -1,5 +1,27 @@
 # Changelog
 
+## [2.0.0](https://github.com/web3-storage/data-segment/compare/v1.0.1...v2.0.0) (2023-07-13)
+
+
+### ⚠ BREAKING CHANGES
+
+* function to derive commP from CID
+* implement sync api
+
+### Features
+
+* function to derive commP from CID ([3aff262](https://github.com/web3-storage/data-segment/commit/3aff2622c715455fea12165ec45fee36818c3e44))
+* implement sync api ([e26b52c](https://github.com/web3-storage/data-segment/commit/e26b52c2cebbb89aecaf76752d44f5b6c3cfa4e8))
+* migrate to bigint ([5ce944c](https://github.com/web3-storage/data-segment/commit/5ce944c82619db520da7350fe6663510ea6f3732))
+* port hybrid tree logic ([0b34c53](https://github.com/web3-storage/data-segment/commit/0b34c53dd1d3264aee663b40efe53300d239fe4e))
+
+
+### Bug Fixes
+
+* add aggregate to exports ([dbcdb91](https://github.com/web3-storage/data-segment/commit/dbcdb91cfd7792ccee912e5c19f2921569eeb874))
+* add aggregate to exports ([#8](https://github.com/web3-storage/data-segment/issues/8)) ([b69ca03](https://github.com/web3-storage/data-segment/commit/b69ca034946c08a4b0ef435cde32eea8b4549589))
+* missing file ([b71fed7](https://github.com/web3-storage/data-segment/commit/b71fed79a60c3ad351e0f495516791cf75c9f575))
+
 ## [1.0.1](https://github.com/web3-storage/data-segment/compare/v1.0.0...v1.0.1) (2023-06-02)
 
 
