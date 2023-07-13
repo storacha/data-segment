@@ -1,6 +1,6 @@
 import process from 'node:process'
 import { deriveBuffer } from '../test/util.js'
-import * as CommP from '../src/commp.js'
+import * as Piece from '../src/piece.js'
 
 /**
  * @param  {Parameters<typeof deriveBuffer>} args
@@ -14,13 +14,13 @@ const main = async (...args) => {
       content.byteLength
     )
 
-    const result = await CommP.build(buffer)
+    const result = await Piece.build(buffer)
 
     console.log(`
 CommPCid: ${result.link()}
-Payload:                ${result.size} bytes
+Payload:                ${result.contentSize} bytes
 Unpadded piece:         ${result.paddedSize} bytes
-Padded piece:           ${result.pieceSize} bytes`)
+Padded piece:           ${result.size} bytes`)
   } catch (err) {
     console.error(err)
   }

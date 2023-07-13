@@ -1,6 +1,6 @@
 import * as Node from '../src/node.js'
-import * as CommP from '../src/commp.js'
-import { sha512 } from 'multiformats/hashes/sha2'
+import * as Piece from '../src/piece.js'
+import * as sha512 from 'sync-multihash-sha2/sha512'
 
 const sampleSizes1 = /** @type {const} */ ([
   256 << 20,
@@ -36,7 +36,7 @@ export const commForDeal = (x) => {
  */
 const cidForDeal = (x) => {
   const node = commForDeal(x)
-  return CommP.toCID(node)
+  return Piece.createLink(node)
 }
 
 /**
@@ -45,12 +45,12 @@ const cidForDeal = (x) => {
  *
  * @param {number} size
  */
-export const deriveBuffer = async (size = 1024) => {
+export const deriveBuffer = (size = 1024) => {
   const buffer = new Uint8Array(size)
   let offset = 0
 
   while (offset < size) {
-    const { digest } = await sha512.digest(
+    const { digest } = sha512.digest(
       offset < 64
         ? buffer.subarray(0, offset)
         : buffer.subarray(offset - 64, offset)
@@ -60,4 +60,24 @@ export const deriveBuffer = async (size = 1024) => {
   }
 
   return buffer
+}
+
+/**
+ * @param {URL} url
+ */
+export const load = async (url) => {
+  try {
+    const cwd = process.env.PWD || process.cwd()
+    const path =
+      url.protocol === 'file:' && url.pathname.startsWith(cwd)
+        ? url.pathname.slice(cwd.length)
+        : url
+
+    const response = await fetch(path)
+    return await response.blob()
+  } catch {
+    const importFS = (id = 'node:fs') => import(id)
+    const FS = await importFS()
+    return new Blob([FS.readFileSync(url)])
+  }
 }

@@ -1,5 +1,5 @@
 import * as API from './api.js'
-import { sha256 } from 'multiformats/hashes/sha2'
+import * as SHA256 from 'sync-multihash-sha2/sha256'
 import { Size as NodeSize } from './node.js'
 
 /**
@@ -14,20 +14,20 @@ export const depth = (proofData) => proofData.path.length
  * @param {Uint8Array} data
  * @param {API.MerkleTreeNode} root
  * @param {API.ProofData} proofData
- * @returns {Promise<API.Result<void, Error>>}
+ * @returns {API.Result<void, Error>}
  */
-export async function validateLeaf(data, root, proofData) {
-  const leaf = await truncatedHash(data)
-  return await validateSubtree(leaf, root, proofData)
+export function validateLeaf(data, root, proofData) {
+  const leaf = truncatedHash(data)
+  return validateSubtree(leaf, root, proofData)
 }
 
 /**
  * @param {API.MerkleTreeNode} subtree
  * @param {API.MerkleTreeNode} root
  * @param {API.ProofData} proofData
- * @returns {Promise<API.Result<void, Error>>}
+ * @returns {API.Result<void, Error>}
  */
-export async function validateSubtree(subtree, root, proofData) {
+export function validateSubtree(subtree, root, proofData) {
   // Validate the structure first to avoid panics
   const structureValidation = validateProofStructure(proofData)
   if (structureValidation.error) {
@@ -37,7 +37,7 @@ export async function validateSubtree(subtree, root, proofData) {
       ),
     }
   }
-  return await validateProof(subtree, root, proofData)
+  return validateProof(subtree, root, proofData)
 }
 
 const MAX_DEPTH = 63
@@ -45,9 +45,9 @@ const MAX_DEPTH = 63
 /**
  * @param {API.MerkleTreeNode} subtree
  * @param {API.ProofData} proofData
- * @returns {Promise<API.Result<API.MerkleTreeNode, Error>>}
+ * @returns {API.Result<API.MerkleTreeNode, Error>}
  */
-export async function computeRoot(subtree, proofData) {
+export function computeRoot(subtree, proofData) {
   if (subtree === null) {
     return { error: new Error('nil subtree cannot be used') }
   }
@@ -58,18 +58,17 @@ export async function computeRoot(subtree, proofData) {
       ),
     }
   }
-  if (proofData.index >> depth(proofData) !== 0) {
+  if (proofData.index >> BigInt(depth(proofData)) !== 0n) {
     return { error: new Error('index greater than width of the tree') }
   }
 
   let carry = subtree
   let index = proofData.index
-  let right = 0
+  let right = 0n
 
   for (const p of proofData.path) {
-    ;[right, index] = [index & 1, index >> 1]
-    carry =
-      right === 1 ? await computeNode(p, carry) : await computeNode(carry, p)
+    ;[right, index] = [index & 1n, index >> 1n]
+    carry = right === 1n ? computeNode(p, carry) : computeNode(carry, p)
   }
 
   return { ok: carry }
@@ -79,10 +78,10 @@ export async function computeRoot(subtree, proofData) {
  * @param {API.MerkleTreeNode} subtree
  * @param {API.MerkleTreeNode} root
  * @param {API.ProofData} proofData
- * @returns {Promise<API.Result<void, Error>>}
+ * @returns {API.Result<void, Error>}
  */
-export async function validateProof(subtree, root, proofData) {
-  const computedRoot = await computeRoot(subtree, proofData)
+export function validateProof(subtree, root, proofData) {
+  const computedRoot = computeRoot(subtree, proofData)
   if (computedRoot.error) {
     return { error: new Error(`computing root: ${computedRoot.error.message}`) }
   }
@@ -110,17 +109,17 @@ export function validateProofStructure(proofData) {
 
 /**
  * @param {Uint8Array} payload
- * @returns {Promise<API.MerkleTreeNode>}
+ * @returns {API.MerkleTreeNode}
  */
-export async function truncatedHash(payload) {
-  const { digest } = await sha256.digest(payload)
+export function truncatedHash(payload) {
+  const { digest } = SHA256.digest(payload)
   return truncate(digest)
 }
 
 /**
  * @param {API.MerkleTreeNode} left
  * @param {API.MerkleTreeNode} right
- * @returns {Promise<API.MerkleTreeNode>}
+ * @returns {API.MerkleTreeNode}
  */
 export const computeNode = (left, right) => {
   const payload = new Uint8Array(left.length + right.length)

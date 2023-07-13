@@ -1,3 +1,5 @@
+import type { Link, ToString } from 'multiformats/link'
+
 /**
  * Implementers of the `Read` interface are called "readers". Readers
  * allow for reading bytes from an underlying source.
@@ -45,31 +47,175 @@ type Poll<T, X> = Variant<{
 export interface Aggregate {
   dealSize: PaddedPieceSize
   index: IndexData
-  tree: MerkleTree
+  tree: AggregateTree
 }
 
-export type PaddedPieceSize = New<{ PaddedPieceSize: number }>
+export interface AggregateState {
+  capacity: number
+  offset: number
+  parts: MerkleTreeNodeSource[]
+}
+
+export interface Vector<T> extends Iterable<T> {
+  append(value: T): Vector<T>
+}
+
+export type uint64 = bigint
+
+export type PaddedPieceSize = New<{ PaddedPieceSize: uint64 }>
+
+/**
+ * `UnpaddedPieceSize` is the size of a piece, in bytes.
+ * @see https://github.com/filecoin-project/go-state-types/blob/ff2ed169ff566458f2acd8b135d62e8ca27e7d0c/abi/piece.go#L10C4-L11
+ */
+export type UnpaddedPieceSize = New<{ UnpaddedPieceSize: uint64 }>
 
 export type Fr23Padded = New<{ Fr23Padded: Uint8Array }>
 
 export interface IndexData {
-  entries: SegmentDescriptor[]
+  entries: SegmentInfo[]
 }
 
-export interface SegmentDescriptor {
-  commDs: MerkleTreeNode
-  offset: number
-  size: number
-  checksum: Uint8Array
-}
-
-export interface MerkleTree {
+export interface MerkleTree<I extends uint64 | number = uint64 | number> {
+  /**
+   * The Depth of the tree. A single-node tree has depth of 1
+   */
   depth: number
-  leafCount: number
+  /**
+   * Amount of leafs in this Merkle tree.
+   */
+  leafCount: I
+  /**
+   * Root node of this Merkle tree.
+   */
   root: MerkleTreeNode
-  leafs: MerkleTreeNode[]
 
-  node(level: number, index: number): MerkleTreeNode | undefined
+  /**
+   * Returns a node at the given level and index.
+   *
+   * @param level
+   * @param index
+   */
+  node(level: number, index: I): MerkleTreeNode | undefined
+}
+
+export interface MerkleTreeBuilder<
+  I extends uint64 | number = uint64 | number
+> {
+  clear(): this
+  setNode(level: number, index: I, node: MerkleTreeNode): this
+}
+
+export interface PieceTree extends MerkleTree<number> {
+  /**
+   * All leaf nodes of this Merkle tree.
+   */
+  leafs: MerkleTreeNode[]
+}
+
+export interface AggregateTree
+  extends MerkleTree<uint64>,
+    MerkleTreeBuilder<uint64> {
+  collectProof(level: number, index: uint64): ProofData
+}
+
+export interface PieceInfo {
+  /**
+   * Commitment to the data segment (Merkle node which is the root of the
+   * subtree containing all the nodes making up the data segment)
+   */
+  root: MerkleTreeNode
+
+  /**
+   * Size is the number of padded bytes that is contained in this piece.
+   */
+  size: PaddedPieceSize
+}
+
+export interface Piece extends PieceInfo {
+  link(): PieceLink
+  toJSON(): {
+    link: { '/': string }
+    size: number
+  }
+}
+
+export interface ContentPiece extends Piece {
+  contentSize: number
+  paddedSize: number
+
+  toJSON(): {
+    link: { '/': string }
+    contentSize: number
+    paddedSize: number
+    size: number
+  }
+}
+
+export type PieceLink = Link<MerkleTreeNode, 0xf101, 0x1012>
+
+/**
+ * Contains a data segment description to be contained as two Fr32 elements in
+ * 2 leaf nodes of the data segment index.
+ *
+ * @see https://github.com/filecoin-project/go-data-segment/blob/41a48065383eca6f52efc4ee78a9902a9d25293b/datasegment/index.go#L146C16-L156
+ */
+export interface Segment {
+  /**
+   * Commitment to the data segment (Merkle node which is the root of the
+   * subtree containing all the nodes making up the data segment)
+   */
+  root: MerkleTreeNode
+
+  /**
+   * Offset is the offset from the start of the deal in padded bytes
+   */
+  offset: uint64
+
+  /**
+   * Number of padded bytes in this segment
+   * reflected by this segment.
+   */
+  size: uint64
+}
+
+/**
+ * Segment contains a data segment description to be contained as two Fr32
+ * elements in 2 leaf nodes of the data segment index.
+ */
+export interface SegmentInfo extends Segment {
+  /**
+   * Checksum is a 126 bit checksum (SHA256) computes on `[...root, offset, size]`
+   */
+  checksum: Checksum<Segment, 16>
+}
+
+export type Checksum<Payload = unknown, Size extends number = number> = New<
+  { Checksum: SizedUint8Array<number> },
+  Payload
+>
+
+export type SizedUint8Array<Size extends number> = New<{
+  SizedUint8Array: Uint8Array & { length: Size }
+}>
+
+/**
+ * Represents a location in a Merkle tree.
+ */
+export interface MerkleTreeLocation {
+  /**
+   * Level is counted from the leaf layer, with 0 being leaf layer.
+   */
+  level: number
+  index: uint64
+}
+
+/**
+ * Represents a commitment and its location in a Merkle tree.
+ */
+export interface MerkleTreeNodeSource {
+  node: MerkleTreeNode
+  location: MerkleTreeLocation
 }
 
 export interface MerkleProof {
@@ -105,7 +251,7 @@ export interface ProofData {
   path: MerkleTreeNode[]
   // index indicates the index within the level where the element whose membership to prove is located
   // Leftmost node is index 0
-  index: number
+  index: uint64
 }
 
 export type MerkleTreeNode = New<{ Node: Uint8Array }, { size: 32 }>

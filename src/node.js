@@ -25,3 +25,8 @@ export const from = (bytes) => {
   node.set([...bytes])
   return node
 }
+
+export const empty = () => EMPTY
+
+const EMPTY = from(new Uint8Array(Size).fill(0))
+Object.freeze(EMPTY.buffer)

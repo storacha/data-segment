@@ -1,7 +1,7 @@
-import * as API from './api.js'
-import { Size as NodeSize } from './node.js'
-import * as Proof from './proof.js'
-export { computeNode } from './proof.js'
+import * as API from '../api.js'
+import { Size as NodeSize } from '../node.js'
+import * as Proof from '../proof.js'
+export { computeNode } from '../proof.js'
 
 /**
  * `newBareTree` allocates that memory needed to construct a tree with a
@@ -62,25 +62,25 @@ export const split = (source) => {
 /**
  * @param {API.Fr23Padded} source
  */
-export const compile = (source) => buildFromChunks(split(source))
+export const build = (source) => buildFromChunks(split(source))
 
 /**
  * @param {API.MerkleTreeNode[]} chunks
  */
-export const buildFromChunks = async (chunks) => {
+export const buildFromChunks = (chunks) => {
   if (chunks.length === 0) {
     throw new RangeError('Empty source')
   }
 
   const leafs = chunks //await Promise.all(chunks.map(truncatedHash))
-  return await buildFromLeafs(leafs)
+  return buildFromLeafs(leafs)
 }
 
 /**
  * @param {API.MerkleTreeNode[]} leafs
- * @returns {Promise<API.MerkleTree>}
+ * @returns {API.PieceTree}
  */
-export const buildFromLeafs = async (leafs) => {
+export const buildFromLeafs = (leafs) => {
   const tree = newBareTree(leafs.length)
   // Set the padded leaf nodes
   tree.nodes[depth(tree) - 1] = padLeafs(leafs)
@@ -92,7 +92,7 @@ export const buildFromLeafs = async (leafs) => {
     const currentLevel = new Array(Math.ceil(parentNodes.length / 2))
     // Traverse the level left to right
     for (let i = 0; i + 1 < parentNodes.length; i = i + 2) {
-      currentLevel[Math.floor(i / 2)] = await Proof.computeNode(
+      currentLevel[Math.floor(i / 2)] = Proof.computeNode(
         parentNodes[i],
         parentNodes[i + 1]
       )
@@ -101,7 +101,7 @@ export const buildFromLeafs = async (leafs) => {
     parentNodes = currentLevel
   }
 
-  return new MerkleTree(tree)
+  return new PieceTree(tree)
 }
 
 /**
@@ -116,7 +116,7 @@ export const padLeafs = (leafs) => {
   return [...leafs, ...paddingLeafs]
 }
 
-class MerkleTree {
+class PieceTree {
   /**
    * @param {API.TreeData} model
    */

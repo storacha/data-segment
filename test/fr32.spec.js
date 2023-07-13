@@ -18,13 +18,13 @@ const vector = [
 ]
 
 /**
- * @type {import("./api.js").TestSuite}
+ * @type {import("entail").Suite}
  */
-export const test = Object.fromEntries(
+export const testFr32 = Object.fromEntries(
   vector.map((size) => [
     `size: ${size}`,
     async (assert) => {
-      const source = await deriveBuffer(size)
+      const source = deriveBuffer(size)
       const padded = Fr32.pad(source)
       const unpadded = Fr32.unpad(padded)
 
