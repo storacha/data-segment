@@ -12,10 +12,8 @@ const EntrySize = Number(Index.EntrySize)
 export const MAX_CAPACITY = 2n ** BigInt(Hybrid.MAX_LOG2_LEAFS) * NodeSize
 
 /**
- * Our default aggregate size is 32GiB. 16GiB might be an option smaller pieces
- *
- * but our current
- * average rate is 30 GiB per hour
+ * Our default aggregate size is 32GiB is chosen based on current
+ * average rate. 
  */
 export const DEFAULT_DEAL_SIZE = Piece.PaddedSize.from(2n ** 35n) // 32 GiB
 
@@ -67,6 +65,9 @@ class AggregateBuilder {
     this.offset = offset
     this.parts = parts
 
+    /**
+     * Maximum number of pieces that could be added to this aggregate.
+     */
     this.limit = limit
 
     this._tree = null
@@ -107,7 +108,7 @@ class AggregateBuilder {
       }
     }
 
-    const tree = Hybrid.create(log2Ceil(this.size / NodeSize))
+    const tree = Hybrid.create(log2Ceil(size / NodeSize))
     Hybrid.batchSet(tree, parts)
     Hybrid.batchSet(tree, batch)
 

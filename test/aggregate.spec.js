@@ -157,8 +157,6 @@ export const testAggregate = {
     assert.match(estimate.error, /padded piece size must be a power of 2/)
   },
 
-  'fails when too many pieces are added': async (assert) => {},
-
   'basic aggregate builder': async (assert) => {
     const pieces = [...Dataset.pieces]
     const builder = Aggregate.createBuilder({

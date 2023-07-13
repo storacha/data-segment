@@ -173,7 +173,7 @@ export interface Segment {
   offset: bigint
 
   /**
-   * Size is the number of padded bytes that is contained in the sub-deal
+   * Number of padded bytes in this segment
    * reflected by this segment.
    */
   size: bigint

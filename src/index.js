@@ -38,5 +38,5 @@ export const maxIndexEntriesInDeal = (size) => {
   const n = Math.pow(2, log2Ceil(size / 2048n / EntrySize))
 
   // If the number is less than 4, return 4, otherwise return actual number.
-  return n < 4 ? 4 : n
+  return Math.max(4, n)
 }

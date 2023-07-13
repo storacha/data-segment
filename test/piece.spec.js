@@ -14,7 +14,7 @@ import vector from './commp/vector.js'
  * @type {import("entail").Suite}
  */
 export const testPiece = {
-  'size: 0': async (assert) => {
+  'size shorter than allowed': async (assert) => {
     const source = deriveBuffer(64)
     let result = null
     try {
