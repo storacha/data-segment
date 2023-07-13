@@ -12,21 +12,21 @@ const EntrySize = Number(Index.EntrySize)
 export const MAX_CAPACITY = 2n ** BigInt(Hybrid.MAX_LOG2_LEAFS) * NodeSize
 
 /**
- * Our default aggregate size is 32GiB is chosen based on current
- * average rate. 
+ * Default aggregate size (32GiB).
  */
-export const DEFAULT_DEAL_SIZE = Piece.PaddedSize.from(2n ** 35n) // 32 GiB
+// Default is chosen based on our current average rate of 30GiB per hour.
+// The 16GiB may also be a viable option, however given our current rate
+// 32GiB is better default.
+export const DEFAULT_DEAL_SIZE = Piece.PaddedSize.from(2n ** 35n)
 
 export const { PaddedSize, UnpaddedSize } = Piece
 
 /**
  * @param {object} [options]
  * @param {API.PaddedPieceSize} [options.size] - Size of the aggregate in
- * (fr32 padded) bytes. If omitted default to 32 GiB which is a good
- * default because deals 8GiB and smaller are too expensive for service
- * providers to bother. The 16GiB deals may be an option, however our
- * current average rate of 30 GiB per hour suggests that 32 GiB is a
- * better default.
+ * (fr32 padded) bytes. If omitted default to 32 GiB. Note that sizes >=8GiB
+ * are are too expensive for service providers and it may be challenging to
+ * find a deal.
  */
 export const createBuilder = ({ size = DEFAULT_DEAL_SIZE } = {}) =>
   new AggregateBuilder({ size })
