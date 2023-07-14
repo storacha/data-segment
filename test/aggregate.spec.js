@@ -2,6 +2,7 @@ import * as Aggregate from '../src/aggregate.js'
 import * as Dataset from './piece/vector.js'
 import * as Piece from '../src/piece.js'
 import * as Link from 'multiformats/link'
+import * as Node from '../src/node.js'
 
 /**
  * @type {import("entail").Suite}
@@ -35,14 +36,12 @@ export const testAggregate = {
       size: Piece.PaddedSize.from(1 << 20),
     })
 
-    const piece = {
-      root: Link.parse(
+    builder.write({
+      link: Link.parse(
         'baga6ea4seaqae5ysjdbsr4b5jhotaz5ooh62jrrdbxwygfpkkfjz44kvywycmgy'
-      ).multihash.digest,
+      ),
       size: Piece.UnpaddedSize.toPaddedSize(Piece.UnpaddedSize.from(520192)),
-    }
-
-    builder.write(piece)
+    })
 
     const build = builder.build()
 
@@ -58,12 +57,12 @@ export const testAggregate = {
       size: Aggregate.PaddedSize.from(1 << 20),
     })
 
-    builder.write({
-      root: Link.parse(
-        'baga6ea4seaqae5ysjdbsr4b5jhotaz5ooh62jrrdbxwygfpkkfjz44kvywycmgy'
-      ).multihash.digest,
-      size: Piece.UnpaddedSize.toPaddedSize(Piece.UnpaddedSize.from(520192)),
-    })
+    builder.write(
+      Piece.fromString(`{
+      "link": { "/": "baga6ea4seaqae5ysjdbsr4b5jhotaz5ooh62jrrdbxwygfpkkfjz44kvywycmgy" },
+      "height": ${Piece.UnpaddedSize.toHeight(Piece.UnpaddedSize.from(520192))}
+    }`)
+    )
 
     assert.deepEqual(
       Link.parse(
@@ -72,12 +71,18 @@ export const testAggregate = {
       builder.build().link()
     )
 
-    builder.write({
-      root: Link.parse(
-        'baga6ea4seaqnrm2n2g4m23t6rs26obxjw2tjtr7tcho24gepj2naqhevytduyoa'
-      ).multihash.digest,
-      size: Piece.UnpaddedSize.toPaddedSize(Piece.UnpaddedSize.from(260096)),
-    })
+    builder.write(
+      Piece.fromJSON(
+        Piece.toJSON({
+          link: Link.parse(
+            'baga6ea4seaqnrm2n2g4m23t6rs26obxjw2tjtr7tcho24gepj2naqhevytduyoa'
+          ),
+          size: Piece.UnpaddedSize.toPaddedSize(
+            Piece.UnpaddedSize.from(260096)
+          ),
+        })
+      )
+    )
 
     const build = builder.build()
 
@@ -97,7 +102,7 @@ export const testAggregate = {
       JSON.stringify(build),
       JSON.stringify({
         link: build.link(),
-        size: 1 << 20,
+        height: Math.log2((1 << 20) / Node.Size),
       })
     )
   },
@@ -109,16 +114,16 @@ export const testAggregate = {
 
     builder.write({
       size: Piece.PaddedSize.from(131072),
-      root: Link.parse(
+      link: Link.parse(
         `baga6ea4seaqievout3bskdb76gzldeidkhxo6z5zjrnl2jruvwfwvr2uvvpuwdi`
-      ).multihash.digest,
+      ),
     })
 
     const estimate = builder.estimate({
       size: Piece.PaddedSize.from(524288),
-      root: Link.parse(
+      link: Link.parse(
         `baga6ea4seaqkzsosscjqdegbhqrlequtm7pbjscwpeqwhrd53cxov5td34vfojy`
-      ).multihash.digest,
+      ),
     })
 
     assert.match(estimate.error, /Pieces are too large to fit/)
@@ -127,9 +132,9 @@ export const testAggregate = {
       () =>
         builder.write({
           size: Piece.PaddedSize.from(524288),
-          root: Link.parse(
+          link: Link.parse(
             `baga6ea4seaqkzsosscjqdegbhqrlequtm7pbjscwpeqwhrd53cxov5td34vfojy`
-          ).multihash.digest,
+          ),
         }),
       /Pieces are too large to fit in the index/
     )
@@ -142,16 +147,16 @@ export const testAggregate = {
 
     builder.write({
       size: Piece.PaddedSize.from(131072),
-      root: Link.parse(
+      link: Link.parse(
         `baga6ea4seaqievout3bskdb76gzldeidkhxo6z5zjrnl2jruvwfwvr2uvvpuwdi`
-      ).multihash.digest,
+      ),
     })
 
     const estimate = builder.estimate({
       size: Piece.PaddedSize.from(524288) + 1n,
-      root: Link.parse(
+      link: Link.parse(
         `baga6ea4seaqkzsosscjqdegbhqrlequtm7pbjscwpeqwhrd53cxov5td34vfojy`
-      ).multihash.digest,
+      ),
     })
 
     assert.match(estimate.error, /padded piece size must be a power of 2/)
@@ -178,35 +183,36 @@ export const testAggregate = {
   },
 
   'fails to write when too many pieces are added': async (assert) => {
+    /** @type {API.PieceInfo[]} */
     const pieces = [
       {
-        root: Link.parse(
+        link: Link.parse(
           'baga6ea4seaqae5ysjdbsr4b5jhotaz5ooh62jrrdbxwygfpkkfjz44kvywycmgy'
-        ).multihash.digest,
+        ),
         size: Piece.PaddedSize.from(1 << 7),
       },
       {
-        root: Link.parse(
+        link: Link.parse(
           'baga6ea4seaqnrm2n2g4m23t6rs26obxjw2tjtr7tcho24gepj2naqhevytduyoa'
-        ).multihash.digest,
+        ),
         size: Piece.PaddedSize.from(1 << 7),
       },
       {
-        root: Link.parse(
+        link: Link.parse(
           'baga6ea4seaqa2dqkaeaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'
-        ).multihash.digest,
+        ),
         size: Piece.PaddedSize.from(1 << 7),
       },
       {
-        root: Link.parse(
+        link: Link.parse(
           'baga6ea4seaqa2dqkaeaacaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'
-        ).multihash.digest,
+        ),
         size: Piece.PaddedSize.from(1 << 7),
       },
       {
-        root: Link.parse(
+        link: Link.parse(
           'baga6ea4seaqa2dqkaeaagaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'
-        ).multihash.digest,
+        ),
         size: Piece.PaddedSize.from(1 << 7),
       },
     ]
@@ -225,17 +231,17 @@ export const testAggregate = {
     const build = Aggregate.build({
       pieces: [
         {
-          root: Link.parse(
+          link: Link.parse(
             'baga6ea4seaqae5ysjdbsr4b5jhotaz5ooh62jrrdbxwygfpkkfjz44kvywycmgy'
-          ).multihash.digest,
+          ),
           size: Piece.UnpaddedSize.toPaddedSize(
             Piece.UnpaddedSize.from(520192)
           ),
         },
         {
-          root: Link.parse(
+          link: Link.parse(
             'baga6ea4seaqnrm2n2g4m23t6rs26obxjw2tjtr7tcho24gepj2naqhevytduyoa'
-          ).multihash.digest,
+          ),
           size: Piece.UnpaddedSize.toPaddedSize(
             Piece.UnpaddedSize.from(260096)
           ),
@@ -259,7 +265,7 @@ export const testAggregate = {
       JSON.stringify(build),
       JSON.stringify({
         link: build.link(),
-        size: 1 << 20,
+        height: Math.log2((1 << 20) / Node.Size),
       })
     )
   },

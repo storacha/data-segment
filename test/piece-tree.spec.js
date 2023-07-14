@@ -1,5 +1,4 @@
 import { Tree } from '@web3-storage/data-segment'
-import { base16 } from 'multiformats/bases/base16'
 
 /**
  * @type {import("entail").Suite}
@@ -8,7 +7,7 @@ export const testTree = {
   'throws on empty tree': async (assert) => {
     let result = null
     try {
-      result = Tree.buildFromChunks([])
+      result = Tree.fromChunks([])
     } catch (error) {
       result = { catch: error }
     }
@@ -22,5 +21,8 @@ export const testTree = {
     assert.equal(tree.leafs.length, 4)
     assert.equal(tree.node(0, 0), tree.root)
     assert.equal(tree.leafCount, 4)
+  },
+  'throws when exceeding max leaf count': async (assert) => {
+    assert.throws(() => Tree.allocate(2 ** 32), /too many leafs/)
   },
 }
