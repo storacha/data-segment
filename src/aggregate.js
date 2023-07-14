@@ -205,15 +205,13 @@ class Aggregate {
     this.limit = limit
     this.size = size
     this.offset = offset
+    this.link = Piece.createLink(this.tree.root)
   }
   /**
    * Size of the index in bytes.
    */
   get indexSize() {
     return this.limit * EntrySize
-  }
-  link() {
-    return Piece.createLink(this.tree.root)
   }
   /**
    * Height of the perfect binary merkle tree corresponding to this aggregate.
@@ -223,7 +221,7 @@ class Aggregate {
   }
   toJSON() {
     return {
-      link: { '/': this.link().toString() },
+      link: { '/': this.link.toString() },
       height: this.height,
     }
   }

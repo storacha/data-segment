@@ -3,6 +3,7 @@ import * as Dataset from './piece/vector.js'
 import * as Piece from '../src/piece.js'
 import * as Link from 'multiformats/link'
 import * as Node from '../src/node.js'
+import * as API from '../src/api.js'
 
 /**
  * @type {import("entail").Suite}
@@ -27,7 +28,7 @@ export const testAggregate = {
       Link.parse(
         'baga6ea4seaqao7s73y24kcutaosvacpdjgfe5pw76ooefnyqw4ynr3d2y6x2mpq'
       ),
-      build.link()
+      build.link
     )
   },
 
@@ -49,7 +50,7 @@ export const testAggregate = {
       Link.parse(
         'baga6ea4seaqko3i6w4rij37dqerctuv4kbakbcylpe6weeu3tjp26fqyd6txcjy'
       ).toString(),
-      build.link().toString()
+      build.link.toString()
     )
   },
   'basic with two pieces': async (assert) => {
@@ -68,7 +69,7 @@ export const testAggregate = {
       Link.parse(
         'baga6ea4seaqko3i6w4rij37dqerctuv4kbakbcylpe6weeu3tjp26fqyd6txcjy'
       ),
-      builder.build().link()
+      builder.build().link
     )
 
     builder.write(
@@ -90,7 +91,7 @@ export const testAggregate = {
       Link.parse(
         'baga6ea4seaqnqkeoqevjjjfe46wo2lpfclcbmkyms4wkz5srou3vzmr3w3c72bq'
       ),
-      build.link()
+      build.link
     )
 
     assert.equal(build.size, 1n << 20n)
@@ -101,7 +102,7 @@ export const testAggregate = {
     assert.deepEqual(
       JSON.stringify(build),
       JSON.stringify({
-        link: build.link(),
+        link: build.link,
         height: Math.log2((1 << 20) / Node.Size),
       })
     )
@@ -178,7 +179,7 @@ export const testAggregate = {
       Link.parse(
         'baga6ea4seaqd6rv4mrnqpi7kfqcpazxzhho7pytj3v3woh46dzq2hi3zpztfcjy'
       ),
-      build.link()
+      build.link
     )
   },
 
@@ -254,7 +255,7 @@ export const testAggregate = {
       Link.parse(
         'baga6ea4seaqnqkeoqevjjjfe46wo2lpfclcbmkyms4wkz5srou3vzmr3w3c72bq'
       ),
-      build.link()
+      build.link
     )
 
     assert.equal(build.size, 1n << 20n)
@@ -264,7 +265,7 @@ export const testAggregate = {
     assert.deepEqual(
       JSON.stringify(build),
       JSON.stringify({
-        link: build.link(),
+        link: build.link,
         height: Math.log2((1 << 20) / Node.Size),
       })
     )

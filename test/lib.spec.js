@@ -6,6 +6,7 @@ import * as Link from 'multiformats/link'
  */
 export const testLib = {
   'test aggregate sample': async (assert) => {
+    /** @type {Lib.PieceInfo[]} */
     const pieces = [
       {
         link: Link.parse(

@@ -39,7 +39,7 @@ export function allocate(leafs) {
 /**
  * @param {API.TreeData} tree
  */
-export const depth = (tree) => {
+const depth = (tree) => {
   return tree.nodes.length
 }
 
@@ -140,9 +140,6 @@ class PieceTree {
 
   get root() {
     return root(this)
-  }
-  get depth() {
-    return depth(this)
   }
   get leafs() {
     const { nodes } = this
