@@ -1,5 +1,13 @@
 # Changelog
 
+## [2.1.0](https://github.com/web3-storage/data-segment/compare/v2.0.0...v2.1.0) (2023-07-17)
+
+
+### Features
+
+* serialization format ([a0c70ed](https://github.com/web3-storage/data-segment/commit/a0c70ed11978933eabb32a0f0292066c4f6bdc61))
+* serialization format ([#13](https://github.com/web3-storage/data-segment/issues/13)) ([b88afdf](https://github.com/web3-storage/data-segment/commit/b88afdf11ddaa69594c22b6a6ce42c778189dc0a))
+
 ## [2.0.0](https://github.com/web3-storage/data-segment/compare/v1.0.1...v2.0.0) (2023-07-13)
 
 
