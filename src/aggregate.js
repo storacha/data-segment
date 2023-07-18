@@ -9,7 +9,7 @@ import { indexAreaStart } from './inclusion.js'
 
 const NodeSize = BigInt(Node.Size)
 const EntrySize = Number(Index.EntrySize)
-export const MAX_CAPACITY = 2n ** BigInt(Tree.MAX_HEIGHT) * NodeSize
+export const MAX_CAPACITY = Piece.PaddedSize.fromHeight(Tree.MAX_HEIGHT)
 
 /**
  * Default aggregate size (32GiB).
