@@ -47,7 +47,7 @@ class PieceInfo {
     this.height = height
   }
   get size() {
-    return 2n ** BigInt(this.height) * BigInt(NodeSize)
+    return PaddedSize.fromHeight(this.height)
   }
   toJSON() {
     return toJSON(this)
