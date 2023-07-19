@@ -1,6 +1,7 @@
 import * as API from './api.js'
+import { NODE_SIZE as Size } from './constant.js'
 
-export const Size = 32
+export { Size }
 
 /**
  * @param {number[]} bytes

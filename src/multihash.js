@@ -1,14 +1,9 @@
 import * as API from './api.js'
-import {
-  IN_BYTES_PER_QUAD,
-  OUT_BYTES_PER_QUAD,
-  FR_RATIO,
-  pad,
-  MIN_PIECE_SIZE,
-} from './fr32.js'
+import { IN_BYTES_PER_QUAD, FR_RATIO, MIN_PAYLOAD_SIZE } from './constant.js'
 import * as ZeroPad from './zero-comm.js'
 import * as Proof from './proof.js'
 import { split } from './piece/tree.js'
+import { pad } from './fr32.js'
 
 export const name = /** @type {const} */ (
   'fr32-sha2-256-trunc254-padded-binary-tree'

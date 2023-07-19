@@ -1,8 +1,9 @@
 import * as API from '../api.js'
 import { trailingZeros64, log2Ceil } from '../uint64.js'
-import * as Node from '../node.js'
+import { IN_BYTES_PER_QUAD, NODE_SIZE } from '../constant.js'
 
-const NODE_SIZE = BigInt(Node.Size)
+const BYTES_PER_NODE = BigInt(NODE_SIZE)
+const BYTES_PER_QUAD = BigInt(IN_BYTES_PER_QUAD)
 
 /**
  * Validates that given `size` is a valid {@link API.UnpaddedPieceSize} and
@@ -33,14 +34,16 @@ export const from = (size) => {
  * @returns {API.Result<API.UnpaddedPieceSize, Error>}
  */
 export const validate = (size) => {
-  if (size < 127) {
-    return { error: new Error('Minimum piece size is 127 bytes') }
+  if (size < BYTES_PER_QUAD) {
+    return {
+      error: new Error(`Minimum piece size is ${BYTES_PER_QUAD} bytes`),
+    }
   }
 
-  if (size >> BigInt(trailingZeros64(size)) !== 127n) {
+  if (size >> BigInt(trailingZeros64(size)) !== BYTES_PER_QUAD) {
     return {
       error: new Error(
-        `Unpadded piece size must be a power of 2 multiple of 127, got ${size} instead`
+        `Unpadded piece size must be a power of 2 multiple of ${BYTES_PER_QUAD}, got ${size} instead`
       ),
     }
   }
@@ -62,11 +65,11 @@ export const validate = (size) => {
  * @param {API.UnpaddedPieceSize} size
  * @returns {API.PaddedPieceSize}
  */
-export const toPaddedSize = (size) => size + size / 127n
+export const toPaddedSize = (size) => size + size / BYTES_PER_QUAD
 
 /**
  * Calculates the height of the piece tree from unpadded size.
  *
  * @param {API.UnpaddedPieceSize} size
  */
-export const toHeight = (size) => log2Ceil(toPaddedSize(size) / NODE_SIZE)
+export const toHeight = (size) => log2Ceil(toPaddedSize(size) / BYTES_PER_NODE)

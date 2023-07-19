@@ -1,12 +1,11 @@
 import * as API from './api.js'
 import * as Fr32 from './fr32.js'
-import { Size as NodeSize } from './node.js'
 import * as Digest from 'multiformats/hashes/digest'
 import * as Link from 'multiformats/link'
 import * as Tree from './piece/tree.js'
 import * as UnpaddedSize from './piece/unpadded-size.js'
 import * as PaddedSize from './piece/padded-size.js'
-import { log2Ceil } from './uint64.js'
+import { FR_RATIO, NODE_SIZE, MIN_PAYLOAD_SIZE } from './constant.js'
 
 export { Tree }
 
@@ -24,12 +23,12 @@ export const FilCommitmentUnsealed = 0xf101
  * Current maximum piece size is limited by the maximum number of leaves in the
  * tree, which is limited by max size of the JS array, which is 128GiB.
  */
-export const MAX_PIECE_SIZE = Tree.MAX_LEAF_COUNT * NodeSize
+export const MAX_PIECE_SIZE = Tree.MAX_LEAF_COUNT * NODE_SIZE
 
 /**
  * The maximum amount of data that one can compute for the piece.
  */
-export const MAX_PAYLOAD_SIZE = (MAX_PIECE_SIZE / 128) * 127
+export const MAX_PAYLOAD_SIZE = MAX_PIECE_SIZE * FR_RATIO
 
 export { UnpaddedSize, PaddedSize }
 
@@ -47,7 +46,7 @@ class PieceInfo {
     this.height = height
   }
   get size() {
-    return 2n ** BigInt(this.height) * BigInt(NodeSize)
+    return 2n ** BigInt(this.height) * BigInt(NODE_SIZE)
   }
   toJSON() {
     return toJSON(this)
@@ -123,9 +122,9 @@ export const createLink = (root) =>
  * @returns {API.Piece}
  */
 export const build = (source) => {
-  if (source.length < Fr32.MIN_PIECE_SIZE) {
+  if (source.length < MIN_PAYLOAD_SIZE) {
     throw new RangeError(
-      `Piece is not defined for payloads smaller than ${Fr32.MIN_PIECE_SIZE} bytes`
+      `Piece is not defined for payloads smaller than ${MIN_PAYLOAD_SIZE} bytes`
     )
   }
 

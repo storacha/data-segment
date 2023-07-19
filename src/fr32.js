@@ -1,52 +1,21 @@
 import * as API from './api.js'
-
-/**
- * The smallest amount of data for which FR32 padding has a defined result.
- */
-export const MIN_PIECE_SIZE = 65
-
-/**
- * Number of bits per byte
- */
-const BITS_PER_BYTE = 8
-
-/**
- * The number of Frs per Block.
- */
-const FRS_PER_QUAD = 4
-/**
- * The amount of bits in an Fr when not padded.
- */
-const IN_BITS_FR = 254
-/**
- * The amount of bits in an Fr when padded.
- */
-const OUT_BITS_FR = 256
-
-export const IN_BYTES_PER_QUAD =
-  /** @type {127} */
-  ((FRS_PER_QUAD * IN_BITS_FR) / BITS_PER_BYTE)
-
-export const OUT_BYTES_PER_QUAD =
-  /** @type {128} */
-  ((FRS_PER_QUAD * OUT_BITS_FR) / BITS_PER_BYTE)
-
-export const BYTES_PER_FR =
-  /** @type {32} */
-  OUT_BYTES_PER_QUAD / FRS_PER_QUAD
-
-export const FR_RATIO = IN_BITS_FR / OUT_BITS_FR
+import {
+  OUT_BYTES_PER_QUAD,
+  FR_RATIO,
+  IN_BYTES_PER_QUAD,
+  MIN_PAYLOAD_SIZE,
+} from './constant.js'
 
 /**
  * Determine the additional bytes of zeroed padding to append to the
  * end of a resource of `size` length in order to fit within a pow2 piece while
  * leaving enough room for Fr32 padding (2 bits per 254).
  *
- * @param {number} sourceSize - The size of the original resource
+ * @param {number} payloadSize - The size of the payload.
  * @returns {number}
  */
-export function toZeroPaddedSize(sourceSize) {
-  const size = Math.max(sourceSize, MIN_PIECE_SIZE)
+export function toZeroPaddedSize(payloadSize) {
+  const size = Math.max(payloadSize, MIN_PAYLOAD_SIZE)
   const highestBit = Math.floor(Math.log2(size))
 
   const bound = Math.ceil(FR_RATIO * 2 ** (highestBit + 1))
