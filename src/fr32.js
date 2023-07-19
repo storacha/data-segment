@@ -30,16 +30,14 @@ export function toZeroPaddedSize(payloadSize) {
  *
  * @param {number} size
  */
-export const toPieceSize = (size) =>
-  (toZeroPaddedSize(size) / IN_BYTES_PER_QUAD) * OUT_BYTES_PER_QUAD
+export const toPieceSize = (size) => toZeroPaddedSize(size) / FR_RATIO
 
 /**
  * Derives fr32 unpadded size from the Fr32 padded size in bytes.
  *
  * @param {number} size
  */
-export const fromPieceSize = (size) =>
-  (size / OUT_BYTES_PER_QUAD) * IN_BYTES_PER_QUAD
+export const fromPieceSize = (size) => size * FR_RATIO
 
 /**
  * Takes source bytes that returns fr32 padded bytes.
