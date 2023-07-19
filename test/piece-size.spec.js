@@ -80,6 +80,22 @@ export const testPieceSize = {
     ])
   ),
 
+  // to height - from height
+  ...Object.fromEntries(
+    [128, 1024, 34359738368].map((size) => [
+      `PaddedSize.fromHeight(PaddedSize.toHeight(PaddedSize.from(${size})))) === ${size}`,
+      (assert) => {
+        assert.equal(
+          PaddedSize.fromHeight(
+            PaddedSize.toHeight(PaddedSize.from(size))
+          ),
+          BigInt(size)
+        )
+      },
+    ])
+  ),
+
+
   // throw
   ...Object.fromEntries(
     [9, 128, 99453687, 1016 + 0x1000000].map((size) => [

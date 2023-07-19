@@ -60,4 +60,11 @@ export const toUnpaddedSize = (size) => size - size / BYTES_PER_QUAD
  *
  * @param {API.PaddedPieceSize} size
  */
-export const toHeight = (size) => log2Ceil(size / BYTES_PER_NODE)
+export const toHeight = (size) => log2Ceil(size / NODE_SIZE)
+
+/**
+ * Calculates the padded size of the piece tree from height.
+ *
+ * @param {number} height
+ */
+export const fromHeight = (height) => 2n ** BigInt(height) * NODE_SIZE
