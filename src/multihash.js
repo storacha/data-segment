@@ -100,7 +100,7 @@ class Hasher {
      * The layers of the tree. Each layer will contain either 0 or 1 nodes
      * between writes. When we write into a hasher, if we have enough nodes
      * leaves will be created and pushed into the `layers[0]` array, after
-     * which we flush and combining every two leaf into a node which is moved
+     * which we flush and combine every two leafs into a node which is moved
      * to the next layer. This process is repeated until we reach the top
      * layer, leaving each layer either empty or with a single node.
      *
