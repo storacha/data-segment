@@ -23,19 +23,19 @@ const IN_BITS_FR = 254
  */
 const OUT_BITS_FR = 256
 
-const IN_BYTES_PER_QUAD =
+export const IN_BYTES_PER_QUAD =
   /** @type {127} */
   ((FRS_PER_QUAD * IN_BITS_FR) / BITS_PER_BYTE)
 
-const OUT_BYTES_PER_QUAD =
+export const OUT_BYTES_PER_QUAD =
   /** @type {128} */
   ((FRS_PER_QUAD * OUT_BITS_FR) / BITS_PER_BYTE)
 
-const BYTES_PER_FR =
+export const BYTES_PER_FR =
   /** @type {32} */
   OUT_BYTES_PER_QUAD / FRS_PER_QUAD
 
-const FR_RATIO = IN_BITS_FR / OUT_BITS_FR
+export const FR_RATIO = IN_BITS_FR / OUT_BITS_FR
 
 /**
  * Determine the additional bytes of zeroed padding to append to the
