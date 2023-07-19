@@ -1,8 +1,9 @@
 import * as API from '../api.js'
 import { onesCount64, log2Ceil } from '../uint64.js'
-import * as Node from '../node.js'
+import { OUT_BYTES_PER_QUAD, NODE_SIZE } from '../constant.js'
 
-const NODE_SIZE = BigInt(Node.Size)
+const BYTES_PER_NODE = BigInt(NODE_SIZE)
+const BYTES_PER_QUAD = BigInt(OUT_BYTES_PER_QUAD)
 
 /**
  * Validates that given `size` is a valid {@link API.PaddedPieceSize} and
@@ -34,8 +35,10 @@ export const from = (size) => {
  * @returns {API.Result<API.PaddedPieceSize, RangeError>}
  */
 export const validate = (size) => {
-  if (size < 128) {
-    return { error: RangeError('minimum padded piece size is 128 bytes') }
+  if (size < BYTES_PER_QUAD) {
+    return {
+      error: RangeError(`minimum padded piece size is ${BYTES_PER_QUAD} bytes`),
+    }
   }
 
   if (onesCount64(size) !== 1) {
@@ -50,18 +53,18 @@ export const validate = (size) => {
  * @param {API.PaddedPieceSize} size
  * @returns {API.UnpaddedPieceSize}
  */
-export const toUnpaddedSize = (size) => size - size / 128n
+export const toUnpaddedSize = (size) => size - size / BYTES_PER_QUAD
 
 /**
  * Calculates the height of the piece tree from unpadded size.
  *
  * @param {API.PaddedPieceSize} size
  */
-export const toHeight = (size) => log2Ceil(size / NODE_SIZE)
+export const toHeight = (size) => log2Ceil(size / BYTES_PER_NODE)
 
 /**
  * Calculates the padded size of the piece tree from height.
  *
  * @param {number} height
  */
-export const fromHeight = (height) => 2n ** BigInt(height) * NODE_SIZE
+export const fromHeight = (height) => 2n ** BigInt(height) * BYTES_PER_NODE

@@ -1,5 +1,6 @@
-import exp from 'constants'
 import type { Link, ToString } from 'multiformats/link'
+import { MultihashDigest } from 'multiformats'
+import { Digest } from 'multiformats/hashes/digest'
 
 export { ToString }
 /**
@@ -38,6 +39,53 @@ export interface Read {
    * happen for example because fewer bytes are actually available right now.
    */
   read(buffer: Uint8Array): Poll<number, Error>
+}
+
+export interface StreamDigest<Code extends MulticodecCode, Size extends number>
+  extends MultihashDigest<Code> {
+  size: Size
+}
+
+export interface StreamingHasher<
+  Code extends MulticodecCode,
+  Size extends number,
+  Digest = StreamDigest<Code, Size>
+> {
+  size: Size
+  code: Code
+  name: string
+  /**
+   * Number of bytes currently consumed.
+   */
+  count(): bigint
+
+  /**
+   * Returns multihash digest of the bytes written so far.
+   */
+  digest(): Digest
+
+  /**
+   * Computes the digest of the given input and writes it into the given output
+   * at the given offset. Unless `asMultihash` is `false` multihash is
+   * written otherwise only the digest (without multihash prefix) is written.
+   */
+  digestInto(output: Uint8Array, offset?: number, asMultihash?: boolean): this
+
+  /**
+   * Writes bytes to be digested.
+   */
+  write(bytes: Uint8Array): this
+
+  /**
+   * Resets this hasher to its initial state.
+   */
+  reset(): this
+
+  /**
+   * Disposes this hasher and frees up any resources it may be holding on to.
+   * After this is called this hasher should not be used.
+   */
+  dispose(): void
 }
 
 type Poll<T, X> = Variant<{
@@ -349,6 +397,18 @@ export type Result<T extends {} = {}, X extends {} = {}> = Variant<{
  * @see {@link https://en.wikipedia.org/wiki/Unit_type|Unit type - Wikipedia}
  */
 export interface Unit {}
+
+/**
+ * [Multicodec code] usually used to tag [multiformat].
+ *
+ * [multiformat]:https://multiformats.io/
+ * [multicodec code]:https://github.com/multiformats/multicodec/blob/master/table.csv
+ */
+export type MulticodecCode<
+  Code extends number = number,
+  Name extends string = string
+> = Code & Phantom<Name>
+
 /**
  * Utility type for defining a [keyed union] type as in IPLD Schema. In practice
  * this just works around typescript limitation that requires discriminant field
