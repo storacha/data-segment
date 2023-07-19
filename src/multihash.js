@@ -133,6 +133,12 @@ class Hasher {
   digestInto(output, byteOffset = 0, asMultihash = true) {
     const { buffer, layers, offset } = this
 
+    if (this.bytesWritten < MIN_PAYLOAD_SIZE) {
+      throw new RangeError(
+        `Algorithm is not defined for payloads smaller than ${MIN_PAYLOAD_SIZE} bytes`
+      )
+    }
+
     // We do not want to mutate the layers, so we create a shallow copy of it
     // which we will use to compute the root.
     let [leaves, ...nodes] = layers

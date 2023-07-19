@@ -13,6 +13,19 @@ import vector from './commp/vector.js'
  * @type {import("entail").Suite}
  */
 export const testMultihash = {
+  'throws if payload as less than minimum allowed': async (assert) => {
+    const payload = deriveBuffer(64)
+    let result = null
+    try {
+      result = await Hasher.digest(payload)
+    } catch (error) {
+      result = error
+    }
+
+    assert.ok(
+      String(result).includes('not defined for payloads smaller than 65 bytes')
+    )
+  },
   ...Object.fromEntries(
     Object.values(vector).map((data) => [
       `${data.in.contentSize}\t\t${data.in.cid}`,
