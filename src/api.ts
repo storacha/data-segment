@@ -129,13 +129,21 @@ export interface PieceInfo {
   size: PaddedPieceSize
 }
 
-export interface PieceInfoView extends PieceInfo {
+export interface PieceView {
+  /**
+   * Commitment to the data segment (Merkle node which is the root of the
+   * subtree containing all the nodes making up the data segment)
+   */
+  link: PieceLink
+
   /**
    * Height of the perfect binary merkle tree representing
    * this piece.
    */
   height: number
 }
+
+export interface PieceInfoView extends PieceInfo, PieceView {}
 
 /**
  * Represents a piece tree and underlying merkle tree.
