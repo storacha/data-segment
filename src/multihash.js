@@ -6,12 +6,9 @@ import {
   pad,
   MIN_PIECE_SIZE,
 } from './fr32.js'
-import * as Node from './node.js'
 import * as ZeroPad from './zero-comm.js'
-import * as Digest from 'multiformats/hashes/digest'
 import * as Proof from './proof.js'
 import { split } from './piece/tree.js'
-import { log2Floor } from './uint64.js'
 
 export const name = /** @type {const} */ (
   'fr32-sha2-256-trunc254-padded-binary-tree'
@@ -40,8 +37,8 @@ export const MAX_HEIGHT = 255
 export const MAX_PAYLOAD_SIZE = 2 ** 255 * FR_RATIO
 
 /**
- *
  * @param {Uint8Array} payload
+ * @returns {StreamDigest}
  */
 export const digest = (payload) => {
   const hasher = new Hasher()
@@ -50,14 +47,14 @@ export const digest = (payload) => {
 }
 
 /**
- * @returns {API.StreamingHasher<typeof code, typeof size>}
+ * @returns {API.StreamingHasher<typeof code, typeof size, StreamDigest>}
  */
 export const create = () => new Hasher()
 
 /**
  * @typedef {[API.MerkleTreeNode[], ...API.MerkleTreeNode[][]]} Layers
  *
- * @implements {API.StreamingHasher<typeof code, typeof size>}
+ * @implements {API.StreamingHasher<typeof code, typeof size, StreamDigest>}
  */
 class Hasher {
   constructor() {
@@ -105,14 +102,35 @@ class Hasher {
    * bytes of commP
    */
   digest() {
+    const buffer = new Uint8Array(MULTIHASH_SIZE)
+    this.digestInto(buffer)
+    return new Digest(buffer)
+  }
+
+  /**
+   *
+   * @param {Uint8Array} output
+   * @param {number} [byteOffset]
+   * @param {boolean} asMultihash
+   */
+  digestInto(output, byteOffset = 0, asMultihash = true) {
     const { buffer, layers, offset } = this
     // If we have remaining bytes in the buffer we pad with zeros and turn
     // them into leaf nodes. Note that it is safe to mutate the buffer here
     // as bytes past `offset` are considered dirty.
     const nodes = offset > 0 ? split(pad(buffer.fill(0, offset))) : undefined
-    const root = computedRoot(layers, nodes)
+    const { root, height } = computedRoot(layers, nodes)
 
-    return root
+    if (asMultihash) {
+      output.set(PREFIX, byteOffset)
+      byteOffset += PREFIX.length
+    }
+
+    output[byteOffset] = height
+    byteOffset += 1
+    output.set(root, byteOffset)
+
+    return this
   }
   /**
    *
@@ -124,8 +142,8 @@ class Hasher {
     const { length } = bytes
     if (length === 0) {
       return this
+      /* c8 ignore next 5 */
     } else if (this.bytesWritten + BigInt(length) > MAX_PAYLOAD_SIZE) {
-      /* c8 ignore next 4 */
       throw new RangeError(
         `Writing ${length} bytes exceeds max payload size of ${MAX_PAYLOAD_SIZE}`
       )
@@ -193,7 +211,10 @@ class Hasher {
     return this
   }
 
-  dispose() {}
+  /* c8 ignore next 3 */
+  dispose() {
+    this.reset()
+  }
   get code() {
     return code
   }
@@ -202,6 +223,39 @@ class Hasher {
   }
   get name() {
     return name
+  }
+}
+
+/**
+ * Byte encoded {@link code} and the {@link size} of the digest.
+ */
+const PREFIX = new Uint8Array([145, 32, size])
+
+const MULTIHASH_SIZE = PREFIX.length + size
+
+/**
+ * @typedef {API.StreamDigest<typeof code, typeof size> & { height: number, root: API.MerkleTreeNode, name: typeof name }} StreamDigest
+ */
+
+class Digest {
+  /**
+   * @param {Uint8Array} bytes
+   */
+  constructor(bytes) {
+    this.bytes = bytes
+    this.digest = bytes.subarray(PREFIX.length)
+    this.height = bytes[PREFIX.length]
+    this.root = bytes.subarray(PREFIX.length + 1)
+  }
+
+  get size() {
+    return size
+  }
+  get name() {
+    return name
+  }
+  get code() {
+    return code
   }
 }
 
@@ -244,5 +298,7 @@ const computedRoot = (layers, newNodes = []) => {
     }
   }
 
-  return newNodes[0] ?? layers[layers.length - 1][0]
+  return newNodes.length
+    ? { root: newNodes[0], height }
+    : { root: layers[layers.length - 1][0], height: height - 1 }
 }

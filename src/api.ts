@@ -1,5 +1,6 @@
 import type { Link, ToString } from 'multiformats/link'
 import { MultihashDigest } from 'multiformats'
+import { Digest } from 'multiformats/hashes/digest'
 
 export { ToString }
 /**
@@ -40,14 +41,15 @@ export interface Read {
   read(buffer: Uint8Array): Poll<number, Error>
 }
 
-export interface Digest<Code extends MulticodecCode, Size extends number>
+export interface StreamDigest<Code extends MulticodecCode, Size extends number>
   extends MultihashDigest<Code> {
   size: Size
 }
 
 export interface StreamingHasher<
   Code extends MulticodecCode,
-  Size extends number
+  Size extends number,
+  Digest = StreamDigest<Code, Size>
 > {
   size: Size
   code: Code
@@ -60,7 +62,7 @@ export interface StreamingHasher<
   /**
    * Returns multihash digest of the bytes written so far.
    */
-  digest(): Digest<Code, Size>
+  digest(): Digest
 
   /**
    * Computes the digest of the given input and writes it into the given output

@@ -27,30 +27,59 @@ export const testMultihash = {
       async (assert) => {
         const payload = deriveBuffer(data.in.contentSize)
         const root = parseLink(data.out.cid).multihash.digest
+        const height = Piece.PaddedSize.toHeight(BigInt(data.out.paddedSize))
 
-        assert.deepEqual(Hasher.digest(payload), root)
+        {
+          const digest = Hasher.digest(payload)
+          assert.deepEqual(digest.root, root)
+          assert.deepEqual(digest.code, 0x1011)
+          assert.deepEqual(
+            digest.name,
+            'fr32-sha2-256-trunc254-padded-binary-tree'
+          )
+          assert.deepEqual(digest.size, 33)
+          assert.deepEqual(digest.height, height)
+        }
 
         const hasher = Hasher.create()
-        const offset = Math.floor(Math.random() * payload.byteLength)
-        hasher.write(payload.subarray(0, offset))
-        assert.deepEqual(hasher.count(), BigInt(offset))
-        hasher.write(new Uint8Array())
-        assert.deepEqual(hasher.count(), BigInt(offset))
-        hasher.write(payload.subarray(offset))
-        assert.deepEqual(hasher.count(), BigInt(payload.byteLength))
-        assert.deepEqual(hasher.digest(), root)
+        // do the chunked write
+        {
+          const offset = Math.floor(Math.random() * payload.byteLength)
+          hasher.write(payload.subarray(0, offset))
+          assert.deepEqual(hasher.count(), BigInt(offset))
+          hasher.write(new Uint8Array())
+          assert.deepEqual(hasher.count(), BigInt(offset))
+          hasher.write(payload.subarray(offset))
+          assert.deepEqual(hasher.count(), BigInt(payload.byteLength))
 
-        assert.deepEqual(hasher.code, 0x1011)
-        assert.deepEqual(hasher.size, 33)
-        assert.deepEqual(
-          hasher.name,
-          'fr32-sha2-256-trunc254-padded-binary-tree'
-        )
+          assert.deepEqual(hasher.code, 0x1011)
+          assert.deepEqual(hasher.size, 33)
+          assert.deepEqual(
+            hasher.name,
+            'fr32-sha2-256-trunc254-padded-binary-tree'
+          )
 
+          const digest = hasher.digest()
+          assert.deepEqual(digest.root, root)
+          assert.deepEqual(digest.root, root)
+          assert.deepEqual(digest.code, 0x1011)
+          assert.deepEqual(
+            digest.name,
+            'fr32-sha2-256-trunc254-padded-binary-tree'
+          )
+          assert.deepEqual(digest.size, 33)
+          assert.deepEqual(digest.height, height)
+        }
+
+        // reset and retry
         hasher.reset()
-        assert.deepEqual(hasher.count(), 0n)
-        assert.deepEqual(hasher.write(payload).digest(), root)
-        assert.deepEqual(hasher.count(), BigInt(payload.byteLength))
+        {
+          assert.deepEqual(hasher.count(), 0n)
+          const digest = hasher.write(payload).digest()
+          assert.deepEqual(digest.root, root)
+          assert.deepEqual(digest.height, height)
+          assert.deepEqual(hasher.count(), BigInt(payload.byteLength))
+        }
 
         // const piece = Hasher.digest(payload)
         // assert.deepEqual(link.toString(), data.in.cid, 'same source content')
