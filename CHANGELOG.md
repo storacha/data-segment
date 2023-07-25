@@ -1,5 +1,21 @@
 # Changelog
 
+## [2.2.0](https://github.com/web3-storage/data-segment/compare/v2.1.0...v2.2.0) (2023-07-21)
+
+
+### Features
+
+* fr32-sha2-256-trunc254-padded-binary-tree ([412bf18](https://github.com/web3-storage/data-segment/commit/412bf18059c6603c62ea898ae866fb0d5ef73856))
+* fr32-sha2-256-trunc254-padded-binary-tree ([#19](https://github.com/web3-storage/data-segment/issues/19)) ([0c7b499](https://github.com/web3-storage/data-segment/commit/0c7b4999eb1d547b60c9d7bd64aa23310311bb44))
+* padded size from height calc function ([dba6cd5](https://github.com/web3-storage/data-segment/commit/dba6cd58954b4f21d7b527a87534cd46fefda96c))
+* padded size from height calc function ([#18](https://github.com/web3-storage/data-segment/issues/18)) ([47971cd](https://github.com/web3-storage/data-segment/commit/47971cda7c931a1a466e162cee983a03a050d8d7))
+
+
+### Bug Fixes
+
+* export interface for data structure with link and height ([263656e](https://github.com/web3-storage/data-segment/commit/263656eb68145ddc682ecd2fc57d94f0b796d861))
+* export interface for data structure with link and height ([#17](https://github.com/web3-storage/data-segment/issues/17)) ([a1006c0](https://github.com/web3-storage/data-segment/commit/a1006c0fb5faaf3a8398047cd3b772bb009c07ec))
+
 ## [2.1.0](https://github.com/web3-storage/data-segment/compare/v2.0.0...v2.1.0) (2023-07-17)
 
 
