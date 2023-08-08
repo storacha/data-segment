@@ -44,15 +44,7 @@ export const testPiece = {
         assert.deepEqual(piece.height, Math.log2(data.out.size / Node.Size))
         // assert.deepEqual(piece.paddedSize, data.out.paddedSize)
 
-        // assert.deepEqual(piece.toInfo(), {
-        //   link: parseLink(data.out.cid),
-        //   height: Math.log2(data.out.size / Node.Size),
-        // })
 
-        // const view = Piece.fromJSON(json)
-        // assert.deepEqual(view.link, piece.link)
-        // assert.deepEqual(view.size, piece.size)
-        // assert.deepEqual(view.height, piece.height)
       },
     ])
   ),
