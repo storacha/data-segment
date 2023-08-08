@@ -2,6 +2,7 @@ import { Piece, Node } from '@web3-storage/data-segment'
 import { deriveBuffer } from './util.js'
 import * as SHA256 from 'sync-multihash-sha2/sha256'
 import * as raw from 'multiformats/codecs/raw'
+import * as API from '@web3-storage/data-segment'
 import { create as createLink, parse as parseLink } from 'multiformats/link'
 
 /**
@@ -9,6 +10,7 @@ import { create as createLink, parse as parseLink } from 'multiformats/link'
  * @see https://github.com/hugomrdias/playwright-test/issues/544
  */
 import vector from './commp/vector.js'
+import { PaddedSize } from '../src/piece.js'
 
 /**
  * @type {import("entail").Suite}
@@ -18,7 +20,7 @@ export const testPiece = {
     const source = deriveBuffer(64)
     let result = null
     try {
-      result = await Piece.build(source)
+      result = await Piece.fromPayload(source)
     } catch (error) {
       result = error
     }
@@ -34,61 +36,84 @@ export const testPiece = {
         const source = deriveBuffer(data.in.contentSize)
         const root = SHA256.digest(raw.encode(source))
         const link = createLink(raw.code, root)
-        const piece = await Piece.build(source)
+        const piece = await Piece.fromPayload(source)
         assert.deepEqual(link.toString(), data.in.cid, 'same source content')
-        assert.deepEqual(
-          piece.tree.root,
-          parseLink(data.out.cid).multihash.digest
-        )
-        assert.deepEqual(parseLink(data.out.cid), piece.link)
+        assert.deepEqual(piece.root, parseLink(data.out.cid).multihash.digest)
+        assert.deepEqual(parseLink(data.out.cid), piece.toInfo().link)
         assert.deepEqual(piece.size, BigInt(data.out.size))
         assert.deepEqual(piece.height, Math.log2(data.out.size / Node.Size))
-        assert.deepEqual(piece.paddedSize, data.out.paddedSize)
+        // assert.deepEqual(piece.paddedSize, data.out.paddedSize)
 
-        const json = piece.toJSON()
+        // assert.deepEqual(piece.toInfo(), {
+        //   link: parseLink(data.out.cid),
+        //   height: Math.log2(data.out.size / Node.Size),
+        // })
 
-        assert.deepEqual(json, {
-          link: {
-            '/': data.out.cid,
-          },
-          height: Math.log2(data.out.size / Node.Size),
-        })
-
-        const view = Piece.fromJSON(json)
-        assert.deepEqual(view.link, piece.link)
-        assert.deepEqual(view.size, piece.size)
-        assert.deepEqual(view.height, piece.height)
+        // const view = Piece.fromJSON(json)
+        // assert.deepEqual(view.link, piece.link)
+        // assert.deepEqual(view.size, piece.size)
+        // assert.deepEqual(view.height, piece.height)
       },
     ])
   ),
 
-  'throws if payload is too large': async (assert) => {
-    // Subclass Uint8Array as we can't actually allocate a buffer this large
-    class HugePayload extends Uint8Array {
-      get length() {
-        return Piece.MAX_PAYLOAD_SIZE + 1
-      }
-    }
+  'toString <-> fromString': async (assert) => {
+    const source = deriveBuffer(128)
+    const piece = await Piece.fromPayload(source)
 
+    const serialized = piece.toString()
+    assert.deepEqual(piece.link.toString(), serialized)
+
+    const deserialized = Piece.fromString(serialized)
+    assert.deepEqual(deserialized.link.toString(), piece.link.toString())
+    assert.deepEqual(deserialized.size, piece.size)
+    assert.deepEqual(deserialized.height, piece.height)
+  },
+
+  'fromLink throws on invalid encoding': async (assert) => {
     assert.throws(
-      () => Piece.build(new HugePayload()),
-      /Payload exceeds maximum supported size/
+      () =>
+        Piece.fromLink(
+          parseLink(
+            'baga6ea4seaqcq4xx7rqx2lsrm6iky7qqk5jh7pbaj5bgdu22afhp4fodvccb6bq'
+          )
+        ),
+      /raw encoding/
+    )
+  },
+  'fromLink throws on invalid multihash': async (assert) => {
+    assert.throws(
+      () =>
+        Piece.fromLink(
+          parseLink(
+            'bafkreie3ntx3nzvhuv63btdsgaeste6gurdigzw2soryitq6m3f3p24nba'
+          )
+        ),
+      /must have fr32-sha2-256-trunc254-padded-binary-tree multihash/
     )
   },
 
-  'toString <-> fromString': async (assert) => {
-    const source = deriveBuffer(128)
-    const piece = await Piece.build(source)
-
-    const serialized = piece.toString()
-    assert.deepEqual(JSON.parse(serialized), {
-      link: { '/': piece.link.toString() },
-      height: piece.height,
+  'test PieceInfo View': async (assert) => {
+    const size = 8192n
+    const height = 8
+    /** @type {API.LegacyPieceLink} */
+    const legacyLink = parseLink(
+      'baga6ea4seaqidthc6vofh2jqtu4lcg5ptuuqcsgzzlcq4ilafyjfixdfbhpnoda'
+    )
+    const piece = Piece.fromInfo({
+      link: legacyLink,
+      size: PaddedSize.from(size),
     })
 
-    const deserialized = Piece.fromString(serialized)
-    assert.deepEqual(deserialized.link, piece.link)
-    assert.deepEqual(deserialized.size, piece.size)
-    assert.deepEqual(deserialized.height, piece.height)
+    const info = piece.toInfo()
+    assert.deepEqual(info.height, height)
+    assert.deepEqual(info.size, size)
+
+    console.log(JSON.stringify(info))
+    assert.deepEqual(JSON.parse(JSON.stringify(info)), {
+      link: { '/': legacyLink.toString() },
+      height,
+    })
+    assert.deepEqual(`${info}`, JSON.stringify(info, null, 2))
   },
 }

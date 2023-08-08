@@ -1,140 +1,188 @@
 import * as API from './api.js'
-import * as Fr32 from './fr32.js'
 import * as Digest from 'multiformats/hashes/digest'
 import * as Link from 'multiformats/link'
-import * as Tree from './piece/tree.js'
 import * as UnpaddedSize from './piece/unpadded-size.js'
 import * as PaddedSize from './piece/padded-size.js'
-import { FR_RATIO, NODE_SIZE, MIN_PAYLOAD_SIZE } from './constant.js'
+import * as Raw from 'multiformats/codecs/raw'
+import {
+  PREFIX,
+  toDigest,
+  digest,
+  MAX_PAYLOAD_SIZE,
+  code,
+  name,
+} from './multihash.js'
 
-export { Tree }
+export { MAX_PAYLOAD_SIZE }
 
 /**
  * @see https://github.com/multiformats/go-multihash/blob/dc3bd6897fcd17f6acd8d4d6ffd2cea3d4d3ebeb/multihash.go#L73
+ * @type {API.MulticodecCode<0x1012, 'sha2-256-trunc254-padded'>}
  */
-export const SHA2_256_TRUNC254_PADDED = 0x1012
+export const Sha256Trunc254Padded = 0x1012
 
 /**
  * @see https://github.com/ipfs/go-cid/blob/829c826f6be23320846f4b7318aee4d17bf8e094/cid.go#L104
+ * @type {API.MulticodecCode<0xf101, 'fil-commitment-unsealed'>}
  */
 export const FilCommitmentUnsealed = 0xf101
-
-/**
- * Current maximum piece size is limited by the maximum number of leaves in the
- * tree, which is limited by max size of the JS array, which is 128GiB.
- */
-export const MAX_PIECE_SIZE = Tree.MAX_LEAF_COUNT * NODE_SIZE
-
-/**
- * The maximum amount of data that one can compute for the piece.
- */
-export const MAX_PAYLOAD_SIZE = MAX_PIECE_SIZE * FR_RATIO
 
 export { UnpaddedSize, PaddedSize }
 
 /**
- * @param {API.PieceInfo} piece
+ * @param {API.PieceDigest} digest
+ * @returns {API.PieceView}
  */
-class PieceInfo {
+export const fromDigest = (digest) => fromLink(Link.create(Raw.code, digest))
+
+/**
+ *
+ * @param {API.PieceLink} link
+ * @returns {API.PieceView}
+ */
+export const fromLink = (link) => {
+  if (link.code !== Raw.code) {
+    throw new TypeError(`Piece link must have raw encoding`)
+  }
+
+  if (link.multihash.code !== code) {
+    throw new Error(`Piece link must have ${name} multihash`)
+  }
+
+  return new Piece(link)
+}
+
+/**
+ * @param {string} source
+ */
+export const fromString = (source) => fromLink(Link.parse(source))
+
+/**
+ *
+ * @param {API.Piece} piece
+ * @returns {API.ToString<API.PieceLink>}
+ */
+export const toString = (piece) => `${toLink(piece)}`
+
+/**
+ * @param {unknown} json
+ */
+export const fromJSON = (json) =>
+  fromString(/** @type {{'/': string}} */ (json)['/'])
+
+/**
+ *
+ * @param {API.Piece} piece
+ * @returns {{'/': API.ToString<API.PieceLink>}}}
+ */
+export const toJSON = (piece) => ({ '/': toString(piece) })
+
+/**
+ * @param {Uint8Array} payload
+ */
+export const fromPayload = (payload) => fromDigest(digest(payload))
+
+/**
+ * @param {API.Piece} piece
+ * @returns {API.PieceView}
+ */
+export const toView = (piece) => fromDigest(toDigest(piece))
+
+/**
+ *
+ * @param {API.Piece} piece
+ * @returns {API.PieceLink}
+ */
+export const toLink = (piece) => Link.create(Raw.code, toDigest(piece))
+
+/**
+ *
+ * @param {API.Piece} piece
+ * @returns {API.PieceInfo}
+ */
+export const toInfo = (piece) => new Info(toDigest(piece))
+
+/**
+ *
+ * @param {API.PieceInfo} info
+ * @returns
+ */
+export const fromInfo = (info) =>
+  toView({
+    height: PaddedSize.toHeight(info.size),
+    root: info.link.multihash.digest,
+  })
+
+class Piece {
   /**
-   * @param {object} data
-   * @param {API.PieceLink} data.link
-   * @param {number} data.height
+   * @param {API.PieceLink} link
    */
-  constructor({ link, height }) {
+  constructor(link) {
     this.link = link
-    this.height = height
+  }
+  get height() {
+    return this.link.multihash.bytes[PREFIX.length]
   }
   get size() {
     return PaddedSize.fromHeight(this.height)
   }
+  get root() {
+    return this.link.multihash.bytes.subarray(PREFIX.length + 1)
+  }
+
   toJSON() {
-    return toJSON(this)
+    return {
+      '/': this.toString(),
+    }
   }
   toString() {
-    return toString(this)
+    return /** @type {API.ToString<API.PieceLink>} */ (this.link.toString())
+  }
+
+  toInfo() {
+    return new Info(this)
   }
 }
 
 /**
- * @implements {API.Piece}
+ * @implements {API.PieceInfo}
  */
-class Piece extends PieceInfo {
+class Info {
   /**
-   * @param {object} data
-   * @param {number} data.contentSize
-   * @param {API.PieceTree} data.tree
+   * @param {API.Piece} piece
    */
-  constructor({ contentSize, tree }) {
-    super({ link: createLink(tree.root), height: tree.height })
-    this.contentSize = contentSize
-    this.tree = tree
+  constructor(piece) {
+    this.piece = piece
+    /** @type {API.LegacyPieceLink|undefined} */
+    this._link
+  }
+  get height() {
+    return this.piece.height
+  }
+  get root() {
+    return this.piece.root
+  }
+  get size() {
+    return PaddedSize.fromHeight(this.height)
   }
 
-  get paddedSize() {
-    return Fr32.toZeroPaddedSize(this.contentSize)
+  get link() {
+    if (this._link == null) {
+      this._link = Link.create(
+        FilCommitmentUnsealed,
+        Digest.create(Sha256Trunc254Padded, this.root)
+      )
+    }
+
+    return this._link
   }
-}
-
-/**
- * @param {API.PieceInfo} piece
- * @returns {API.PieceJSON}
- */
-export const toJSON = (piece) => ({
-  link: { '/': piece.link.toString() },
-  height: PaddedSize.toHeight(piece.size),
-})
-
-/**
- *
- * @param {API.PieceJSON} json
- * @returns {API.PieceInfoView}
- */
-export const fromJSON = ({ link, height }) =>
-  new PieceInfo({ link: Link.parse(link['/']), height })
-
-/**
- * @param {API.PieceInfo} piece
- * @returns {API.ToString<API.PieceJSON>}
- */
-export const toString = (piece) => JSON.stringify(toJSON(piece), null, 2)
-
-/**
- * @param {API.ToString<API.PieceJSON>|string} source
- */
-export const fromString = (source) => fromJSON(JSON.parse(source))
-
-/**
- * Creates Piece CID from the the merkle tree root. It will not perform
- * any validation.
- *
- * @param {API.MerkleTreeNode} root
- * @returns {API.PieceLink}
- */
-export const createLink = (root) =>
-  Link.create(
-    FilCommitmentUnsealed,
-    Digest.create(SHA2_256_TRUNC254_PADDED, root)
-  )
-
-/**
- * @param {Uint8Array} source
- * @returns {API.Piece}
- */
-export const build = (source) => {
-  if (source.length < MIN_PAYLOAD_SIZE) {
-    throw new RangeError(
-      `Piece is not defined for payloads smaller than ${MIN_PAYLOAD_SIZE} bytes`
-    )
+  toJSON() {
+    return {
+      link: { '/': this.link.toString() },
+      height: this.height,
+    }
   }
-
-  if (source.length > MAX_PAYLOAD_SIZE) {
-    throw new RangeError(
-      `Payload exceeds maximum supported size of ${MAX_PAYLOAD_SIZE} bytes`
-    )
+  toString() {
+    return JSON.stringify(this.toJSON(), null, 2)
   }
-
-  const tree = Tree.build(Fr32.pad(source))
-
-  return new Piece({ tree, contentSize: source.byteLength })
 }

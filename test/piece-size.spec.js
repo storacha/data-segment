@@ -7,6 +7,7 @@ const vector = [
   [127, 128],
   [1016, 1024],
   [34091302912, 34359738368],
+  [4261412864, 4294967296],
 ]
 
 /**
@@ -86,15 +87,24 @@ export const testPieceSize = {
       `PaddedSize.fromHeight(PaddedSize.toHeight(PaddedSize.from(${size})))) === ${size}`,
       (assert) => {
         assert.equal(
-          PaddedSize.fromHeight(
-            PaddedSize.toHeight(PaddedSize.from(size))
-          ),
+          PaddedSize.fromHeight(PaddedSize.toHeight(PaddedSize.from(size))),
           BigInt(size)
         )
       },
     ])
   ),
 
+  ...Object.fromEntries(
+    [127, 1016, 34091302912].map((size) => [
+      `UnpaddedSize.toHeight(${size})`,
+      (assert) => {
+        assert.equal(
+          PaddedSize.fromHeight(UnpaddedSize.toHeight(UnpaddedSize.from(size))),
+          UnpaddedSize.toPaddedSize(UnpaddedSize.from(size))
+        )
+      },
+    ])
+  ),
 
   // throw
   ...Object.fromEntries(

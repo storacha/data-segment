@@ -34,7 +34,7 @@ export const createBuilder = ({ size = DEFAULT_DEAL_SIZE } = {}) =>
 
 /**
  * @param {object} options
- * @param {API.PieceInfo[]} options.pieces - Pieces to add to the aggregate
+ * @param {API.Piece[]} options.pieces - Pieces to add to the aggregate
  * @param {API.PaddedPieceSize} [options.size] - Size of the aggregate in
  * (fr32 padded) bytes. If omitted default to 32 GiB
  */
@@ -79,6 +79,10 @@ class AggregateBuilder {
     return this.limit * EntrySize
   }
 
+  /**
+   *
+   * @returns {API.AggregateView}
+   */
   build() {
     const { size, parts, limit, offset } = this
     const indexStartNodes = indexAreaStart(size) / NodeSize
@@ -121,7 +125,7 @@ class AggregateBuilder {
   }
 
   /**
-   * @param {API.PieceInfo} piece
+   * @param {API.Piece} piece
    */
   write(piece) {
     const result = this.estimate(piece)
@@ -142,13 +146,13 @@ class AggregateBuilder {
    * Computes addition to the current aggregate if it were to write
    * provided segment.
    *
-   * @param {API.PieceInfo} piece
+   * @param {API.Piece} piece
    * @returns {API.Result<{
    *   parts: [API.MerkleTreeNodeSource]
    *   offset: API.uint64
    * }, RangeError>}
    */
-  estimate({ link, size }) {
+  estimate(piece) {
     if (this.parts.length >= this.limit) {
       return {
         error: new RangeError(
@@ -159,11 +163,7 @@ class AggregateBuilder {
       }
     }
 
-    const result = PaddedSize.validate(size)
-    if (result.error) {
-      return result
-    }
-
+    const size = PaddedSize.fromHeight(piece.height)
     const sizeInNodes = size / NodeSize
     const level = log2Ceil(sizeInNodes)
 
@@ -183,13 +183,16 @@ class AggregateBuilder {
 
     return {
       ok: {
-        parts: [{ node: link.multihash.digest, location: { level, index } }],
+        parts: [{ node: piece.root, location: { level, index } }],
         offset: offset - this.offset,
       },
     }
   }
 }
 
+/**
+ * @implements {API.AggregateView}
+ */
 class Aggregate {
   /**
    * @param {object} source
@@ -205,13 +208,17 @@ class Aggregate {
     this.limit = limit
     this.size = size
     this.offset = offset
-    this.link = Piece.createLink(this.tree.root)
+    this.link = Piece.toLink(this.tree)
   }
+
   /**
    * Size of the index in bytes.
    */
   get indexSize() {
     return this.limit * EntrySize
+  }
+  get root() {
+    return this.tree.root
   }
   /**
    * Height of the perfect binary merkle tree corresponding to this aggregate.
@@ -220,9 +227,9 @@ class Aggregate {
     return this.tree.height
   }
   toJSON() {
-    return {
-      link: { '/': this.link.toString() },
-      height: this.height,
-    }
+    return Piece.toJSON(this)
+  }
+  toInfo() {
+    return Piece.toInfo(this)
   }
 }

@@ -1,3 +1,4 @@
+import * as API from '../../src/api.js'
 import * as Piece from '../../src/piece.js'
 import * as Node from '../../src/node.js'
 
@@ -21,6 +22,7 @@ export const sizes = [
  * @see https://github.com/filecoin-project/go-data-segment/blob/5d01fdd3e4a17651b1b271f80a8df8f991b5307a/datasegment/inclusion_test.go#L30-L43
  *
  * @param {number} n
+ * @returns {API.MerkleTreeNode}
  */
 export const createNodeFromInt = (n) => {
   const bytes = [0xd, 0xe, 0xa, 0x1]
@@ -33,7 +35,11 @@ export const createNodeFromInt = (n) => {
   return Node.from(bytes)
 }
 
-export const pieces = sizes.map((size, index) => ({
-  size: Piece.PaddedSize.from(size),
-  link: Piece.createLink(createNodeFromInt(index)),
-}))
+export const pieces = sizes.map((n, index) => {
+  const size = Piece.PaddedSize.from(n)
+  const root = createNodeFromInt(index)
+  const height = Piece.PaddedSize.toHeight(size)
+  const { link } = Piece.toInfo({ height, root })
+
+  return { size, link }
+})
