@@ -123,15 +123,14 @@ type Poll<T, X> = Variant<{
   wait: Promise<void>
 }>
 
-export interface Aggregate extends Piece {}
+export interface Aggregate extends Piece {
+  
+}
 
-export interface AggregateView extends Aggregate {
+export interface AggregateView extends Aggregate, PieceView {
   indexSize: number
   limit: number
-  size: PaddedPieceSize
   tree: AggregateTree
-
-  toInfo(): PieceInfo
 }
 
 export interface Vector<T> extends Iterable<T> {
