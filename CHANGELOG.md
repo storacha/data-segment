@@ -1,5 +1,14 @@
 # Changelog
 
+## [3.0.1](https://github.com/web3-storage/data-segment/compare/v3.0.0...v3.0.1) (2023-08-09)
+
+
+### Bug Fixes
+
+* aggregate types ([25a5cb8](https://github.com/web3-storage/data-segment/commit/25a5cb8803757801f600da573d689c4f4d0d8494))
+* aggregate types ([#23](https://github.com/web3-storage/data-segment/issues/23)) ([11c2770](https://github.com/web3-storage/data-segment/commit/11c2770dd3a1725d479b0ca3e9d7899b79c39c31))
+* types ([e1d2df5](https://github.com/web3-storage/data-segment/commit/e1d2df523f8e62fe07c95ca36ba9d6717ee9a827))
+
 ## [3.0.0](https://github.com/web3-storage/data-segment/compare/v2.2.0...v3.0.0) (2023-08-09)
 
 
