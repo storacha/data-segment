@@ -98,7 +98,7 @@ export const toLink = (piece) => Link.create(Raw.code, toDigest(piece))
 /**
  *
  * @param {API.Piece} piece
- * @returns {API.PieceInfo}
+ * @returns {API.PieceInfoView}
  */
 export const toInfo = (piece) => new Info(toDigest(piece))
 
