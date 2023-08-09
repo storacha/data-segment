@@ -7,7 +7,7 @@ import * as Link from 'multiformats/link'
 export const testLib = {
   'test aggregate sample': async (assert) => {
     /** @type {Lib.PieceInfo[]} */
-    const pieces = [
+    const source = [
       {
         link: Link.parse(
           'baga6ea4seaqae5ysjdbsr4b5jhotaz5ooh62jrrdbxwygfpkkfjz44kvywycmgy'
@@ -25,6 +25,8 @@ export const testLib = {
         ),
       },
     ]
+
+    const pieces = source.map(Lib.Piece.fromInfo)
 
     const dealSize = Lib.Piece.PaddedSize.from(1 << 20)
     const aggregate = Lib.Aggregate.createBuilder({

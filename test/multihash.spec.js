@@ -2,6 +2,7 @@ import { Piece } from '@web3-storage/data-segment'
 import { deriveBuffer } from './util.js'
 import { parse as parseLink } from 'multiformats/link'
 import * as Hasher from '../src/multihash.js'
+import * as Uint64 from '../src/uint64.js'
 
 /**
  * Module is generated from `./commp.csv` using prepare script.
@@ -25,6 +26,62 @@ export const testMultihash = {
     assert.ok(
       String(result).includes('not defined for payloads smaller than 65 bytes')
     )
+  },
+  'RFC test case 1': async (assert) => {
+    const part = 127
+    const payload = new Uint8Array(part * 4)
+    payload.fill(0, 0 * part, 1 * part)
+    payload.fill(1, 1 * part, 2 * part)
+    payload.fill(2, 2 * part, 3 * part)
+    payload.fill(3, 3 * part)
+
+    const v1 = parseLink(
+      'baga6ea4seaqes3nobte6ezpp4wqan2age2s5yxcatzotcvobhgcmv5wi2xh5mbi'
+    )
+    const v2 = parseLink(
+      `bafkzcibbarew3lqmzhrgl37fuadoqbrguxofyqe6luyvlqjzqtfpnsgvz7lak`
+    )
+
+    const digest = Hasher.digest(payload)
+    assert.deepEqual(digest.root, v1.multihash.digest)
+    assert.deepEqual(digest.bytes, v2.multihash.bytes)
+    assert.deepEqual(v2.toString(), Piece.fromDigest(digest).link.toString())
+  },
+
+  'RFC test case 2': async (assert) => {
+    const v1 = parseLink(
+      'baga6ea4seaqao7s73y24kcutaosvacpdjgfe5pw76ooefnyqw4ynr3d2y6x2mpq'
+    )
+    const v2 = parseLink(
+      `bafkzcibbdydx4x66gxcqveyduviaty2jrjhl5x7ttrbloefxgdmoy6whv6td4`
+    )
+    // Empty 32 GiB piece
+    const height = Piece.PaddedSize.toHeight(Uint64.pow2(35n))
+    const digest = Hasher.digest(new Uint8Array(127))
+    const { bytes } = digest
+    bytes.set(v1.multihash.digest, bytes.length - v1.multihash.digest.length)
+    bytes[bytes.length - v1.multihash.digest.length - 1] = height
+
+    assert.equal(digest.height, height)
+    assert.equal(v2.toString(), Piece.fromDigest(digest).link.toString())
+  },
+  'RFC test case 3': async (assert) => {
+    const v1 = parseLink(
+      'baga6ea4seaqomqafu276g53zko4k23xzh4h4uecjwicbmvhsuqi7o4bhthhm4aq'
+    )
+    const v2 = parseLink(
+      `bafkzcibbd7teabngx7rxo6ktxcww56j7b7fbasnsaqlfj4vech3xaj4zz3hae`
+    )
+    // Empty 32 GiB piece
+    const height = Piece.PaddedSize.toHeight(Uint64.pow2(36n))
+
+    const digest = Hasher.digest(new Uint8Array(127))
+    const { bytes } = digest
+    bytes.set(v1.multihash.digest, bytes.length - v1.multihash.digest.length)
+    bytes[bytes.length - v1.multihash.digest.length - 1] = height
+
+    assert.equal(digest.height, height)
+    assert.equal(v2.toString(), Piece.fromDigest(digest).link.toString())
   },
   ...Object.fromEntries(
     Object.values(vector).map((data) => [

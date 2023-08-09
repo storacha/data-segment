@@ -10,12 +10,21 @@ import * as Proof from './proof.js'
 import { split } from './piece/tree.js'
 import { pad } from './fr32.js'
 import { fromHeight as piceSizeFromHeight } from './piece/padded-size.js'
+import * as Link from 'multiformats/link'
+import * as Raw from 'multiformats/codecs/raw'
+import * as Piece from './piece.js'
 
+/**
+ * @see https://github.com/multiformats/multicodec/pull/331/files
+ */
 export const name = /** @type {const} */ (
   'fr32-sha2-256-trunc254-padded-binary-tree'
 )
 
-/** @type {API.MulticodecCode<0x1011, typeof name>} */
+/**
+ * @type {API.MulticodecCode<0x1011, typeof name>}
+ * @see https://github.com/multiformats/multicodec/pull/331/files
+ */
 export const code = 0x1011
 
 /**
@@ -46,7 +55,7 @@ export const MAX_PAYLOAD_SIZE =
  * Computes the digest of the given payload.
  *
  * @param {Uint8Array} payload
- * @returns {StreamDigest}
+ * @returns {API.PieceDigest}
  */
 export const digest = (payload) => {
   const hasher = new Hasher()
@@ -58,14 +67,14 @@ export const digest = (payload) => {
  * Creates a streaming hasher that can be used to consumer larger streams
  * of data than it would be practical to load into memory all at once.
  *
- * @returns {API.StreamingHasher<typeof code, typeof size, StreamDigest>}
+ * @returns {API.StreamingHasher<typeof code, typeof size, API.PieceDigest>}
  */
 export const create = () => new Hasher()
 
 /**
  * @typedef {[API.MerkleTreeNode[], ...API.MerkleTreeNode[][]]} Layers
  *
- * @implements {API.StreamingHasher<typeof code, typeof size, StreamDigest>}
+ * @implements {API.StreamingHasher<typeof code, typeof size, API.PieceDigest>}
  */
 class Hasher {
   constructor() {
@@ -180,7 +189,6 @@ class Hasher {
     return this
   }
   /**
-   *
    * @param {Uint8Array} bytes
    */
   write(bytes) {
@@ -270,13 +278,9 @@ class Hasher {
 /**
  * Byte encoded {@link code} and the {@link size} of the digest.
  */
-const PREFIX = new Uint8Array([145, 32, size])
+export const PREFIX = new Uint8Array([145, 32, size])
 
 const MULTIHASH_SIZE = PREFIX.length + size
-
-/**
- * @typedef {API.StreamDigest<typeof code, typeof size> & { height: number, root: API.MerkleTreeNode, name: typeof name }} StreamDigest
- */
 
 class Digest {
   /**
@@ -285,8 +289,10 @@ class Digest {
   constructor(bytes) {
     this.bytes = bytes
     this.digest = bytes.subarray(PREFIX.length)
-    this.height = bytes[PREFIX.length]
     this.root = bytes.subarray(PREFIX.length + 1)
+  }
+  get height() {
+    return this.bytes[PREFIX.length]
   }
 
   get size() {
@@ -300,6 +306,24 @@ class Digest {
   }
 }
 
+/**
+ * @param {API.Piece} piece
+ * @returns {API.PieceDigest}
+ */
+export const toDigest = ({ height, root }) => {
+  const bytes = new Uint8Array(MULTIHASH_SIZE)
+  let byteOffset = 0
+  bytes.set(PREFIX, byteOffset)
+  byteOffset += PREFIX.length
+
+  // Write the tree height as the first byte of the digest
+  bytes[byteOffset] = height
+  byteOffset += 1
+  // Write the root as the remaining 32 bytes of the digest
+  bytes.set(root, byteOffset)
+
+  return new Digest(bytes)
+}
 /**
  * Prunes layers by combining node pairs into nodes in the next layer and
  * removing them from the layer that they were in. After pruning each layer
@@ -353,6 +377,11 @@ const flush = (layers, build) => {
       // we will never end up with an extra node when consuming two at a time.
       while (index + 1 < layer.length) {
         const node = Proof.computeNode(layer[index], layer[index + 1])
+
+        // we proactively delete nodes in order to free up a memory used.
+        delete layer[index]
+        delete layer[index + 1]
+
         next.push(node)
         index += 2
       }
@@ -361,11 +390,9 @@ const flush = (layers, build) => {
         layers[level] = next
       }
 
-      if (!build) {
-        // we remove nodes that we have combined from the current layer to reduce
-        // memory overhead and move to the next layer.
-        layer.splice(0, index)
-      }
+      // we remove nodes that we have combined from the current layer to reduce
+      // memory overhead and move to the next layer.
+      layer.splice(0, index)
     }
   }
 

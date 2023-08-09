@@ -32,14 +32,6 @@ export const commForDeal = (x) => {
 }
 
 /**
- * @param {number} x
- */
-const cidForDeal = (x) => {
-  const node = commForDeal(x)
-  return Piece.createLink(node)
-}
-
-/**
  * Generates pseudo-random bytes by recursively computing sha512 starting from
  * the empty seed.
  *

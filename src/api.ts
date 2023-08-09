@@ -1,8 +1,12 @@
 import type { Link, ToString } from 'multiformats/link'
-import { MultihashDigest } from 'multiformats'
-import { Digest } from 'multiformats/hashes/digest'
+import type { MultihashDigest } from 'multiformats'
+import type * as Raw from 'multiformats/codecs/raw'
+import type * as Multihash from './multihash.js'
+import type { Sha256Trunc254Padded, FilCommitmentUnsealed } from './piece.js'
 
-export { ToString }
+export type RAW_CODE = MulticodecCode<0x55, 'raw'>
+
+export type { ToString }
 /**
  * Implementers of the `Read` interface are called "readers". Readers
  * allow for reading bytes from an underlying source.
@@ -41,8 +45,10 @@ export interface Read {
   read(buffer: Uint8Array): Poll<number, Error>
 }
 
-export interface StreamDigest<Code extends MulticodecCode, Size extends number>
-  extends MultihashDigest<Code> {
+export interface StreamDigest<
+  Code extends MulticodecCode = MulticodecCode,
+  Size extends number = number
+> extends MultihashDigest<Code> {
   size: Size
 }
 
@@ -88,16 +94,44 @@ export interface StreamingHasher<
   dispose(): void
 }
 
+export interface Piece {
+  /**
+   * Height of the tree.
+   */
+  height: number
+
+  /**
+   * Root node of this Merkle tree.
+   */
+  root: MerkleTreeNode
+}
+
+export interface PieceView extends Piece {
+  link: PieceLink
+  /**
+   * Size is the number of padded bytes that is contained in this piece.
+   */
+  size: PaddedPieceSize
+  toInfo(): PieceInfoView
+  toJSON(): { '/': ToString<PieceLink> }
+  toString(): ToString<PieceLink>
+}
+
 type Poll<T, X> = Variant<{
   ok: T
   error: X
   wait: Promise<void>
 }>
 
-export interface Aggregate {
-  dealSize: PaddedPieceSize
-  index: IndexData
+export interface Aggregate extends Piece {}
+
+export interface AggregateView extends Aggregate {
+  indexSize: number
+  limit: number
+  size: PaddedPieceSize
   tree: AggregateTree
+
+  toInfo(): PieceInfo
 }
 
 export interface Vector<T> extends Iterable<T> {
@@ -120,20 +154,12 @@ export interface IndexData {
   entries: SegmentInfo[]
 }
 
-export interface MerkleTree<I extends uint64 | number = uint64 | number> {
+export interface MerkleTree<I extends uint64 | number = uint64 | number>
+  extends Piece {
   /**
    * Amount of leafs in this Merkle tree.
    */
   leafCount: I
-
-  /**
-   * Height of the tree.
-   */
-  height: number
-  /**
-   * Root node of this Merkle tree.
-   */
-  root: MerkleTreeNode
 
   /**
    * Returns a node at the given level and index.
@@ -142,6 +168,17 @@ export interface MerkleTree<I extends uint64 | number = uint64 | number> {
    * @param index
    */
   node(level: number, index: I): MerkleTreeNode | undefined
+}
+
+export interface Piece {
+  /**
+   * Root node of this Merkle tree.
+   */
+  root: MerkleTreeNode
+  /**
+   * Height of the tree.
+   */
+  height: number
 }
 
 export interface MerkleTreeBuilder<
@@ -169,7 +206,7 @@ export interface PieceInfo {
    * Commitment to the data segment (Merkle node which is the root of the
    * subtree containing all the nodes making up the data segment)
    */
-  link: PieceLink
+  link: LegacyPieceLink
 
   /**
    * Size is the number of padded bytes that is contained in this piece.
@@ -177,50 +214,42 @@ export interface PieceInfo {
   size: PaddedPieceSize
 }
 
-export interface PieceView {
-  /**
-   * Commitment to the data segment (Merkle node which is the root of the
-   * subtree containing all the nodes making up the data segment)
-   */
-  link: PieceLink
+export interface PieceInfoView extends PieceInfo, Piece {}
 
-  /**
-   * Height of the perfect binary merkle tree representing
-   * this piece.
-   */
-  height: number
+export interface PieceDigest
+  extends StreamDigest<FR32_SHA2_256_TRUNC254_PADDED_BINARY_TREE, 33>,
+    Piece {
+  name: typeof Multihash.name
 }
 
-export interface PieceInfoView extends PieceInfo, PieceView {}
-
-/**
- * Represents a piece tree and underlying merkle tree.
- */
-export interface Piece extends PieceInfoView {
-  tree: PieceTree
-
-  /**
-   * Size of the payload from which this piece was derived.
-   */
-  contentSize: number
-
-  /**
-   * Size after 0 padding to next power of 2.
-   */
-  paddedSize: number
-
-  /**
-   * Returns a JSON representation of this piece.
-   */
-  toJSON(): PieceJSON
-}
-
-export interface PieceJSON {
+export interface PieceInfoJSON {
   link: { '/': string }
   height: number
 }
 
-export type PieceLink = Link<MerkleTreeNode, 0xf101, 0x1012>
+export type FR32_SHA2_256_TRUNC254_PADDED_BINARY_TREE = typeof Multihash.code
+
+/**
+ * Represents Piece link V2
+ * @see https://github.com/filecoin-project/FIPs/pull/758/files
+ */
+export type PieceLink = Link<
+  MerkleTreeNode,
+  RAW_CODE,
+  FR32_SHA2_256_TRUNC254_PADDED_BINARY_TREE
+>
+
+export type SHA2_256_TRUNC254_PADDED = typeof Sha256Trunc254Padded
+export type FIL_COMMITMENT_UNSEALED = typeof FilCommitmentUnsealed
+
+/**
+ * Represents a Piece link v1
+ */
+export type LegacyPieceLink = Link<
+  MerkleTreeNode,
+  FIL_COMMITMENT_UNSEALED,
+  SHA2_256_TRUNC254_PADDED
+>
 
 /**
  * Contains a data segment description to be contained as two Fr32 elements in
