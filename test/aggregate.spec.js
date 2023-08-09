@@ -152,34 +152,6 @@ export const testAggregate = {
       /Pieces are too large to fit in the index/
     )
   },
-
-  'skip! pass bad value to estimate': async (assert) => {
-    const builder = Aggregate.createBuilder({
-      size: Aggregate.PaddedSize.from(1 << 20),
-    })
-
-    builder.write(
-      Piece.fromInfo({
-        size: Piece.PaddedSize.from(131072),
-        link: Link.parse(
-          `baga6ea4seaqievout3bskdb76gzldeidkhxo6z5zjrnl2jruvwfwvr2uvvpuwdi`
-        ),
-      })
-    )
-
-    const estimate = builder.estimate(
-      Piece.fromInfo({
-        // log2Ceil will truncate and not fail
-        size: Piece.PaddedSize.from(524288) + 1n,
-        link: Link.parse(
-          `baga6ea4seaqkzsosscjqdegbhqrlequtm7pbjscwpeqwhrd53cxov5td34vfojy`
-        ),
-      })
-    )
-
-    assert.match(estimate.error, /padded piece size must be a power of 2/)
-  },
-
   'basic aggregate builder': async (assert) => {
     const pieces = [...Dataset.pieces].map(Piece.fromInfo)
     const builder = Aggregate.createBuilder({
@@ -277,13 +249,5 @@ export const testAggregate = {
     assert.equal(build.size, 1n << 20n)
     assert.deepEqual(build.limit, 8)
     assert.deepEqual(build.indexSize, 512)
-
-    // assert.deepEqual(
-    //   JSON.stringify(build),
-    //   JSON.stringify({
-    //     link: build.link,
-    //     height: Math.log2((1 << 20) / Node.Size),
-    //   })
-    // )
   },
 }
