@@ -1,7 +1,7 @@
 {
   "name": "@web3-storage/data-segment",
   "description": "Implementation of [FRC-0058](https://github.com/filecoin-project/FIPs/blob/master/FRCs/frc-0058.md) verifiable aggregation scheme",
-  "version": "2.2.0",
+  "version": "3.0.0",
   "keywords": [
     "FRC-0058",
     "CommP",

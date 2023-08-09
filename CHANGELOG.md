@@ -1,5 +1,18 @@
 # Changelog
 
+## [3.0.0](https://github.com/web3-storage/data-segment/compare/v2.2.0...v3.0.0) (2023-08-09)
+
+
+### ⚠ BREAKING CHANGES
+
+* adopt piece cid v2 ([#21](https://github.com/web3-storage/data-segment/issues/21))
+* adopt piece cid v2
+
+### Features
+
+* adopt piece cid v2 ([e2df8fb](https://github.com/web3-storage/data-segment/commit/e2df8fbfdfaa4733c67be012887090f6ee5c15c1))
+* adopt piece cid v2 ([#21](https://github.com/web3-storage/data-segment/issues/21)) ([ae68ed1](https://github.com/web3-storage/data-segment/commit/ae68ed1c88c82f901fd8204dfd5ee78a5b20f426))
+
 ## [2.2.0](https://github.com/web3-storage/data-segment/compare/v2.1.0...v2.2.0) (2023-07-21)
 
 
