@@ -7,11 +7,15 @@ const main = async () => {
   try {
     const hasher = Multihash.create()
     let contentSize = 0
-    for await (const chunk of process.stdin) {
+    const payload = process.stdin
+    for await (const chunk of payload) {
       contentSize += chunk.length
       hasher.write(chunk)
     }
-    const digest = hasher.digest()
+
+    const digest = Multihash.createDigest()
+    hasher.digestInto(digest.bytes)
+
     const piece = Piece.fromDigest(digest)
     const { link, size } = piece.toInfo()
 

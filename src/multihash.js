@@ -6,12 +6,10 @@ import {
   MIN_PAYLOAD_SIZE,
 } from './constant.js'
 import * as ZeroPad from './zero-comm.js'
-import * as Proof from './proof.js'
+import { computeNode } from './proof.js'
 import { split } from './piece/tree.js'
 import { pad } from './fr32.js'
 import { fromHeight as piceSizeFromHeight } from './piece/padded-size.js'
-import * as Link from 'multiformats/link'
-import * as Raw from 'multiformats/codecs/raw'
 import * as Piece from './piece.js'
 
 /**
@@ -135,9 +133,9 @@ class Hasher {
    * written from the very beginning.
    */
   digest() {
-    const buffer = new Uint8Array(MULTIHASH_SIZE)
-    this.digestInto(buffer)
-    return new Digest(buffer)
+    const digest = createDigest()
+    this.digestInto(digest.bytes)
+    return digest
   }
 
   /**
@@ -324,6 +322,9 @@ export const toDigest = ({ height, root }) => {
 
   return new Digest(bytes)
 }
+
+export const createDigest = () => new Digest(new Uint8Array(MULTIHASH_SIZE))
+
 /**
  * Prunes layers by combining node pairs into nodes in the next layer and
  * removing them from the layer that they were in. After pruning each layer
@@ -369,31 +370,30 @@ const flush = (layers, build) => {
     level += 1
 
     // If we have 0 nodes in the current layer we just move to the next one.
-    if (layer.length) {
-      // If we have a next layer and we are building  will combine nodes from the current layer
-      next = next ? (build ? [...next] : next) : []
-      let index = 0
-      // Note that we have checked that we have an even number of nodes so
-      // we will never end up with an extra node when consuming two at a time.
-      while (index + 1 < layer.length) {
-        const node = Proof.computeNode(layer[index], layer[index + 1])
 
-        // we proactively delete nodes in order to free up a memory used.
-        delete layer[index]
-        delete layer[index + 1]
+    // If we have a next layer and we are building  will combine nodes from the current layer
+    next = next ? (build ? [...next] : next) : []
+    let index = 0
+    // Note that we have checked that we have an even number of nodes so
+    // we will never end up with an extra node when consuming two at a time.
+    while (index + 1 < layer.length) {
+      const node = computeNode(layer[index], layer[index + 1])
 
-        next.push(node)
-        index += 2
-      }
+      // we proactively delete nodes in order to free up a memory used.
+      delete layer[index]
+      delete layer[index + 1]
 
-      if (next.length) {
-        layers[level] = next
-      }
-
-      // we remove nodes that we have combined from the current layer to reduce
-      // memory overhead and move to the next layer.
-      layer.splice(0, index)
+      next.push(node)
+      index += 2
     }
+
+    if (next.length) {
+      layers[level] = next
+    }
+
+    // we remove nodes that we have combined from the current layer to reduce
+    // memory overhead and move to the next layer.
+    layer.splice(0, index)
   }
 
   return layers
