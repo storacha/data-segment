@@ -5,13 +5,15 @@ Implementation of the [FRC-0058] verifiable aggregation scheme.
 ## API
 
 ```ts
-import { CommP } from "@web3-storage/data-segment"
+import { Piece, MIN_PAYLOAD_SIZE } from "@web3-storage/data-segment"
 
-const demo = async (bytes: Uint8Array) => {
-  const commP = await CommP.build(bytes)
-  // Gives you a commP as a CID
-  const cid = commP.link()
-}
+// input must be >= 65 bytes
+const bytes = new Uint8Array(MIN_PAYLOAD_SIZE)
+
+const piece = Piece.fromPayload(bytes)
+
+// bafkzcibbai3tdo4zvruj6zxo6wlt4suu3imi6to4vzmaojh4n475mdp5jcbtg
+const cid = piece.link.toSting()
 ```
 
 ## Prior Art
