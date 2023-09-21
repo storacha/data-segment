@@ -123,15 +123,65 @@ type Poll<T, X> = Variant<{
   wait: Promise<void>
 }>
 
-export interface Aggregate extends Piece {
-  
-}
+export interface Aggregate extends Piece {}
 
 export interface AggregateView extends Aggregate, PieceView {
   indexSize: number
   limit: number
   tree: AggregateTree
+
+  resolveProof(proof: PieceLink): Result<InclusionProof, RangeError>
 }
+
+/**
+ * @see https://github.com/filecoin-project/go-data-segment/blob/master/datasegment/verifier.go#L8-L14
+ */
+export type AggregationProof = [
+  InclusionProof,
+  AuxDataType,
+  SingletonMarketSource
+]
+
+/**
+ * @see https://github.com/filecoin-project/go-data-segment/blob/master/datasegment/verifier.go#L16-L18
+ */
+export type SingletonMarketSource = [DealID]
+/**
+ * @see https://github.com/filecoin-project/go-state-types/blob/master/abi/deal.go#L5
+ */
+export type DealID = uint64
+
+/**
+ * @see https://github.com/filecoin-project/go-data-segment/blob/master/datasegment/verifier.go#L12
+ */
+export type AuxDataType = 0
+
+/**
+ * @see https://github.com/filecoin-project/go-data-segment/blob/e3257b64fa2c84e0df95df35de409cfed7a38438/datasegment/inclusion.go#L31-L39
+ */
+export type InclusionProofAsTuple = [
+  // ProofSubtree is proof of inclusion of the client's data segment in the data aggregator's Merkle tree (includes position information)
+  // I.e. a proof that the root node of the subtree containing all the nodes (leafs) of a data segment is contained in CommDA
+  ProofDataAsTuple,
+  // ProofIndex is a proof that an entry for the user's data is contained in the index of the aggregator's deal.
+  // I.e. a proof that the data segment index constructed from the root of the user's data segment subtree is contained in the index of the deal tree.
+  ProofDataAsTuple
+]
+
+export interface InclusionProof {
+  tree: ProofData
+  index: ProofData
+}
+
+/**
+ * @see https://github.com/filecoin-project/go-data-segment/blob/master/merkletree/proof.go#L9-L14
+ */
+export type ProofDataAsTuple = [
+  MerkleTreeNode[],
+  // index indicates the index within the level where the element whose membership to prove is located
+  // Leftmost node is index 0
+  uint64
+]
 
 export interface Vector<T> extends Iterable<T> {
   append(value: T): Vector<T>
@@ -149,9 +199,7 @@ export type UnpaddedPieceSize = New<{ UnpaddedPieceSize: uint64 }>
 
 export type Fr23Padded = New<{ Fr23Padded: Uint8Array }>
 
-export interface IndexData {
-  entries: SegmentInfo[]
-}
+export interface IndexData extends Array<SegmentInfo> {}
 
 export interface MerkleTree<I extends uint64 | number = uint64 | number>
   extends Piece {

@@ -235,7 +235,7 @@ class SparseArray {
 
 /**
  * @param {API.MerkleTreeBuilder} tree
- * @param {API.MerkleTreeNodeSource[]} values
+ * @param {Iterable<API.MerkleTreeNodeSource>} values
  */
 export const batchSet = (tree, values) => {
   for (const {
@@ -274,7 +274,7 @@ const getNodeRaw = (tree, level, idx) => {
  * @param {number} level
  * @param {API.uint64} index
  */
-const validateLevelIndex = (maxLevel, level, index) => {
+export const validateLevelIndex = (maxLevel, level, index) => {
   if (level < 0) {
     throw new RangeError('level can not be negative')
   }
