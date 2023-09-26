@@ -62,23 +62,23 @@ class AggregateTree {
    * Collects a proof from the specified node to the root of the tree.
    *
    * @param {number} level
-   * @param {API.uint64} index
+   * @param {API.uint64} at
    * @returns {API.ProofData}
    */
-  collectProof(level, index) {
-    validateLevelIndex(this.height, level, index)
+  collectProof(level, at) {
+    validateLevelIndex(this.height, level, at)
     const path = []
     let currentLevel = level
-    let currentIndex = index
+    let position = at
     while (currentLevel < this.height) {
       // idx^1 is the sibling index
-      const node = this.node(currentLevel, currentIndex ^ 1n)
-      currentIndex = currentIndex / 2n
+      const node = this.node(currentLevel, position ^ 1n)
+      position = position / 2n
       path.push(node)
       currentLevel++
     }
 
-    return { path, index }
+    return Proof.create({ path, at })
   }
 
   /**
@@ -235,7 +235,7 @@ class SparseArray {
 
 /**
  * @param {API.MerkleTreeBuilder} tree
- * @param {API.MerkleTreeNodeSource[]} values
+ * @param {Iterable<API.MerkleTreeNodeSource>} values
  */
 export const batchSet = (tree, values) => {
   for (const {
@@ -274,7 +274,7 @@ const getNodeRaw = (tree, level, idx) => {
  * @param {number} level
  * @param {API.uint64} index
  */
-const validateLevelIndex = (maxLevel, level, index) => {
+export const validateLevelIndex = (maxLevel, level, index) => {
   if (level < 0) {
     throw new RangeError('level can not be negative')
   }

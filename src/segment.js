@@ -1,7 +1,7 @@
 import * as SHA256 from 'sync-multihash-sha2/sha256'
 import { Size as NodeSize } from './node.js'
 import * as API from './api.js'
-import { pow2 } from './uint64.js'
+import { log2Ceil, pow2 } from './uint64.js'
 
 /**
  * The size of the checksum in bytes
@@ -39,6 +39,23 @@ export const fromSource = ({ node, location }) => ({
   offset: toLeafIndex(location) * BigInt(NodeSize),
   size: pow2(BigInt(location.level)) * BigInt(NodeSize),
 })
+
+/**
+ *
+ * @param {API.SegmentInfo} segment
+ * @returns {API.MerkleTreeNodeSource}
+ */
+export const toSource = (segment) => {
+  const level = log2Ceil(segment.size / BigInt(NodeSize))
+
+  return {
+    node: segment.root,
+    location: {
+      level,
+      index: (segment.offset / BigInt(NodeSize)) >> BigInt(level),
+    },
+  }
+}
 
 /**
  * @param {API.MerkleTreeNodeSource} source

@@ -1,12 +1,33 @@
-import type { Link, ToString } from 'multiformats/link'
-import type { MultihashDigest } from 'multiformats'
-import type * as Raw from 'multiformats/codecs/raw'
+import type { Link, ToString } from 'multiformats'
+import type {
+  MultihashDigest,
+  BlockEncoder,
+  BlockDecoder,
+  BlockCodec,
+  SyncMultihashHasher,
+} from 'multiformats'
 import type * as Multihash from './multihash.js'
 import type { Sha256Trunc254Padded, FilCommitmentUnsealed } from './piece.js'
 
 export type RAW_CODE = MulticodecCode<0x55, 'raw'>
 
-export type { ToString }
+/**
+ * Type describes a byte representation of a `Data` encoded using
+ * the multicodec with `Code` code.
+ */
+export type ByteView<Data, Code extends MulticodecCode> = New<
+  { Bytes: Uint8Array },
+  { code: Code; model: Data }
+>
+
+export type {
+  ToString,
+  Link,
+  BlockEncoder,
+  BlockDecoder,
+  BlockCodec,
+  SyncMultihashHasher,
+}
 /**
  * Implementers of the `Read` interface are called "readers". Readers
  * allow for reading bytes from an underlying source.
@@ -123,15 +144,51 @@ type Poll<T, X> = Variant<{
   wait: Promise<void>
 }>
 
-export interface Aggregate extends Piece {
-  
-}
+export interface Aggregate extends Piece {}
 
 export interface AggregateView extends Aggregate, PieceView {
   indexSize: number
   limit: number
   tree: AggregateTree
+
+  /**
+   * Resolves inclusion proof for the given piece. If aggregate does not include
+   * the given piece `{ error: RangeError }` is returned.
+   */
+  resolveProof(piece: PieceLink): Result<InclusionProof, RangeError>
 }
+
+/**
+ * @see https://github.com/filecoin-project/go-data-segment/blob/master/datasegment/verifier.go#L8-L14
+ */
+export type AggregationProof = [
+  InclusionProof,
+  AuxDataType,
+  SingletonMarketSource
+]
+
+/**
+ * @see https://github.com/filecoin-project/go-data-segment/blob/master/datasegment/verifier.go#L16-L18
+ */
+export type SingletonMarketSource = [DealID]
+/**
+ * @see https://github.com/filecoin-project/go-state-types/blob/master/abi/deal.go#L5
+ */
+export type DealID = uint64
+
+/**
+ * @see https://github.com/filecoin-project/go-data-segment/blob/master/datasegment/verifier.go#L12
+ */
+export type AuxDataType = 0
+
+/**
+ * Proof that content piece (merkle tree) is a fully contained segment of the
+ * aggregate (merke tree).
+ *
+ * @see https://github.com/filecoin-project/go-data-segment/blob/e3257b64fa2c84e0df95df35de409cfed7a38438/merkletree/proof.go#L9-L14
+ * @see https://github.com/filecoin-project/go-data-segment/blob/e3257b64fa2c84e0df95df35de409cfed7a38438/datasegment/inclusion.go#L31-L39
+ */
+export type InclusionProof = [tree: ProofData, index: ProofData]
 
 export interface Vector<T> extends Iterable<T> {
   append(value: T): Vector<T>
@@ -149,9 +206,7 @@ export type UnpaddedPieceSize = New<{ UnpaddedPieceSize: uint64 }>
 
 export type Fr23Padded = New<{ Fr23Padded: Uint8Array }>
 
-export interface IndexData {
-  entries: SegmentInfo[]
-}
+export interface IndexData extends Array<SegmentInfo> {}
 
 export interface MerkleTree<I extends uint64 | number = uint64 | number>
   extends Piece {
@@ -363,12 +418,14 @@ export interface SparseArray<T> {
   set(index: uint64, value: T): this
 }
 
-export interface ProofData {
-  path: MerkleTreeNode[]
-  // index indicates the index within the level where the element whose membership to prove is located
-  // Leftmost node is index 0
-  index: uint64
-}
+export type ProofData = [
+  // indicates the index within the level where the element whose membership to prove is located
+  // Leftmost node is at 0
+  at: uint64,
+  path: MerkleTreePath
+]
+
+export type MerkleTreePath = MerkleTreeNode[]
 
 export type MerkleTreeNode = New<{ Node: Uint8Array }, { size: 32 }>
 

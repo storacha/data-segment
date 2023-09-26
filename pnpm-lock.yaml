@@ -5,6 +5,9 @@ settings:
   excludeLinksFromLockfile: false
 
 dependencies:
+  '@ipld/dag-cbor':
+    specifier: ^9.0.5
+    version: 9.0.5
   multiformats:
     specifier: ^11.0.2
     version: 11.0.2
@@ -447,6 +450,14 @@ packages:
     dev: true
     optional: true
 
+  /@ipld/dag-cbor@9.0.5:
+    resolution: {integrity: sha512-TyqgtxEojc98rvxg4NGM+73JzQeM4+tK2VQes/in2mdyhO+1wbGuBijh1tvi9BErQ/dEblxs9v4vEQSX8mFCIw==}
+    engines: {node: '>=16.0.0', npm: '>=7.0.0'}
+    dependencies:
+      cborg: 4.0.3
+      multiformats: 12.1.1
+    dev: false
+
   /@istanbuljs/load-nyc-config@1.1.0:
     resolution: {integrity: sha512-VjeHSlIzpv/NyD3N0YuHfXOPDIixcA1q2ZV98wsMqcYlPmv2n3Yb2lYP9XMElnaFVXg5A7YLTeLu6V84uQDjmQ==}
     engines: {node: '>=8'}
@@ -754,6 +765,11 @@ packages:
   /caniuse-lite@1.0.30001495:
     resolution: {integrity: sha512-F6x5IEuigtUfU5ZMQK2jsy5JqUUlEFRVZq8bO2a+ysq5K7jD6PPc9YXZj78xDNS3uNchesp1Jw47YXEqr+Viyg==}
     dev: true
+
+  /cborg@4.0.3:
+    resolution: {integrity: sha512-poLvpK30KT5KI8gzDx3J/IuVCbsLqMT2fEbOrOuX0H7Hyj8yg5LezeWhRh9aLa5Z6MfPC5sriW3HVJF328M8LQ==}
+    hasBin: true
+    dev: false
 
   /chalk@2.4.2:
     resolution: {integrity: sha512-Mti+f9lpJNcwF4tWV8/OrTTtF1gZi+f8FqlyAdouralcFWFQWF2+NgCHShjkCb+IFBLq9buZwE1xckQU4peSuQ==}
@@ -1628,6 +1644,11 @@ packages:
 
   /multiformats@11.0.2:
     resolution: {integrity: sha512-b5mYMkOkARIuVZCpvijFj9a6m5wMVLC7cf/jIPd5D/ARDOfLC5+IFkbgDXQgcU2goIsTD/O9NY4DI/Mt4OGvlg==}
+    engines: {node: '>=16.0.0', npm: '>=7.0.0'}
+    dev: false
+
+  /multiformats@12.1.1:
+    resolution: {integrity: sha512-GBSToTmri2vJYs8wqcZQ8kB21dCaeTOzHTIAlr8J06C1eL6UbzqURXFZ5Fl0EYm9GAFz1IlYY8SxGOs9G9NJRg==}
     engines: {node: '>=16.0.0', npm: '>=7.0.0'}
     dev: false
 

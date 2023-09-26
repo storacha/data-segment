@@ -6,10 +6,15 @@ import * as Piece from './piece.js'
 import * as Node from './node.js'
 import { log2Ceil } from './uint64.js'
 import { indexAreaStart } from './inclusion.js'
+import * as Bytes from 'multiformats/bytes'
+
+import * as InclusionProof from './inclusion.js'
 
 const NodeSize = BigInt(Node.Size)
 const EntrySize = Number(Index.EntrySize)
 export const MAX_CAPACITY = Piece.PaddedSize.fromHeight(Tree.MAX_HEIGHT)
+export { InclusionProof }
+export const Proof = InclusionProof.Proof
 
 /**
  * Default aggregate size (32GiB).
@@ -80,44 +85,28 @@ class AggregateBuilder {
   }
 
   /**
+   * Height of the perfect binary merkle tree corresponding to this aggregate.
+   */
+  get height() {
+    return log2Ceil(this.size / NodeSize)
+  }
+
+  /**
    *
    * @returns {API.AggregateView}
    */
   build() {
-    const { size, parts, limit, offset } = this
-    const indexStartNodes = indexAreaStart(size) / NodeSize
+    const { size, parts, limit, offset, height } = this
+    const index = createIndex(parts)
 
-    /** @type {API.MerkleTreeNodeSource[]} */
-    const batch = new Array(2 * parts.length)
-
-    for (const [n, part] of parts.entries()) {
-      const segment = Segment.fromSourceWithChecksum(part)
-      const node = Segment.toIndexNode(segment)
-      const index = n * 2
-      batch[index] = {
-        node: segment.root,
-        location: {
-          level: 0,
-          index: indexStartNodes + BigInt(index),
-        },
-      }
-
-      batch[index + 1] = {
-        node,
-        location: {
-          level: 0,
-          index: indexStartNodes + BigInt(index + 1),
-        },
-      }
-    }
-
-    const tree = Tree.create(log2Ceil(size / NodeSize))
+    const tree = Tree.create(height)
     Tree.batchSet(tree, parts)
-    Tree.batchSet(tree, batch)
+    Tree.batchSet(tree, createIndexNodes(size, index))
 
     return new Aggregate({
       size,
       tree,
+      index,
       offset,
       parts,
       limit,
@@ -191,6 +180,43 @@ class AggregateBuilder {
 }
 
 /**
+ * @param {API.PaddedPieceSize} size
+ * @param {API.SegmentInfo[]} segments
+ * @returns {Iterable<API.MerkleTreeNodeSource>}
+ */
+const createIndexNodes = function* (size, segments) {
+  const indexStartNodes = indexAreaStart(size) / NodeSize
+
+  for (const [n, segment] of segments.entries()) {
+    const node = Segment.toIndexNode(segment)
+    const index = n * 2
+
+    yield {
+      node: segment.root,
+      location: {
+        level: 0,
+        index: indexStartNodes + BigInt(index),
+      },
+    }
+
+    yield {
+      node,
+      location: {
+        level: 0,
+        index: indexStartNodes + BigInt(index + 1),
+      },
+    }
+  }
+}
+
+/**
+ * @param {API.MerkleTreeNodeSource[]} parts
+ * @returns {API.IndexData}
+ */
+const createIndex = (parts) =>
+  parts.map((part) => Segment.fromSourceWithChecksum(part))
+
+/**
  * @implements {API.AggregateView}
  */
 class Aggregate {
@@ -199,12 +225,14 @@ class Aggregate {
    * @param {API.PaddedPieceSize} source.size
    * @param {API.uint64} source.offset
    * @param {API.MerkleTreeNodeSource[]} source.parts
+   * @param {API.IndexData} source.index
    * @param {number} source.limit
    * @param {API.AggregateTree} source.tree
    */
-  constructor({ tree, parts, limit, size, offset }) {
+  constructor({ tree, parts, index, limit, size, offset }) {
     this.tree = tree
     this.parts = parts
+    this.index = index
     this.limit = limit
     this.size = size
     this.offset = offset
@@ -231,5 +259,60 @@ class Aggregate {
   }
   toInfo() {
     return Piece.toInfo(this)
+  }
+
+  /**
+   * @param {API.PieceLink} piece
+   */
+  resolveProof(piece) {
+    return resolveProof(this, Piece.fromLink(piece))
+  }
+}
+
+/**
+ *
+ * @param {Aggregate} aggregate
+ * @param {API.Piece} piece
+ * @returns {API.Result<[number, API.SegmentInfo], RangeError>}
+ */
+export const resolveSegment = (aggregate, piece) => {
+  const { height, root } = piece
+  const size = PaddedSize.fromHeight(height)
+  for (const [n, segment] of aggregate.index.entries()) {
+    if (size === segment.size && Bytes.equals(root, segment.root)) {
+      return { ok: [n, segment] }
+    }
+  }
+
+  return {
+    error: new RangeError(
+      `Piece ${piece} was not found in aggregate ${aggregate.link}`
+    ),
+  }
+}
+
+/**
+ * @see https://github.com/filecoin-project/go-data-segment/blob/master/datasegment/creation.go#L86-L105
+ *
+ * @param {Aggregate} aggregate
+ * @param {API.Piece} piece
+ * @returns {API.Result<API.InclusionProof, RangeError>}
+ */
+export const resolveProof = (aggregate, piece) => {
+  const result = resolveSegment(aggregate, piece)
+  if (result.error) {
+    return result
+  } else {
+    const [n, segment] = result.ok
+    const { level, index } = Segment.toSource(segment).location
+    const subTreeProof = aggregate.tree.collectProof(level, index)
+
+    const indexOffset =
+      indexAreaStart(aggregate.size) / BigInt(EntrySize) + BigInt(n)
+    const indexProof = aggregate.tree.collectProof(1, indexOffset)
+
+    const inclusion = { tree: subTreeProof, index: indexProof }
+
+    return { ok: InclusionProof.create(inclusion) }
   }
 }

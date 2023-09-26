@@ -1,35 +1,48 @@
 import * as API from './api.js'
-import * as SHA256 from 'sync-multihash-sha2/sha256'
+
 import { Size as NodeSize } from './node.js'
+import { CBOR, SHA256 } from './ipld.js'
 
 /**
- * @param {API.ProofData} proofData
+ * @param {API.ProofData} proof
+ * @returns {API.MerkleTreePath}
+ */
+export const path = ([, path]) => path
+
+/**
+ * @param {API.ProofData} proof
+ * @returns {API.uint64}
+ */
+export const at = ([at]) => at
+
+/**
+ * @param {API.ProofData} proof
  * @returns {number}
  */
-export const depth = (proofData) => proofData.path.length
+export const depth = (proof) => path(proof).length
 
 /* c8 ignore next 98 */
 
 /**
  * @param {Uint8Array} data
  * @param {API.MerkleTreeNode} root
- * @param {API.ProofData} proofData
+ * @param {API.ProofData} proof
  * @returns {API.Result<void, Error>}
  */
-export function validateLeaf(data, root, proofData) {
+export function validateLeaf(data, root, proof) {
   const leaf = truncatedHash(data)
-  return validateSubtree(leaf, root, proofData)
+  return validateSubtree(leaf, root, proof)
 }
 
 /**
  * @param {API.MerkleTreeNode} subtree
  * @param {API.MerkleTreeNode} root
- * @param {API.ProofData} proofData
+ * @param {API.ProofData} proof
  * @returns {API.Result<void, Error>}
  */
-export function validateSubtree(subtree, root, proofData) {
+export function validateSubtree(subtree, root, proof) {
   // Validate the structure first to avoid panics
-  const structureValidation = validateProofStructure(proofData)
+  const structureValidation = validateProofStructure(proof)
   if (structureValidation.error) {
     return {
       error: new Error(
@@ -37,7 +50,7 @@ export function validateSubtree(subtree, root, proofData) {
       ),
     }
   }
-  return validateProof(subtree, root, proofData)
+  return validateProof(subtree, root, proof)
 }
 
 const MAX_DEPTH = 63
@@ -58,15 +71,16 @@ export function computeRoot(subtree, proofData) {
       ),
     }
   }
-  if (proofData.index >> BigInt(depth(proofData)) !== 0n) {
+
+  let index = at(proofData)
+  if (index >> BigInt(depth(proofData)) !== 0n) {
     return { error: new Error('index greater than width of the tree') }
   }
 
   let carry = subtree
-  let index = proofData.index
   let right = 0n
 
-  for (const p of proofData.path) {
+  for (const p of path(proofData)) {
     ;[right, index] = [index & 1n, index >> 1n]
     carry = right === 1n ? computeNode(p, carry) : computeNode(carry, p)
   }
@@ -154,4 +168,25 @@ function areNodesEqual(node1, node2) {
     }
   }
   return true
+}
+
+/**
+ * Takes data model and returns an IPLD View of it.
+ *
+ * @param {object} source
+ * @param {API.uint64} source.at
+ * @param {API.MerkleTreePath} source.path
+ * @returns {API.ProofData}
+ */
+export const create = ({ at, path }) => [at, path]
+
+/**
+ * Takes proof in somewhat arbitrary form and returns a proof data.
+ * @param {[API.uint64|number, API.MerkleTreePath]|{at:API.uint64|number, path: API.MerkleTreePath}} source
+ * @returns {API.ProofData}
+ */
+export const from = (source) => {
+  const [at, path] = Array.isArray(source) ? source : [source.at, source.path]
+
+  return create({ at: BigInt(at), path })
 }
