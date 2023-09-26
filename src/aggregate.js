@@ -96,31 +96,7 @@ class AggregateBuilder {
   build() {
     const { size, parts, limit, offset, height } = this
     const index = createIndex(parts)
-    // const indexStartNodes = indexAreaStart(size) / NodeSize
-    //
-    // /** @type {API.MerkleTreeNodeSource[]} */
-    // const batch = new Array(2 * parts.length)
 
-    // for (const [n, part] of parts.entries()) {
-    //   const segment = Segment.fromSourceWithChecksum(part)
-    //   const node = Segment.toIndexNode(segment)
-    //   const index = n * 2
-    //   batch[index] = {
-    //     node: segment.root,
-    //     location: {
-    //       level: 0,
-    //       index: indexStartNodes + BigInt(index),
-    //     },
-    //   }
-
-    //   batch[index + 1] = {
-    //     node,
-    //     location: {
-    //       level: 0,
-    //       index: indexStartNodes + BigInt(index + 1),
-    //     },
-    //   }
-    // }
 
     const tree = Tree.create(height)
     Tree.batchSet(tree, parts)

@@ -191,15 +191,14 @@ export type AuxDataType = 0
  * @see https://github.com/filecoin-project/go-data-segment/blob/e3257b64fa2c84e0df95df35de409cfed7a38438/datasegment/inclusion.go#L31-L39
  */
 export type InclusionProofLayout = [
-  // ProofSubtree is proof of inclusion of the client's data segment in the data aggregator's Merkle tree (includes position information)
-  // I.e. a proof that the root node of the subtree containing all the nodes (leafs) of a data segment is contained in CommDA
-  ProofDataLayout,
-  // ProofIndex is a proof that an entry for the user's data is contained in the index of the aggregator's deal.
-  // I.e. a proof that the data segment index constructed from the root of the user's data segment subtree is contained in the index of the deal tree.
-  ProofDataLayout
+  InclusionProof['tree'],
+  InclusionProof['index']
 ]
 
 /**
+ * Proof that content piece (merkle tree) is a fully contained segment of the
+ * aggregate (merke tree).
+ *
  * @see https://github.com/filecoin-project/go-data-segment/blob/e3257b64fa2c84e0df95df35de409cfed7a38438/merkletree/proof.go#L9-L14
  */
 export interface InclusionProof {
@@ -215,8 +214,8 @@ export interface InclusionProof {
 export type ProofDataLayout = [
   // index indicates the index within the level where the element whose membership to prove is located
   // Leftmost node is index 0
-  uint64,
-  MerkleTreeNode[]
+  ProofData['at'],
+  ProofData['path']
 ]
 
 export interface Vector<T> extends Iterable<T> {
@@ -479,9 +478,9 @@ export interface InclusionProofView
     > {}
 
 /**
- * View over an IPLD block that has fields to access both encoded and encoded
- * representations and a filed for the IPLD link. Interface is intended to be
- * implemented by a some wrapper that can do encode / decode tasks on demand.
+ * View over an IPLD block that has fields to access both encoded and decoded
+ * representations and a field for the IPLD link. Interface is intended to be
+ * implemented by wrappers that do encode / decode tasks on demand.
  *
  * It provides similar functionality to `Uint8Array` which provides a view
  * over the `ArrayBuffer`.

@@ -205,10 +205,10 @@ export const encode = (proof) => CBOR.encode(proof)
  * @returns {API.ProofDataLayout}
  */
 export const decode = (bytes) => {
-  const [index, path] = CBOR.decode(bytes)
+  const [at, path] = CBOR.decode(bytes)
   // Note we do bigint conversion because DAG CBOR will use JS Number if
   // Int is small enough
-  return [BigInt(index), path]
+  return [BigInt(at), path]
 }
 
 // IPLD View settings used for by the ProofDataView
