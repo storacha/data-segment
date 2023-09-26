@@ -172,7 +172,7 @@ class AggregateBuilder {
 
     return {
       ok: {
-        parts: [{ node: piece.root, location: { level, index } }],
+        parts: [{ node: piece.root, location: { level, offset: index } }],
         offset: offset - this.offset,
       },
     }
@@ -195,7 +195,7 @@ const createIndexNodes = function* (size, segments) {
       node: segment.root,
       location: {
         level: 0,
-        index: indexStartNodes + BigInt(index),
+        offset: indexStartNodes + BigInt(index),
       },
     }
 
@@ -203,7 +203,7 @@ const createIndexNodes = function* (size, segments) {
       node,
       location: {
         level: 0,
-        index: indexStartNodes + BigInt(index + 1),
+        offset: indexStartNodes + BigInt(index + 1),
       },
     }
   }
@@ -304,15 +304,18 @@ export const resolveProof = (aggregate, piece) => {
     return result
   } else {
     const [n, segment] = result.ok
-    const { level, index } = Segment.toSource(segment).location
-    const subTreeProof = aggregate.tree.collectProof(level, index)
+    const { level, offset } = Segment.toSource(segment).location
+    const subTreeProof = aggregate.tree.collectProof(level, offset)
 
     const indexOffset =
       indexAreaStart(aggregate.size) / BigInt(EntrySize) + BigInt(n)
     const indexProof = aggregate.tree.collectProof(1, indexOffset)
 
-    const inclusion = { tree: subTreeProof, index: indexProof }
+    const proof = InclusionProof.create({
+      tree: subTreeProof,
+      index: indexProof,
+    })
 
-    return { ok: InclusionProof.create(inclusion) }
+    return { ok: proof }
   }
 }

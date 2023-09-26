@@ -52,7 +52,7 @@ export const toSource = (segment) => {
     node: segment.root,
     location: {
       level,
-      index: (segment.offset / BigInt(NodeSize)) >> BigInt(level),
+      offset: (segment.offset / BigInt(NodeSize)) >> BigInt(level),
     },
   }
 }
@@ -69,7 +69,7 @@ export const fromSourceWithChecksum = (source) =>
  *
  * @param {API.MerkleTreeLocation} location
  */
-export const toLeafIndex = ({ index, level }) =>
+export const toLeafIndex = ({ offset: index, level }) =>
   // This is done by bit shifting Index to the left by `level` places.
   // In the context of a binary tree, this operation essentially corresponds to
   // descending `level` levels down from the current node.

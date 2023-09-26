@@ -150,11 +150,11 @@ class PieceTree {
   }
   /**
    *
-   * @param {number} level
-   * @param {number} index
+   * @param {number} height
+   * @param {number} offset
    */
-  node(level, index) {
+  node(height, offset) {
     const { nodes } = this
-    return nodes[level][index]
+    return nodes[height][offset]
   }
 }

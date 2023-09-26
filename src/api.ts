@@ -216,12 +216,13 @@ export interface MerkleTree<I extends uint64 | number = uint64 | number>
   leafCount: I
 
   /**
-   * Returns a node at the given level and index.
+   * Returns a node at the given tree height and the offset with in
+   * that layer from the left.
    *
-   * @param level
-   * @param index
+   * @param height
+   * @param offset
    */
-  node(level: number, index: I): MerkleTreeNode | undefined
+  node(height: number, offset: I): MerkleTreeNode | undefined
 }
 
 export interface Piece {
@@ -239,7 +240,7 @@ export interface MerkleTreeBuilder<
   I extends uint64 | number = uint64 | number
 > {
   clear(): this
-  setNode(level: number, index: I, node: MerkleTreeNode): this
+  setNode(level: number, offset: I, node: MerkleTreeNode): this
 }
 
 export interface PieceTree extends MerkleTree<number> {
@@ -252,7 +253,7 @@ export interface PieceTree extends MerkleTree<number> {
 export interface AggregateTree<I extends uint64 | number = uint64>
   extends MerkleTree<I>,
     MerkleTreeBuilder<I> {
-  collectProof(level: number, index: I): ProofData
+  collectProof(level: number, offset: I): ProofData
 }
 
 export interface PieceInfo {
@@ -358,7 +359,10 @@ export interface MerkleTreeLocation {
    * Level is counted from the leaf layer, with 0 being leaf layer.
    */
   level: number
-  index: uint64
+  /**
+   * Node index within the level from the left to right.
+   */
+  offset: uint64
 }
 
 /**
@@ -421,7 +425,7 @@ export interface SparseArray<T> {
 export type ProofData = [
   // indicates the index within the level where the element whose membership to prove is located
   // Leftmost node is at 0
-  at: uint64,
+  offset: uint64,
   path: MerkleTreePath
 ]
 

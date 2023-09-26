@@ -239,10 +239,10 @@ class SparseArray {
  */
 export const batchSet = (tree, values) => {
   for (const {
-    location: { level, index },
+    location: { level, offset },
     node,
   } of values) {
-    tree.setNode(level, index, node)
+    tree.setNode(level, offset, node)
   }
 }
 
