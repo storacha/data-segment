@@ -43,8 +43,6 @@ export const testPiece = {
         assert.deepEqual(piece.size, BigInt(data.out.size))
         assert.deepEqual(piece.height, Math.log2(data.out.size / Node.Size))
         // assert.deepEqual(piece.paddedSize, data.out.paddedSize)
-
-
       },
     ])
   ),
@@ -101,7 +99,6 @@ export const testPiece = {
     assert.deepEqual(info.height, height)
     assert.deepEqual(info.size, size)
 
-    console.log(JSON.stringify(info))
     assert.deepEqual(JSON.parse(JSON.stringify(info)), {
       link: { '/': legacyLink.toString() },
       height,

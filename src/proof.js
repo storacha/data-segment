@@ -1,6 +1,7 @@
 import * as API from './api.js'
-import * as SHA256 from 'sync-multihash-sha2/sha256'
+
 import { Size as NodeSize } from './node.js'
+import { CBOR, SHA256, View } from './ipld.js'
 
 /**
  * @param {API.ProofData} proofData
@@ -58,12 +59,12 @@ export function computeRoot(subtree, proofData) {
       ),
     }
   }
-  if (proofData.index >> BigInt(depth(proofData)) !== 0n) {
+  if (proofData.at >> BigInt(depth(proofData)) !== 0n) {
     return { error: new Error('index greater than width of the tree') }
   }
 
   let carry = subtree
-  let index = proofData.index
+  let index = proofData.at
   let right = 0n
 
   for (const p of proofData.path) {
@@ -155,3 +156,80 @@ function areNodesEqual(node1, node2) {
   }
   return true
 }
+
+/**
+ * Extension on of the IPLD View that adds accessors for the data model fields.
+ *
+ * @implements {API.ProofDataView}
+ * @extends {View<API.ProofData, API.ProofDataLayout, typeof CBOR.code, typeof SHA256.code>}
+ */
+class ProofDataView extends View {
+  get path() {
+    return this.model.path
+  }
+  get at() {
+    return this.model.at
+  }
+}
+
+/**
+ * Takes data model and returns a data layout used in the CBOR encoding.
+ *
+ * @param {API.ProofData} source
+ * @returns {API.ProofDataLayout}
+ */
+export const into = ({ path, at }) => [BigInt(at), path]
+
+/**
+ * Takes data layout used in CBOR encoding and returns a corresponding data
+ * model.
+ *
+ * @param {API.ProofDataLayout} layout
+ * @returns {API.ProofData}
+ */
+export const from = ([at, path]) => ({ path, at: BigInt(at) })
+
+/**
+ * Takes data layout expected by the CBOR encoding and returns CBOR encoded
+ * bytes corresponding to it.
+ *
+ * @param {API.ProofDataLayout} proof
+ * @returns {API.ByteView<API.ProofDataLayout, CBOR.code>}
+ */
+export const encode = (proof) => CBOR.encode(proof)
+
+/**
+ * Takes CBOR encoded bytes for the data layout and returns decoded data.
+ *
+ * @param {API.ByteView<API.ProofDataLayout, CBOR.code>} bytes
+ * @returns {API.ProofDataLayout}
+ */
+export const decode = (bytes) => {
+  const [index, path] = CBOR.decode(bytes)
+  // Note we do bigint conversion because DAG CBOR will use JS Number if
+  // Int is small enough
+  return [BigInt(index), path]
+}
+
+// IPLD View settings used for by the ProofDataView
+const hasher = SHA256
+const codec = { ...CBOR, encode, decode }
+const layout = { into, from }
+
+/**
+ * Takes data model and returns an IPLD View of it.
+ *
+ * @param {API.ProofData} model
+ * @returns {API.ProofDataView}
+ */
+export const create = (model) =>
+  new ProofDataView({ model, hasher, codec, layout })
+
+/**
+ * Takes byte encoded proof and returns an IPLD View of it.
+ *
+ * @param {ProofDataView['bytes']} bytes
+ * @returns {API.ProofDataView}
+ */
+export const view = (bytes) =>
+  new ProofDataView({ bytes, hasher, codec, layout })

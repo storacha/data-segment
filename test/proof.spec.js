@@ -5,7 +5,7 @@ import { base16 } from 'multiformats/bases/base16'
  * @type {{
  * subtree: API.MerkleTreeNode
  * path: API.MerkleTreeNode[]
- * index: API.uint64
+ * at: API.uint64
  * root?: API.MerkleTreeNode
  * error?: string
  * }[]}
@@ -14,7 +14,7 @@ const testVectors = [
   {
     subtree: Node.of(0x1),
     path: [Node.of(0x2), Node.of(0x3)],
-    index: 0n,
+    at: 0n,
     root: Node.from([
       0xaa, 0x96, 0x27, 0x47, 0xb, 0x12, 0x9f, 0xab, 0xd, 0xb1, 0x26, 0xd, 0xa8,
       0x0, 0x65, 0xa1, 0xbd, 0xd3, 0x1b, 0x4a, 0xcc, 0x4c, 0x79, 0x12, 0x1f,
@@ -24,7 +24,7 @@ const testVectors = [
   {
     subtree: Node.of(0x1),
     path: [Node.of(0x2), Node.of(0x3)],
-    index: 1n,
+    at: 1n,
     root: Node.from([
       0x47, 0x5a, 0x97, 0x98, 0xaf, 0x48, 0xc5, 0x36, 0x28, 0x33, 0xcd, 0x64,
       0x51, 0xa8, 0xfa, 0x8a, 0x5f, 0x4f, 0x4c, 0x1c, 0xe6, 0x1d, 0x3a, 0xcb,
@@ -34,7 +34,7 @@ const testVectors = [
   {
     subtree: Node.of(0xff),
     path: [Node.of(0x2), Node.of(0x3)],
-    index: 1n,
+    at: 1n,
     root: Node.from([
       0xfd, 0xb3, 0x7a, 0xef, 0x9d, 0x22, 0xce, 0xcd, 0xc0, 0x58, 0xc9, 0x9e,
       0xbf, 0x94, 0xa3, 0x4c, 0xe1, 0x65, 0x88, 0x2b, 0x1e, 0x2d, 0x3a, 0x81,
@@ -44,7 +44,7 @@ const testVectors = [
   {
     subtree: Node.of(0x1),
     path: [Node.of(0x2), Node.of(0x3)],
-    index: 3n,
+    at: 3n,
     root: Node.from([
       0xd4, 0x71, 0x6c, 0xaf, 0x3f, 0xa7, 0x1, 0xea, 0x26, 0x96, 0x2e, 0x53,
       0x4, 0x71, 0x67, 0xbb, 0x25, 0xb0, 0x38, 0x13, 0x8f, 0xb6, 0x51, 0xfb,
@@ -54,19 +54,19 @@ const testVectors = [
   {
     subtree: Node.of(0x1),
     path: [Node.of(0x2), Node.of(0x3)],
-    index: 4n,
+    at: 4n,
     error: 'index greater than width of the tree',
   },
   {
     subtree: Node.of(0x1),
     path: [Node.of(0x2), Node.of(0x3), Node.of(0x4)],
-    index: 8n,
+    at: 8n,
     error: 'index greater than width of the tree',
   },
   {
     subtree: Node.of(0x1),
     path: Array(64).fill(Node.of()),
-    index: 8n,
+    at: 8n,
     error: 'merkleproofs with depths greater than 63 are not supported',
   },
 ]
@@ -125,10 +125,10 @@ export const testProof = {
   },
 
   ...Object.fromEntries(
-    testVectors.map(({ subtree, path, index, root, error }) => [
-      `test compute proof ${subtree.join('')} ${index}`,
+    testVectors.map(({ subtree, path, at, root, error }) => [
+      `test compute proof ${subtree.join('')} ${at}`,
       async (assert) => {
-        const proofData = { path, index }
+        const proofData = { path, at }
         const result = await Proof.computeRoot(subtree, proofData)
         if (error) {
           assert.ok(result.error)
@@ -140,4 +140,17 @@ export const testProof = {
       },
     ])
   ),
+
+  'encode <-> decode': async (assert) => {
+    const p1 = Proof.create({
+      path: [Node.of(0x2), Node.of(0x3), Node.of(0x4)],
+      at: 8n,
+    })
+
+    const p2 = Proof.view(p1.bytes)
+    assert.deepEqual(p1.layout, p2.layout)
+    assert.deepEqual(p1.bytes, p2.bytes)
+    assert.deepEqual(p1.model, p2.model)
+    assert.deepEqual(p1.link, p2.link)
+  },
 }

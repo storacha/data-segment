@@ -1,12 +1,36 @@
-import type { Link, ToString } from 'multiformats/link'
-import type { MultihashDigest } from 'multiformats'
+import type { Link, ToString } from 'multiformats'
+import type {
+  MultihashDigest,
+  BlockEncoder,
+  BlockDecoder,
+  BlockCodec,
+  SyncMultihashHasher,
+} from 'multiformats'
 import type * as Raw from 'multiformats/codecs/raw'
 import type * as Multihash from './multihash.js'
 import type { Sha256Trunc254Padded, FilCommitmentUnsealed } from './piece.js'
+import * as CBOR from './ipld/cbor.js'
+import * as SHA256 from './ipld/sha256.js'
 
 export type RAW_CODE = MulticodecCode<0x55, 'raw'>
 
-export type { ToString }
+/**
+ * Type describes a byte representation of a `Data` encoded using
+ * the multicodec with `Code` code.
+ */
+export type ByteView<Data, Code extends MulticodecCode> = New<
+  { Bytes: Uint8Array },
+  { code: Code; model: Data }
+>
+
+export type {
+  ToString,
+  Link,
+  BlockEncoder,
+  BlockDecoder,
+  BlockCodec,
+  SyncMultihashHasher,
+}
 /**
  * Implementers of the `Read` interface are called "readers". Readers
  * allow for reading bytes from an underlying source.
@@ -130,7 +154,11 @@ export interface AggregateView extends Aggregate, PieceView {
   limit: number
   tree: AggregateTree
 
-  resolveProof(proof: PieceLink): Result<InclusionProof, RangeError>
+  /**
+   * Resolves inclusion proof for the given piece. If aggregate does not include
+   * the given piece `{ error: RangeError }` is returned.
+   */
+  resolveProof(piece: PieceLink): Result<InclusionProofView, RangeError>
 }
 
 /**
@@ -157,30 +185,38 @@ export type DealID = uint64
 export type AuxDataType = 0
 
 /**
+ * This is the encode layout of the `AggregationProof` used in the go
+ * implementation.
+ *
  * @see https://github.com/filecoin-project/go-data-segment/blob/e3257b64fa2c84e0df95df35de409cfed7a38438/datasegment/inclusion.go#L31-L39
  */
-export type InclusionProofAsTuple = [
+export type InclusionProofLayout = [
   // ProofSubtree is proof of inclusion of the client's data segment in the data aggregator's Merkle tree (includes position information)
   // I.e. a proof that the root node of the subtree containing all the nodes (leafs) of a data segment is contained in CommDA
-  ProofDataAsTuple,
+  ProofDataLayout,
   // ProofIndex is a proof that an entry for the user's data is contained in the index of the aggregator's deal.
   // I.e. a proof that the data segment index constructed from the root of the user's data segment subtree is contained in the index of the deal tree.
-  ProofDataAsTuple
+  ProofDataLayout
 ]
 
+/**
+ * @see https://github.com/filecoin-project/go-data-segment/blob/e3257b64fa2c84e0df95df35de409cfed7a38438/merkletree/proof.go#L9-L14
+ */
 export interface InclusionProof {
   tree: ProofData
   index: ProofData
 }
 
 /**
- * @see https://github.com/filecoin-project/go-data-segment/blob/master/merkletree/proof.go#L9-L14
+ * This is the encode layout of the `ProofData` used in the go implementation.
+ *
+ * @see https://github.com/filecoin-project/go-data-segment/blob/e3257b64fa2c84e0df95df35de409cfed7a38438/merkletree/encoding.go#L11-L22
  */
-export type ProofDataAsTuple = [
-  MerkleTreeNode[],
+export type ProofDataLayout = [
   // index indicates the index within the level where the element whose membership to prove is located
   // Leftmost node is index 0
-  uint64
+  uint64,
+  MerkleTreeNode[]
 ]
 
 export interface Vector<T> extends Iterable<T> {
@@ -413,10 +449,152 @@ export interface SparseArray<T> {
 
 export interface ProofData {
   path: MerkleTreeNode[]
-  // index indicates the index within the level where the element whose membership to prove is located
-  // Leftmost node is index 0
-  index: uint64
+  // indicates the index within the level where the element whose membership to prove is located
+  // Leftmost node is at 0
+  at: uint64
 }
+
+/**
+ * Type describes an IPLD View of the CBOR encoded `ProofData` block.
+ */
+export interface ProofDataView
+  extends ProofData,
+    IPLDBlockView<
+      ProofData,
+      ProofDataLayout,
+      typeof CBOR.code,
+      typeof SHA256.code
+    > {}
+
+/**
+ * Type describes an IPLD View of the CBOR encoded `InclusionProof` block.
+ */
+export interface InclusionProofView
+  extends InclusionProof,
+    IPLDBlockView<
+      InclusionProof,
+      InclusionProofLayout,
+      typeof CBOR.code,
+      typeof SHA256.code
+    > {}
+
+/**
+ * View over an IPLD block that has fields to access both encoded and encoded
+ * representations and a filed for the IPLD link. Interface is intended to be
+ * implemented by a some wrapper that can do encode / decode tasks on demand.
+ *
+ * It provides similar functionality to `Uint8Array` which provides a view
+ * over the `ArrayBuffer`.
+ *
+ * @template Model - Logical type of the data being viewed.
+ * @template Layout - The layout of the data in the encoded form.
+ * @template Format - The multicodec code of the encoding format e.g. CBOR.
+ * @template Hash - The multicodec code of the hashing algorithm used to compute the link.
+ */
+export interface IPLDBlockView<
+  Model extends unknown = unknown,
+  Layout extends {} | null = {} & Model,
+  Format extends MulticodecCode = MulticodecCode,
+  Hash extends MulticodecCode = MulticodecCode
+> {
+  /**
+   * Byte encoded representation of the underlying data.
+   */
+  bytes: ByteView<Layout, Format>
+
+  /**
+   * IPLD link for this block.
+   */
+  link: Link<Layout, Format, Hash>
+
+  /**
+   * Logical representation of the underlying data.
+   */
+  model: Model
+
+  /**
+   * Data layout used to encode / decode the underlying data.
+   */
+  layout: Layout
+}
+
+/**
+ *
+ * @see https://doc.rust-lang.org/std/convert/trait.Into.html
+ */
+export interface Into<Self, Other> {
+  /**
+   * Converts `Self` type into the `Other` type.
+   */
+  into(self: Self): Other
+}
+
+/**
+ * @see https://doc.rust-lang.org/std/convert/trait.From.html
+ */
+export interface From<Self, Other> {
+  /**
+   * Converts `Self` type from the given `Other` type.
+   */
+  from(source: Other): Self
+}
+
+/**
+ * Bidirectional convertor between `Self` and some `Other` type. Usually
+ * used by the IPLD View of the blocks where data model and encoded
+ * data layout are different.
+ */
+export interface Convert<Self, Other>
+  extends Into<Self, Other>,
+    From<Self, Other> {}
+
+/**
+ * Type represents an `IPLDBlockView` source, which view encodes on demand when
+ * corresponding fields are accessed.
+ */
+export interface EncodeSource<
+  Model,
+  Data extends {} | null,
+  Format extends MulticodecCode = MulticodecCode,
+  Hash extends MulticodecCode = MulticodecCode
+> {
+  model: Model
+  bytes?: undefined
+
+  hasher: SyncMultihashHasher<Hash>
+  layout: Into<Model, Data>
+  codec: BlockEncoder<Format, Data>
+}
+
+/**
+ * Type represents an `IPLDBlockView` source, which view decodes on demand when
+ * corresponding fields are accessed.
+ */
+export interface DecodeSource<
+  Model,
+  Data extends {} | null,
+  Format extends MulticodecCode = MulticodecCode,
+  Hash extends MulticodecCode = MulticodecCode
+> {
+  bytes: ByteView<Data, Format>
+  model?: undefined
+
+  hasher: SyncMultihashHasher<Hash>
+  layout: From<Model, Data>
+  codec: BlockDecoder<Format, Data>
+}
+
+/**
+ * Type represents all possible `IPLDBlockView` sources.
+ */
+export type ViewSource<
+  Model,
+  Data extends {} | null,
+  Format extends MulticodecCode = MulticodecCode,
+  Hash extends MulticodecCode = MulticodecCode
+> =
+  | EncodeSource<Model, Data, Format, Hash>
+  | DecodeSource<Model, Data, Format, Hash>
 
 export type MerkleTreeNode = New<{ Node: Uint8Array }, { size: 32 }>
 

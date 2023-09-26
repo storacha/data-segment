@@ -8,10 +8,12 @@ import { log2Ceil } from './uint64.js'
 import { indexAreaStart } from './inclusion.js'
 import * as Bytes from './bytes.js'
 
+import * as InclusionProof from './inclusion.js'
+
 const NodeSize = BigInt(Node.Size)
 const EntrySize = Number(Index.EntrySize)
 export const MAX_CAPACITY = Piece.PaddedSize.fromHeight(Tree.MAX_HEIGHT)
-
+export { InclusionProof }
 /**
  * Default aggregate size (32GiB).
  */
@@ -317,7 +319,7 @@ export const resolveSegment = (aggregate, piece) => {
  *
  * @param {Aggregate} aggregate
  * @param {API.Piece} piece
- * @returns {API.Result<API.InclusionProof, RangeError>}
+ * @returns {API.Result<API.InclusionProofView, RangeError>}
  */
 export const resolveProof = (aggregate, piece) => {
   const result = resolveSegment(aggregate, piece)
@@ -334,6 +336,6 @@ export const resolveProof = (aggregate, piece) => {
 
     const inclusion = { tree: subTreeProof, index: indexProof }
 
-    return { ok: inclusion }
+    return { ok: InclusionProof.create(inclusion) }
   }
 }

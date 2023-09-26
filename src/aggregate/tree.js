@@ -62,23 +62,23 @@ class AggregateTree {
    * Collects a proof from the specified node to the root of the tree.
    *
    * @param {number} level
-   * @param {API.uint64} index
-   * @returns {API.ProofData}
+   * @param {API.uint64} at
+   * @returns {API.ProofDataView}
    */
-  collectProof(level, index) {
-    validateLevelIndex(this.height, level, index)
+  collectProof(level, at) {
+    validateLevelIndex(this.height, level, at)
     const path = []
     let currentLevel = level
-    let currentIndex = index
+    let position = at
     while (currentLevel < this.height) {
       // idx^1 is the sibling index
-      const node = this.node(currentLevel, currentIndex ^ 1n)
-      currentIndex = currentIndex / 2n
+      const node = this.node(currentLevel, position ^ 1n)
+      position = position / 2n
       path.push(node)
       currentLevel++
     }
 
-    return { path, index }
+    return Proof.create({ path, at })
   }
 
   /**
