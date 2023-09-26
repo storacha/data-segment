@@ -128,7 +128,7 @@ export const testProof = {
     testVectors.map(({ subtree, path, at, root, error }) => [
       `test compute proof ${subtree.join('')} ${at}`,
       async (assert) => {
-        const proofData = { path, at }
+        const proofData = Proof.create({ path, at })
         const result = await Proof.computeRoot(subtree, proofData)
         if (error) {
           assert.ok(result.error)
@@ -141,16 +141,24 @@ export const testProof = {
     ])
   ),
 
-  'encode <-> decode': async (assert) => {
-    const p1 = Proof.create({
-      path: [Node.of(0x2), Node.of(0x3), Node.of(0x4)],
-      at: 8n,
-    })
+  'Proof.from': (assert) => {
+    assert.deepEqual(
+      Proof.from({
+        at: 8,
+        path: [Node.of(0x2), Node.of(0x3), Node.of(0x4)],
+      }),
+      Proof.create({
+        at: 8n,
+        path: [Node.of(0x2), Node.of(0x3), Node.of(0x4)],
+      })
+    )
 
-    const p2 = Proof.view(p1.bytes)
-    assert.deepEqual(p1.layout, p2.layout)
-    assert.deepEqual(p1.bytes, p2.bytes)
-    assert.deepEqual(p1.model, p2.model)
-    assert.deepEqual(p1.link, p2.link)
+    assert.deepEqual(
+      Proof.from([8, [Node.of(0x2), Node.of(0x3), Node.of(0x4)]]),
+      Proof.create({
+        at: 8n,
+        path: [Node.of(0x2), Node.of(0x3), Node.of(0x4)],
+      })
+    )
   },
 }

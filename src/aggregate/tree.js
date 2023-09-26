@@ -63,7 +63,7 @@ class AggregateTree {
    *
    * @param {number} level
    * @param {API.uint64} at
-   * @returns {API.ProofDataView}
+   * @returns {API.ProofData}
    */
   collectProof(level, at) {
     validateLevelIndex(this.height, level, at)
