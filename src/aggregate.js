@@ -6,7 +6,7 @@ import * as Piece from './piece.js'
 import * as Node from './node.js'
 import { log2Ceil } from './uint64.js'
 import { indexAreaStart } from './inclusion.js'
-import * as Bytes from './bytes.js'
+import * as Bytes from 'multiformats/bytes'
 
 import * as InclusionProof from './inclusion.js'
 
@@ -96,7 +96,6 @@ class AggregateBuilder {
   build() {
     const { size, parts, limit, offset, height } = this
     const index = createIndex(parts)
-
 
     const tree = Tree.create(height)
     Tree.batchSet(tree, parts)
@@ -278,7 +277,7 @@ export const resolveSegment = (aggregate, piece) => {
   const { height, root } = piece
   const size = PaddedSize.fromHeight(height)
   for (const [n, segment] of aggregate.index.entries()) {
-    if (size === segment.size && Bytes.equal(root, segment.root)) {
+    if (size === segment.size && Bytes.equals(root, segment.root)) {
       return { ok: [n, segment] }
     }
   }
