@@ -212,7 +212,7 @@ export interface InclusionProof {
  * @see https://github.com/filecoin-project/go-data-segment/blob/e3257b64fa2c84e0df95df35de409cfed7a38438/merkletree/encoding.go#L11-L22
  */
 export type ProofDataLayout = [
-  // index indicates the index within the level where the element whose membership to prove is located
+  // position within the level where the element whose membership to prove is located
   // Leftmost node is index 0
   ProofData['at'],
   ProofData['path']
