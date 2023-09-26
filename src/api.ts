@@ -191,8 +191,8 @@ export type AuxDataType = 0
  * @see https://github.com/filecoin-project/go-data-segment/blob/e3257b64fa2c84e0df95df35de409cfed7a38438/datasegment/inclusion.go#L31-L39
  */
 export type InclusionProofLayout = [
-  InclusionProof['tree'],
-  InclusionProof['index']
+  tree: ProofDataLayout,
+  index: ProofDataLayout
 ]
 
 /**
@@ -214,8 +214,8 @@ export interface InclusionProof {
 export type ProofDataLayout = [
   // position within the level where the element whose membership to prove is located
   // Leftmost node is index 0
-  ProofData['at'],
-  ProofData['path']
+  at: ProofData['at'],
+  path: ProofData['path']
 ]
 
 export interface Vector<T> extends Iterable<T> {
