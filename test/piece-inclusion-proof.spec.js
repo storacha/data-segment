@@ -1,11 +1,7 @@
 import * as Aggregate from '../src/aggregate.js'
-import * as Dataset from './piece/vector.js'
 import * as Piece from '../src/piece.js'
 import * as Link from 'multiformats/link'
-import * as Node from '../src/node.js'
-import * as API from '../src/api.js'
 import { base64 } from 'multiformats/bases/base64'
-import { assert } from 'console'
 
 /**
  * @type {import("entail").Suite}
