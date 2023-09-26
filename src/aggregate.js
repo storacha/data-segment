@@ -14,6 +14,8 @@ const NodeSize = BigInt(Node.Size)
 const EntrySize = Number(Index.EntrySize)
 export const MAX_CAPACITY = Piece.PaddedSize.fromHeight(Tree.MAX_HEIGHT)
 export { InclusionProof }
+export const Proof = InclusionProof.Proof
+
 /**
  * Default aggregate size (32GiB).
  */
@@ -294,7 +296,7 @@ export const resolveSegment = (aggregate, piece) => {
  *
  * @param {Aggregate} aggregate
  * @param {API.Piece} piece
- * @returns {API.Result<API.InclusionProofView, RangeError>}
+ * @returns {API.Result<API.InclusionProof, RangeError>}
  */
 export const resolveProof = (aggregate, piece) => {
   const result = resolveSegment(aggregate, piece)
