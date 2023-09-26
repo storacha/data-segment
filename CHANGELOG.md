@@ -1,5 +1,20 @@
 # Changelog
 
+## [3.1.0](https://github.com/web3-storage/data-segment/compare/v3.0.1...v3.1.0) (2023-09-26)
+
+
+### Features
+
+* drop views & embrace simplicity ([53068a0](https://github.com/web3-storage/data-segment/commit/53068a073277d5eed0eb6d848c8966a208cd5b99))
+* drop views & embrace simplicity ([#31](https://github.com/web3-storage/data-segment/issues/31)) ([5e1839c](https://github.com/web3-storage/data-segment/commit/5e1839c09c5b69a88a2a91817a1783accad27269))
+* inclusion proofs ([#29](https://github.com/web3-storage/data-segment/issues/29)) ([33f8f5c](https://github.com/web3-storage/data-segment/commit/33f8f5c6e179e19bba88aae2a9273060c5d13fc6))
+* inclusion proofs PoC ([7abc51b](https://github.com/web3-storage/data-segment/commit/7abc51b815ccc3a8c24299329be983e5c1cf7a2b))
+
+
+### Bug Fixes
+
+* remove generated import ([7a39d57](https://github.com/web3-storage/data-segment/commit/7a39d5718a7d8e86545a5802276f99a7feacf00a))
+
 ## [3.0.1](https://github.com/web3-storage/data-segment/compare/v3.0.0...v3.0.1) (2023-08-09)
 
 
