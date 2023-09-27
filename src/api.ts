@@ -159,12 +159,14 @@ export interface AggregateView extends Aggregate, PieceView {
 }
 
 /**
+ * Top level proof provided by the aggregator after the deal lands on chain.
+
  * @see https://github.com/filecoin-project/go-data-segment/blob/master/datasegment/verifier.go#L8-L14
  */
-export type AggregationProof = [
-  InclusionProof,
-  AuxDataType,
-  SingletonMarketSource
+export type DataAggregationProof = [
+  inclusion: InclusionProof,
+  auxDataType: AuxDataType,
+  axDataSource: SingletonMarketSource
 ]
 
 /**
@@ -292,6 +294,12 @@ export type PieceLink = Link<
   RAW_CODE,
   FR32_SHA2_256_TRUNC254_PADDED_BINARY_TREE
 >
+
+/**
+ * Aggregate link is a Piece link V2, but we define it as an alias to
+ * convey semantical difference.
+ */
+export type AggregateLink = PieceLink
 
 export type SHA2_256_TRUNC254_PADDED = typeof Sha256Trunc254Padded
 export type FIL_COMMITMENT_UNSEALED = typeof FilCommitmentUnsealed
@@ -421,7 +429,7 @@ export interface SparseArray<T> {
 export type ProofData = [
   // indicates the index within the level where the element whose membership to prove is located
   // Leftmost node is at 0
-  at: uint64,
+  offset: uint64,
   path: MerkleTreePath
 ]
 

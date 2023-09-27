@@ -67,7 +67,7 @@ const testVectors = [
     subtree: Node.of(0x1),
     path: Array(64).fill(Node.of()),
     at: 8n,
-    error: 'merkleproofs with depths greater than 63 are not supported',
+    error: 'merkle proofs with depths greater than 63 are not supported',
   },
 ]
 
@@ -128,8 +128,8 @@ export const testProof = {
     testVectors.map(({ subtree, path, at, root, error }) => [
       `test compute proof ${subtree.join('')} ${at}`,
       async (assert) => {
-        const proofData = Proof.create({ path, at })
-        const result = await Proof.computeRoot(subtree, proofData)
+        const proofData = Proof.create({ path, offset: at })
+        const result = await Proof.resolveRoot(proofData, subtree)
         if (error) {
           assert.ok(result.error)
           assert.ok(result.error?.message.includes(error))
@@ -144,11 +144,11 @@ export const testProof = {
   'Proof.from': (assert) => {
     assert.deepEqual(
       Proof.from({
-        at: 8,
+        offset: 8,
         path: [Node.of(0x2), Node.of(0x3), Node.of(0x4)],
       }),
       Proof.create({
-        at: 8n,
+        offset: 8n,
         path: [Node.of(0x2), Node.of(0x3), Node.of(0x4)],
       })
     )
@@ -156,7 +156,7 @@ export const testProof = {
     assert.deepEqual(
       Proof.from([8, [Node.of(0x2), Node.of(0x3), Node.of(0x4)]]),
       Proof.create({
-        at: 8n,
+        offset: 8n,
         path: [Node.of(0x2), Node.of(0x3), Node.of(0x4)],
       })
     )

@@ -41,7 +41,7 @@ export const testPieceInclusionProofs = {
       p1.ok,
       Aggregate.InclusionProof.create({
         tree: Proof.create({
-          at: 0n,
+          offset: 0n,
           path: [
             'TUbpoUFC2Yp4+hKwP1Le79SgVOc4AcdFWKqbHc+hqwY=',
             '2ZiHuXNXOpbhE5NkUjbBex9McDTXI8epn3CbtNphFis=',
@@ -57,7 +57,7 @@ export const testPieceInclusionProofs = {
           ].map(base64.baseDecode),
         }),
         index: Proof.create({
-          at: 16769024n,
+          offset: 16769024n,
           path: [
             'F4SHeChZXPRE3SiszqxuXivpyJYroEN6deOpxYgDeAA=',
             'NzG7maxon2bu9Zc+SpTaGI9N3K5YByT8bz/WDf1IgzM=',
@@ -99,7 +99,7 @@ export const testPieceInclusionProofs = {
       p2.ok,
       Aggregate.InclusionProof.create({
         tree: Proof.create({
-          at: 2n,
+          offset: 2n,
           path: [
             'dS2Wk/oWdSQ5VHbjF6mFgPAJR6+3owVA1iWpKRzBKgc=',
             'AncSSMMo8D1J3TBnrnH9pMYjDe2DFepRU55xVcWwJhs=',
@@ -116,7 +116,7 @@ export const testPieceInclusionProofs = {
           ].map(base64.baseDecode),
         }),
         index: Proof.create({
-          at: 16769025n,
+          offset: 16769025n,
           path: [
             'gzH6jfyw/hohDjIBbWDkxfCjqXETF2JkBtYlrJhjrxU=',
             'NzG7maxon2bu9Zc+SpTaGI9N3K5YByT8bz/WDf1IgzM=',

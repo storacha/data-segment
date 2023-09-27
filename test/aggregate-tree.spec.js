@@ -150,7 +150,7 @@ export const testAggregateTree = {
 
     for (const { location, node } of source) {
       const proof = hybrid.collectProof(location.level, location.index)
-      assert.deepEqual(Proof.computeRoot(node, proof), { ok: expect })
+      assert.deepEqual(Proof.resolveRoot(proof, node), { ok: expect })
     }
 
     hybrid.setNode(0, 1n << (30n - 1n), Node.from([0x1]))

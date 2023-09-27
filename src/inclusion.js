@@ -1,6 +1,9 @@
 import * as API from './api.js'
 import { maxIndexEntriesInDeal, EntrySize } from './index.js'
 import * as Proof from './proof.js'
+import * as Piece from './piece.js'
+import * as Inclusion from './inclusion.js'
+import * as Segment from './segment.js'
 import { SHA256, CBOR } from './ipld.js'
 import * as IPLD from './ipld.js'
 
@@ -64,3 +67,121 @@ export const tree = ([tree]) => tree
  * @returns {API.ProofData}
  */
 export const index = ([_, index]) => index
+
+/**
+ * Resolves an (aggregate) piece (link) from the inclusion proof and a
+ * (segment) piece (link). It will resolve (aggregate) piece root and size
+ * from both tree and index proofs and unless they match it will return an
+ * error. Function may also return an error if indices fall out of bound.
+ *
+ * @param {API.InclusionProof} proof
+ * @param {API.PieceLink} segmentPiece
+ * @returns {API.Result<API.AggregateLink, Error>}
+ */
+export const resolveAggregate = (proof, segmentPiece) => {
+  // Read out piece info form the given segment link
+  const piece = Piece.fromLink(segmentPiece)
+  const tree = Inclusion.tree(proof)
+  const index = Inclusion.index(proof)
+
+  const { ok: aggregate, error } = resolveAggregateFromProofTree(
+    { tree },
+    piece
+  )
+  if (error) {
+    return { error }
+  }
+
+  const result = resolveAggregateFromProofIndex({ index, tree }, piece)
+  if (result.error) {
+    return result
+  }
+
+  if (aggregate.toString() !== result.ok.toString()) {
+    return { error: new Error('Inclusion proof is invalid') }
+  }
+
+  return { ok: aggregate }
+}
+
+/**
+ * Resolves aggregate from the (sub)tree and index proofs. It will use provided
+ * piece information to derive corresponding index nodes and then resolve the
+ * root of the provided proofs index path. Aggregate size is also derived from
+ * the proofs index path. Function also verifies that proof index offset falls
+ * within the bounds of the (aggregate) tree index range. Returns aggregate
+ * (link) or an error if if indices fall out of bound.
+ *
+ * @param {object} proof
+ * @param {API.ProofData} proof.tree
+ * @param {API.ProofData} proof.index
+ * @param {API.Piece} piece
+ * @returns {API.Result<API.AggregateLink, Error>}
+ */
+export const resolveAggregateFromProofIndex = ({ index, tree }, piece) => {
+  // Derive give `piece` size from it's tree height.
+  const size = Piece.PaddedSize.fromHeight(piece.height)
+  // Derive piece root offset within the (aggregate) tree.
+  const offset = Proof.offset(tree) * size
+  // Encode segment which is produces piece root bytes followed by it's index
+  // node. Which are two leaves of the (aggregate) tree.
+  const segment = Segment.toBytes({ root: piece.root, offset, size })
+  // We compute parent node from the (pieceRoot, pieceIndex) which is the node
+  // our index proof leads to.
+  const node = Proof.truncatedHash(segment)
+  // We increment the height by one to account for the parent node we derived
+  // above.
+  const height = Proof.depth(index) + 1
+  const { ok: root, error } = Proof.resolveRoot(index, node)
+
+  if (error) {
+    return { error }
+  }
+
+  // Compute index offset for this aggregate
+  const indexOffset = indexAreaStart(Piece.PaddedSize.fromHeight(height))
+
+  // Error if index offset is out of bounds for this aggregate
+  const nodeOffset = Proof.offset(index) * EntrySize
+  const totalSize = Piece.PaddedSize.fromHeight(height)
+  if (nodeOffset < indexOffset) {
+    return {
+      error: new RangeError(
+        `Index entry at a wrong offset: ${nodeOffset} < ${indexOffset}`
+      ),
+    }
+  }
+  if (nodeOffset > totalSize) {
+    return {
+      error: new RangeError(
+        `Index entry at a wrong offset: ${nodeOffset} > ${totalSize}`
+      ),
+    }
+  }
+
+  return { ok: Piece.toLink({ root, height }) }
+}
+
+/**
+ * Resolves an (aggregate) piece from the (sub)tree of the given inclusion
+ * `proof`. It will use provided piece information to derive to resolve the
+ * root of the aggregate from the proof (sub) tree path. Aggregate size is
+ * also derived from the proof (sub) tree path and piece size.
+ *
+ * @param {object} proof
+ * @param {API.ProofData} proof.tree
+ * @param {API.Piece} piece
+ * @returns {API.Result<API.AggregateLink, Error>}
+ */
+export const resolveAggregateFromProofTree = ({ tree }, piece) => {
+  // Resolve the the aggregate piece root from the given proof and piece.
+  const { ok: root, error } = Proof.resolveRoot(tree, piece.root)
+  if (error) {
+    return { error }
+  }
+  // Derive the aggregate tree height by adding depth of the proof tree to the
+  // height of the piece (sub)tree.
+  const height = piece.height + Proof.depth(tree)
+
+  return { ok: Piece.toLink({ root, height }) }
+}
