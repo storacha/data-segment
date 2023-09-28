@@ -1,5 +1,6 @@
 import * as API from './api.js'
 
+import * as Bytes from 'multiformats/bytes'
 import { Size as NodeSize } from './node.js'
 import { CBOR, SHA256 } from './ipld.js'
 
@@ -21,36 +22,28 @@ export const offset = ([offset]) => offset
  */
 export const depth = (proof) => path(proof).length
 
-/* c8 ignore next 98 */
-
 /**
- * @param {Uint8Array} data
- * @param {API.MerkleTreeNode} root
+ * Verifies that given `proof` is a valid evidence of `claim.node` been
+ * contained by the `claim.tree` merkle tree.
+ *
  * @param {API.ProofData} proof
- * @returns {API.Result<void, Error>}
+ * @param {object} claim
+ * @param {API.MerkleTreeNode} claim.tree
+ * @param {API.MerkleTreeNode} claim.node
+ * @returns {API.Result<{}, Error>}
  */
-export function validateLeaf(data, root, proof) {
-  const leaf = truncatedHash(data)
-  return validateSubtree(leaf, root, proof)
-}
+export const verify = (proof, { tree, node }) => {
+  const computedRoot = resolveRoot(proof, node)
+  if (computedRoot.error) {
+    return { error: new Error(`computing root: ${computedRoot.error.message}`) }
+  }
 
-/**
- * @param {API.MerkleTreeNode} subtree
- * @param {API.MerkleTreeNode} root
- * @param {API.ProofData} proof
- * @returns {API.Result<void, Error>}
- */
-export function validateSubtree(subtree, root, proof) {
-  // Validate the structure first to avoid panics
-  const structureValidation = validateProofStructure(proof)
-  if (structureValidation.error) {
+  if (!Bytes.equals(computedRoot.ok, tree)) {
     return {
-      error: new Error(
-        `in ValidateSubtree: ${structureValidation.error.message}`
-      ),
+      error: new Error('inclusion proof does not lead to the same root'),
     }
   }
-  return validateProof(subtree, root, proof)
+  return { ok: {} }
 }
 
 const MAX_DEPTH = 63
@@ -77,7 +70,7 @@ export function resolveRoot(proof, node) {
 
   let position = offset(proof)
   if (position >> BigInt(depth(proof)) !== 0n) {
-    return { error: new RangeError('index greater than width of the tree') }
+    return { error: new RangeError('offset greater than width of the tree') }
   }
 
   let top = node
@@ -89,39 +82,6 @@ export function resolveRoot(proof, node) {
   }
 
   return { ok: top }
-}
-
-/**
- * @param {API.MerkleTreeNode} subtree
- * @param {API.MerkleTreeNode} root
- * @param {API.ProofData} proof
- * @returns {API.Result<void, Error>}
- */
-export function validateProof(subtree, root, proof) {
-  const computedRoot = resolveRoot(proof, subtree)
-  if (computedRoot.error) {
-    return { error: new Error(`computing root: ${computedRoot.error.message}`) }
-  }
-
-  if (!areNodesEqual(computedRoot.ok, root)) {
-    return {
-      error: new Error('inclusion proof does not lead to the same root'),
-    }
-  }
-  return { ok: undefined }
-}
-
-/**
- * @param {API.ProofData} proofData
- * @returns {API.Result<void, Error>}
- */
-export function validateProofStructure(proofData) {
-  /**
-   * In the Go implementation, this function does not perform any checks and
-   * always returns nil error
-   * @see https://github.com/filecoin-project/go-data-segment/blob/14e4afdb87895d8562142f4f6cf03662ec407237/merkletree/proof.go#L90-L92
-   */
-  return { ok: undefined }
 }
 
 /**
@@ -154,25 +114,6 @@ export function truncate(node) {
   return node
 }
 
-/* c8 ignore next 17 */
-/**
- *
- * @param {API.MerkleTreeNode} node1
- * @param {API.MerkleTreeNode} node2
- * @returns {boolean}
- */
-function areNodesEqual(node1, node2) {
-  if (node1.length !== node2.length) {
-    return false
-  }
-  for (let i = 0; i < node1.length; i++) {
-    if (node1[i] !== node2[i]) {
-      return false
-    }
-  }
-  return true
-}
-
 /**
  * Takes data model and returns an IPLD View of it.
  *
@@ -195,4 +136,27 @@ export const from = (source) => {
     : [source.offset, source.path]
 
   return create({ offset: BigInt(offset), path })
+}
+
+/**
+ * @param {number} height - Height of the merkle tree
+ * @param {number} level - Level of the node in the merkle tree
+ * @param {API.uint64} index - Index of the node in the level
+ */
+export const validateLevelIndex = (height, level, index) => {
+  if (level < 0) {
+    throw new RangeError('level can not be negative')
+  }
+
+  if (level > height) {
+    throw new RangeError(`level too high: ${level} >= ${height}`)
+  }
+
+  if (index > (1 << (height - level)) - 1) {
+    throw new RangeError(
+      `index too large for level: idx ${index}, level ${level} : ${
+        (1 << (height - level)) - 1
+      }`
+    )
+  }
 }

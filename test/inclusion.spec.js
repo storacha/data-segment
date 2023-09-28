@@ -61,5 +61,53 @@ export const testInclusionProof = {
     assert.deepEqual(Inclusion.resolveAggregate(p2.ok, b.link), {
       ok: aggregate.link,
     })
+
+    const e1 = Inclusion.resolveAggregate(
+      Inclusion.create({
+        tree: Proof.create({
+          path: Proof.path(Inclusion.tree(p1.ok)),
+          offset: 1000n,
+        }),
+        index: Inclusion.index(p1.ok),
+      }),
+      a.link
+    )
+    assert.match(e1.error?.message, /Inclusion proof is invalid/)
+
+    const e2 = Inclusion.resolveAggregate(
+      Inclusion.create({
+        tree: Proof.create({
+          path: Proof.path(Inclusion.tree(p1.ok)),
+          offset: aggregate.size,
+        }),
+        index: Inclusion.index(p1.ok),
+      }),
+      a.link
+    )
+    assert.match(e2.error?.message, /offset greater than width of the tree/)
+
+    const e3 = Inclusion.resolveAggregate(
+      Inclusion.create({
+        tree: Inclusion.tree(p1.ok),
+        index: Proof.create({
+          path: Proof.path(Inclusion.index(p1.ok)),
+          offset: aggregate.size,
+        }),
+      }),
+      a.link
+    )
+    assert.match(e3.error?.message, /offset greater than width of the tree/)
+
+    const e4 = Inclusion.resolveAggregate(
+      Inclusion.create({
+        tree: Inclusion.tree(p1.ok),
+        index: Proof.create({
+          path: Proof.path(Inclusion.index(p1.ok)),
+          offset: 1n,
+        }),
+      }),
+      a.link
+    )
+    assert.match(e4.error?.message, /Index entry at a wrong offset/)
   },
 }

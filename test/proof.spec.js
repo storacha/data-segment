@@ -1,4 +1,11 @@
-import { Node, Proof, API } from '@web3-storage/data-segment'
+import {
+  Node,
+  Proof,
+  API,
+  Piece,
+  Aggregate,
+  Inclusion,
+} from '@web3-storage/data-segment'
 import { base16 } from 'multiformats/bases/base16'
 
 /**
@@ -55,13 +62,13 @@ const testVectors = [
     subtree: Node.of(0x1),
     path: [Node.of(0x2), Node.of(0x3)],
     at: 4n,
-    error: 'index greater than width of the tree',
+    error: 'offset greater than width of the tree',
   },
   {
     subtree: Node.of(0x1),
     path: [Node.of(0x2), Node.of(0x3), Node.of(0x4)],
     at: 8n,
-    error: 'index greater than width of the tree',
+    error: 'offset greater than width of the tree',
   },
   {
     subtree: Node.of(0x1),
@@ -160,5 +167,50 @@ export const testProof = {
         path: [Node.of(0x2), Node.of(0x3), Node.of(0x4)],
       })
     )
+  },
+
+  'Proof.verify': (assert) => {
+    const payload = new Uint8Array(1024).fill(7)
+    const piece = Piece.fromPayload(payload)
+    const aggregate = Aggregate.build({
+      pieces: [piece],
+      size: Piece.PaddedSize.from(2n ** 12n),
+    })
+
+    const inclusion = aggregate.resolveProof(piece.link)
+    if (inclusion.error) {
+      throw inclusion.error
+    }
+    const proof = Inclusion.tree(inclusion.ok)
+
+    assert.deepEqual(
+      Proof.verify(proof, { tree: aggregate.root, node: piece.root }),
+      {
+        ok: {},
+      }
+    )
+
+    const fail = Proof.verify(proof, {
+      tree: aggregate.root,
+      node: Piece.fromPayload(payload.subarray(512)).root,
+    })
+
+    assert.match(
+      fail.error?.message,
+      /inclusion proof does not lead to the same root/
+    )
+
+    const invalid = Proof.verify(
+      Proof.create({
+        path: Proof.path(proof),
+        offset: 1024n,
+      }),
+      {
+        tree: aggregate.root,
+        node: piece.root,
+      }
+    )
+
+    assert.match(invalid.error?.message, /offset greater than width/gi)
   },
 }

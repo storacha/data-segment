@@ -143,18 +143,10 @@ export const resolveAggregateFromProofIndex = ({ index, tree }, piece) => {
 
   // Error if index offset is out of bounds for this aggregate
   const nodeOffset = Proof.offset(index) * EntrySize
-  const totalSize = Piece.PaddedSize.fromHeight(height)
   if (nodeOffset < indexOffset) {
     return {
       error: new RangeError(
         `Index entry at a wrong offset: ${nodeOffset} < ${indexOffset}`
-      ),
-    }
-  }
-  if (nodeOffset > totalSize) {
-    return {
-      error: new RangeError(
-        `Index entry at a wrong offset: ${nodeOffset} > ${totalSize}`
       ),
     }
   }

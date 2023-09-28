@@ -66,7 +66,7 @@ class AggregateTree {
    * @returns {API.ProofData}
    */
   collectProof(level, offset) {
-    validateLevelIndex(this.height, level, offset)
+    Proof.validateLevelIndex(this.height, level, offset)
     const path = []
     let currentLevel = level
     let position = offset
@@ -98,7 +98,7 @@ class AggregateTree {
    * @param {API.MerkleTreeNode} node
    */
   setNode(level, index, node) {
-    validateLevelIndex(this.height, level, index)
+    Proof.validateLevelIndex(this.height, level, index)
 
     if (level > 0) {
       let left = getNodeRaw(this, level - 1, 2n * index)
@@ -264,32 +264,9 @@ export const clear = (tree) => {
  * @param {API.uint64} idx
  */
 const getNodeRaw = (tree, level, idx) => {
-  validateLevelIndex(tree.height, level, idx)
+  Proof.validateLevelIndex(tree.height, level, idx)
 
   return tree.data.at(idxFor(tree.height, level, idx))
-}
-
-/**
- * @param {number} maxLevel
- * @param {number} level
- * @param {API.uint64} index
- */
-export const validateLevelIndex = (maxLevel, level, index) => {
-  if (level < 0) {
-    throw new RangeError('level can not be negative')
-  }
-
-  if (level > maxLevel) {
-    throw new RangeError(`level too high: ${level} >= ${maxLevel}`)
-  }
-
-  if (index > (1 << (maxLevel - level)) - 1) {
-    throw new RangeError(
-      `index too large for level: idx ${index}, level ${level} : ${
-        (1 << (maxLevel - level)) - 1
-      }`
-    )
-  }
 }
 
 /**
