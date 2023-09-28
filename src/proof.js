@@ -127,7 +127,7 @@ export const create = ({ offset, path }) => [offset, path]
 /**
  * Takes proof in somewhat arbitrary form and returns a proof data.
  *
- * @param {[API.uint64|number, API.MerkleTreePath]|{offset:API.uint64|number, path: API.MerkleTreePath}} source
+ * @param {API.IntoProofData} source
  * @returns {API.ProofData}
  */
 export const from = (source) => {

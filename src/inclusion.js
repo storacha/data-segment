@@ -35,12 +35,15 @@ export const link = (proof) =>
  *
  * @param {API.ByteView<API.InclusionProof, typeof CBOR.code>} bytes
  */
-export const decode = (bytes) => {
-  const [tree, index] = CBOR.decode(bytes)
+export const decode = (bytes) => from(CBOR.decode(bytes))
 
-  // Note we need to go through this to ensure the bigint conversion
-  return create({ tree: Proof.from(tree), index: Proof.from(index) })
-}
+/**
+ * Takes proof in somewhat arbitrary form and returns a proof data.
+ *
+ * @param {API.IntoInclusionProof} proof
+ * @returns {API.InclusionProof}
+ */
+export const from = ([tree, index]) => [Proof.from(tree), Proof.from(index)]
 
 /**
  * Takes data model and returns an IPLD View of it.

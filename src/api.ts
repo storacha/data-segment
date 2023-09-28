@@ -165,14 +165,22 @@ export interface AggregateView extends Aggregate, PieceView {
  */
 export type DataAggregationProof = [
   inclusion: InclusionProof,
-  auxDataType: AuxDataType,
-  axDataSource: SingletonMarketSource
+  dataType: DataAggregationProofDataType,
+  dataSource: SingletonMarketSource
+]
+
+export type IntoDataAggregationProof = [
+  inclusion: IntoInclusionProof,
+  dataType: DataAggregationProofDataType,
+  dataSource: IntoSingletonMarketSource
 ]
 
 /**
  * @see https://github.com/filecoin-project/go-data-segment/blob/master/datasegment/verifier.go#L16-L18
  */
-export type SingletonMarketSource = [DealID]
+export type SingletonMarketSource = [dealID: DealID]
+
+export type IntoSingletonMarketSource = [dealID: DealID | number]
 /**
  * @see https://github.com/filecoin-project/go-state-types/blob/master/abi/deal.go#L5
  */
@@ -181,7 +189,7 @@ export type DealID = uint64
 /**
  * @see https://github.com/filecoin-project/go-data-segment/blob/master/datasegment/verifier.go#L12
  */
-export type AuxDataType = 0
+export type DataAggregationProofDataType = 0
 
 /**
  * Proof that content piece (merkle tree) is a fully contained segment of the
@@ -191,6 +199,8 @@ export type AuxDataType = 0
  * @see https://github.com/filecoin-project/go-data-segment/blob/e3257b64fa2c84e0df95df35de409cfed7a38438/datasegment/inclusion.go#L31-L39
  */
 export type InclusionProof = [tree: ProofData, index: ProofData]
+
+export type IntoInclusionProof = [tree: IntoProofData, index: IntoProofData]
 
 export interface Vector<T> extends Iterable<T> {
   append(value: T): Vector<T>
@@ -432,6 +442,10 @@ export type ProofData = [
   offset: uint64,
   path: MerkleTreePath
 ]
+
+export type IntoProofData =
+  | [offset: uint64 | number, path: MerkleTreePath]
+  | { offset: uint64 | number; path: MerkleTreePath }
 
 export type MerkleTreePath = MerkleTreeNode[]
 
