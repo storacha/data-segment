@@ -42,7 +42,7 @@ export const fromSource = ({ node, location }) => ({
 
 /**
  *
- * @param {API.SegmentInfo} segment
+ * @param {API.Segment} segment
  * @returns {API.MerkleTreeNodeSource}
  */
 export const toSource = (segment) => {
@@ -82,7 +82,10 @@ export const toLeafIndex = ({ index, level }) =>
 export const toIndexNode = (segment) => toBytes(segment).subarray(NodeSize)
 
 /**
+ * @see https://github.com/filecoin-project/go-data-segment/blob/e3257b64fa2c84e0df95df35de409cfed7a38438/datasegment/index.go#L232-L248
+ *
  * @param {(API.Segment & {checksum?: undefined}) |API.SegmentInfo} segment
+ * @returns {API.ByteView<API.SegmentInfo, API.RAW_CODE>}
  */
 export const toBytes = ({ root, size, offset, checksum }) => {
   const buffer = new Uint8Array(

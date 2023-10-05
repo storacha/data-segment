@@ -1,5 +1,6 @@
 import * as API from './api.js'
 
+import * as Bytes from 'multiformats/bytes'
 import { Size as NodeSize } from './node.js'
 import { CBOR, SHA256 } from './ipld.js'
 
@@ -13,7 +14,7 @@ export const path = ([, path]) => path
  * @param {API.ProofData} proof
  * @returns {API.uint64}
  */
-export const at = ([at]) => at
+export const offset = ([offset]) => offset
 
 /**
  * @param {API.ProofData} proof
@@ -21,104 +22,67 @@ export const at = ([at]) => at
  */
 export const depth = (proof) => path(proof).length
 
-/* c8 ignore next 98 */
-
 /**
- * @param {Uint8Array} data
- * @param {API.MerkleTreeNode} root
+ * Verifies that `proof` proves that `claim.node` is contained by
+ * the `claim.tree` merkle tree.
+ *
  * @param {API.ProofData} proof
- * @returns {API.Result<void, Error>}
+ * @param {object} claim
+ * @param {API.MerkleTreeNode} claim.tree
+ * @param {API.MerkleTreeNode} claim.node
+ * @returns {API.Result<{}, Error>}
  */
-export function validateLeaf(data, root, proof) {
-  const leaf = truncatedHash(data)
-  return validateSubtree(leaf, root, proof)
-}
+export const verify = (proof, { tree, node }) => {
+  const computedRoot = resolveRoot(proof, node)
+  if (computedRoot.error) {
+    return { error: new Error(`computing root: ${computedRoot.error.message}`) }
+  }
 
-/**
- * @param {API.MerkleTreeNode} subtree
- * @param {API.MerkleTreeNode} root
- * @param {API.ProofData} proof
- * @returns {API.Result<void, Error>}
- */
-export function validateSubtree(subtree, root, proof) {
-  // Validate the structure first to avoid panics
-  const structureValidation = validateProofStructure(proof)
-  if (structureValidation.error) {
+  if (!Bytes.equals(computedRoot.ok, tree)) {
     return {
-      error: new Error(
-        `in ValidateSubtree: ${structureValidation.error.message}`
-      ),
+      error: new Error('inclusion proof does not lead to the same root'),
     }
   }
-  return validateProof(subtree, root, proof)
+  return { ok: {} }
 }
 
 const MAX_DEPTH = 63
 
 /**
- * @param {API.MerkleTreeNode} subtree
- * @param {API.ProofData} proofData
- * @returns {API.Result<API.MerkleTreeNode, Error>}
+ * Resolves the root of the merkle tree from given proof and node that root
+ * supposedly includes. It does so by computing parent node from provided node
+ * and node in the proof path, then combining that with the next node in the
+ * path and so on until the root is reached. Function may return an error if
+ * proof path is too long or if proof offset falls out of bounds.
+ *
+ * @param {API.ProofData} proof
+ * @param {API.MerkleTreeNode} node
+ * @returns {API.Result<API.MerkleTreeNode, RangeError>}
  */
-export function computeRoot(subtree, proofData) {
-  if (subtree === null) {
-    return { error: new Error('nil subtree cannot be used') }
-  }
-  if (depth(proofData) > MAX_DEPTH) {
+export function resolveRoot(proof, node) {
+  if (depth(proof) > MAX_DEPTH) {
     return {
-      error: new Error(
-        'merkleproofs with depths greater than 63 are not supported'
+      error: new RangeError(
+        'merkle proofs with depths greater than 63 are not supported'
       ),
     }
   }
 
-  let index = at(proofData)
-  if (index >> BigInt(depth(proofData)) !== 0n) {
-    return { error: new Error('index greater than width of the tree') }
+  let position = offset(proof)
+  if (position >> BigInt(depth(proof)) !== 0n) {
+    return { error: new RangeError('offset greater than width of the tree') }
   }
 
-  let carry = subtree
+  let top = node
   let right = 0n
 
-  for (const p of path(proofData)) {
-    ;[right, index] = [index & 1n, index >> 1n]
-    carry = right === 1n ? computeNode(p, carry) : computeNode(carry, p)
+  for (const node of path(proof)) {
+    right =  position & 1n
+    position = position >> 1n
+    top = right === 1n ? computeNode(node, top) : computeNode(top, node)
   }
 
-  return { ok: carry }
-}
-
-/**
- * @param {API.MerkleTreeNode} subtree
- * @param {API.MerkleTreeNode} root
- * @param {API.ProofData} proofData
- * @returns {API.Result<void, Error>}
- */
-export function validateProof(subtree, root, proofData) {
-  const computedRoot = computeRoot(subtree, proofData)
-  if (computedRoot.error) {
-    return { error: new Error(`computing root: ${computedRoot.error.message}`) }
-  }
-
-  if (!areNodesEqual(computedRoot.ok, root)) {
-    return {
-      error: new Error('inclusion proof does not lead to the same root'),
-    }
-  }
-  return { ok: undefined }
-}
-
-/**
- * @param {API.ProofData} proofData
- * @returns {API.Result<void, Error>}
- */
-export function validateProofStructure(proofData) {
-  /**
-   * In the Go implementation, this function does not perform any checks and
-   * always returns nil error
-   * @see https://github.com/filecoin-project/go-data-segment/blob/14e4afdb87895d8562142f4f6cf03662ec407237/merkletree/proof.go#L90-L92
-   */
-  return { ok: undefined }
+  return { ok: top }
 }
 
 /**
@@ -151,42 +115,49 @@ export function truncate(node) {
   return node
 }
 
-/* c8 ignore next 17 */
-/**
- *
- * @param {API.MerkleTreeNode} node1
- * @param {API.MerkleTreeNode} node2
- * @returns {boolean}
- */
-function areNodesEqual(node1, node2) {
-  if (node1.length !== node2.length) {
-    return false
-  }
-  for (let i = 0; i < node1.length; i++) {
-    if (node1[i] !== node2[i]) {
-      return false
-    }
-  }
-  return true
-}
-
 /**
  * Takes data model and returns an IPLD View of it.
  *
  * @param {object} source
- * @param {API.uint64} source.at
+ * @param {API.uint64} source.offset
  * @param {API.MerkleTreePath} source.path
  * @returns {API.ProofData}
  */
-export const create = ({ at, path }) => [at, path]
+export const create = ({ offset, path }) => [offset, path]
 
 /**
  * Takes proof in somewhat arbitrary form and returns a proof data.
- * @param {[API.uint64|number, API.MerkleTreePath]|{at:API.uint64|number, path: API.MerkleTreePath}} source
+ *
+ * @param {API.IntoProofData} source
  * @returns {API.ProofData}
  */
 export const from = (source) => {
-  const [at, path] = Array.isArray(source) ? source : [source.at, source.path]
+  const [offset, path] = Array.isArray(source)
+    ? source
+    : [source.offset, source.path]
 
-  return create({ at: BigInt(at), path })
+  return create({ offset: BigInt(offset), path })
+}
+
+/**
+ * @param {number} height - Height of the merkle tree
+ * @param {number} level - Level of the node in the merkle tree
+ * @param {API.uint64} index - Index of the node in the level
+ */
+export const validateLevelIndex = (height, level, index) => {
+  if (level < 0) {
+    throw new RangeError('level can not be negative')
+  }
+
+  if (level > height) {
+    throw new RangeError(`level too high: ${level} >= ${height}`)
+  }
+
+  if (index > (1 << (height - level)) - 1) {
+    throw new RangeError(
+      `index too large for level: idx ${index}, level ${level} : ${
+        (1 << (height - level)) - 1
+      }`
+    )
+  }
 }
