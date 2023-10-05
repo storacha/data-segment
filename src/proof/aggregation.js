@@ -60,8 +60,8 @@ export const resolveAggregate = (proof, piece) =>
   Inclusion.resolveAggregate(inclusion(proof), piece)
 
 /**
- * Verifies that given `proof` is a valid evidence of `claim.piece` been
- * a segment of the `claim.aggregate` and that proof is for the `claim.dealID`.
+ * Verifies that `proof` is valid evidence that `claim.piece` is a segment of the `claim.aggregate` 
+ * and that `proof` is for the `claim.dealID`.
  *
  * @param {API.DataAggregationProof} proof
  * @param {object} claim

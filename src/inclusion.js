@@ -38,7 +38,7 @@ export const link = (proof) =>
 export const decode = (bytes) => from(CBOR.decode(bytes))
 
 /**
- * Takes proof in somewhat arbitrary form and returns a proof data.
+ * Takes proof in either object or array form and returns a proof data.
  *
  * @param {API.IntoInclusionProof} proof
  * @returns {API.InclusionProof}
@@ -82,7 +82,7 @@ export const index = ([_, index]) => index
  * @returns {API.Result<API.AggregateLink, Error>}
  */
 export const resolveAggregate = (proof, segmentPiece) => {
-  // Read out piece info form the given segment link
+  // Read out piece info from the given segment link
   const piece = Piece.fromLink(segmentPiece)
   const tree = Inclusion.tree(proof)
   const index = Inclusion.index(proof)
@@ -113,7 +113,7 @@ export const resolveAggregate = (proof, segmentPiece) => {
  * root of the provided proofs index path. Aggregate size is also derived from
  * the proofs index path. Function also verifies that proof index offset falls
  * within the bounds of the (aggregate) tree index range. Returns aggregate
- * (link) or an error if if indices fall out of bound.
+ * (link) or an error if indices fall out of bound.
  *
  * @param {object} proof
  * @param {API.ProofData} proof.tree
@@ -122,11 +122,11 @@ export const resolveAggregate = (proof, segmentPiece) => {
  * @returns {API.Result<API.AggregateLink, Error>}
  */
 export const resolveAggregateFromProofIndex = ({ index, tree }, piece) => {
-  // Derive give `piece` size from it's tree height.
+  // Derive piece size from it's tree height.
   const size = Piece.PaddedSize.fromHeight(piece.height)
   // Derive piece root offset within the (aggregate) tree.
   const offset = Proof.offset(tree) * size
-  // Encode segment which is produces piece root bytes followed by it's index
+  // Encode segment which produces piece root bytes followed by it's index
   // node. Which are two leaves of the (aggregate) tree.
   const segment = Segment.toBytes({ root: piece.root, offset, size })
   // We compute parent node from the (pieceRoot, pieceIndex) which is the node
@@ -159,7 +159,7 @@ export const resolveAggregateFromProofIndex = ({ index, tree }, piece) => {
 
 /**
  * Resolves an (aggregate) piece from the (sub)tree of the given inclusion
- * `proof`. It will use provided piece information to derive to resolve the
+ * `proof`. It will use provided piece information to resolve the
  * root of the aggregate from the proof (sub) tree path. Aggregate size is
  * also derived from the proof (sub) tree path and piece size.
  *

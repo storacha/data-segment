@@ -160,7 +160,7 @@ export interface AggregateView extends Aggregate, PieceView {
 
 /**
  * Top level proof provided by the aggregator after the deal lands on chain.
-
+ *
  * @see https://github.com/filecoin-project/go-data-segment/blob/master/datasegment/verifier.go#L8-L14
  */
 export type DataAggregationProof = [
@@ -307,7 +307,7 @@ export type PieceLink = Link<
 
 /**
  * Aggregate link is a Piece link V2, but we define it as an alias to
- * convey semantical difference.
+ * convey the semantic difference.
  */
 export type AggregateLink = PieceLink
 

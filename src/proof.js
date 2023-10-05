@@ -23,8 +23,8 @@ export const offset = ([offset]) => offset
 export const depth = (proof) => path(proof).length
 
 /**
- * Verifies that given `proof` is a valid evidence of `claim.node` been
- * contained by the `claim.tree` merkle tree.
+ * Verifies that `proof` proves that `claim.node` is contained by
+ * the `claim.tree` merkle tree.
  *
  * @param {API.ProofData} proof
  * @param {object} claim
@@ -77,7 +77,8 @@ export function resolveRoot(proof, node) {
   let right = 0n
 
   for (const node of path(proof)) {
-    ;[right, position] = [position & 1n, position >> 1n]
+    right =  position & 1n
+    position = position >> 1n
     top = right === 1n ? computeNode(node, top) : computeNode(top, node)
   }
 
