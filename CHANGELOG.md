@@ -1,5 +1,15 @@
 # Changelog
 
+## [3.2.0](https://github.com/web3-storage/data-segment/compare/v3.1.0...v3.2.0) (2023-10-05)
+
+
+### Features
+
+* DataAggregationProof ([58fdb94](https://github.com/web3-storage/data-segment/commit/58fdb9415092e434ec34b74be635761140f9269f))
+* get full code coverage ([0997409](https://github.com/web3-storage/data-segment/commit/0997409bb2d8c4937b8fea4938ec44bf9ea81899))
+* implement proof verification logic ([6dcbd83](https://github.com/web3-storage/data-segment/commit/6dcbd835783615325ae32c82875009febf8b3bfb))
+* implement proof verification logic ([#33](https://github.com/web3-storage/data-segment/issues/33)) ([492f6a9](https://github.com/web3-storage/data-segment/commit/492f6a9d5f4014a8c916da5065162c1170729f38))
+
 ## [3.1.0](https://github.com/web3-storage/data-segment/compare/v3.0.1...v3.1.0) (2023-09-26)
 
 
