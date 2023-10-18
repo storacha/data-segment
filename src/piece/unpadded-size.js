@@ -1,6 +1,6 @@
 import * as API from '../api.js'
-import { trailingZeros64, log2Ceil } from '../uint64.js'
-import { IN_BYTES_PER_QUAD, NODE_SIZE } from '../constant.js'
+import { pow2, log2Ceil, trailingZeros64 } from '../uint64.js'
+import { FRS_PER_QUAD, IN_BYTES_PER_QUAD, NODE_SIZE } from '../constant.js'
 
 const BYTES_PER_NODE = BigInt(NODE_SIZE)
 const BYTES_PER_QUAD = BigInt(IN_BYTES_PER_QUAD)
@@ -73,3 +73,27 @@ export const toPaddedSize = (size) => size + size / BYTES_PER_QUAD
  * @param {API.UnpaddedPieceSize} size
  */
 export const toHeight = (size) => log2Ceil(toPaddedSize(size) / BYTES_PER_NODE)
+
+/**
+ *
+ * @param {API.uint64} payloadSize
+ */
+export const requiredZeroPadding = (payloadSize) => {
+  const width = toWidth(payloadSize)
+  const paddedSize = BigInt(width / FRS_PER_QUAD) * BYTES_PER_QUAD
+  return paddedSize - payloadSize
+}
+
+/**
+ * Counts number of leaves required to fit the given payload.
+ *
+ * @param {API.uint64} payloadSize
+ */
+export const toWidth = (payloadSize) => {
+  // Number of quads that would fit in the given payload size
+  // Since bigint division will truncate we add 1 shy of another quads worth to
+  // compensate for the truncation.
+  let quadCount = (payloadSize + BYTES_PER_QUAD - 1n) / BYTES_PER_QUAD
+
+  return 2 ** log2Ceil(quadCount) * FRS_PER_QUAD
+}

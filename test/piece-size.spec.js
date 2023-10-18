@@ -124,3 +124,70 @@ export const testPieceSize = {
     ])
   ),
 }
+
+/**
+ * @type {import("entail").Suite}
+ */
+export const testZeroPadding = {
+  ...Object.fromEntries(
+    [
+      [0n, 127n],
+      [1n, 126n],
+      [5n, 122n],
+      [11n, 116n],
+      [127n, 0n],
+      [128n, 127n - 1n],
+      [127 * 2 - 1, 1],
+      [127 * 2, 0],
+      [127 * 2 + 1, 127 * 2 - 1],
+      [127 * 3, 127],
+      [127 * 4, 0],
+      // [127 * 4 + 1, 8 * 4],
+      [127 * 4 + 10, 127 * 8 - 127 * 4 - 10],
+      [128 * 4, 504],
+    ].map(([size, expect]) => {
+      return [
+        `UnpaddedSize.requiredZeroPadding(${size}) === ${expect}`,
+        (assert) => {
+          assert.equal(
+            UnpaddedSize.requiredZeroPadding(BigInt(size)),
+            BigInt(expect)
+          )
+        },
+      ]
+    })
+  ),
+}
+
+/**
+ * @type {import("entail").Suite}
+ */
+export const testWidth = {
+  ...Object.fromEntries(
+    [
+      [128, 8],
+      [127 * 4 + 1, 8 * 4],
+      [0, 4],
+      [1, 4],
+      [5, 4],
+      [11, 4],
+      [127, 4],
+      [128, 8],
+      [127 * 2 - 1, 8],
+      [127 * 2, 8],
+      [127 * 2 + 1, 16],
+      [127 * 3, 16],
+      [127 * 4, 16],
+      [127 * 4 + 10, 32],
+      [128 * 4, 32],
+      [128 * 8 + 1, 64],
+    ].map(([size, expect]) => {
+      return [
+        `UnpaddedSize.toWidth(${size}) === ${expect}`,
+        (assert) => {
+          assert.equal(UnpaddedSize.toWidth(BigInt(size)), expect)
+        },
+      ]
+    })
+  ),
+}
