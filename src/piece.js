@@ -111,6 +111,7 @@ export const fromInfo = (info) =>
   toView({
     height: PaddedSize.toHeight(info.size),
     root: info.link.multihash.digest,
+    padding: 0n,
   })
 
 class Piece {
@@ -119,6 +120,9 @@ class Piece {
    */
   constructor(link) {
     this.link = link
+  }
+  get padding() {
+    return 0n
   }
   get height() {
     return this.link.multihash.bytes[PREFIX.length]
@@ -164,6 +168,9 @@ class Info {
   }
   get size() {
     return PaddedSize.fromHeight(this.height)
+  }
+  get padding() {
+    return this.piece.padding
   }
 
   get link() {

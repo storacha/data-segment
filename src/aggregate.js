@@ -53,6 +53,15 @@ export const build = ({ pieces, size = DEFAULT_DEAL_SIZE }) => {
   return builder.build()
 }
 
+/**
+ *
+ * @param {object} tree
+ * @param {API.MerkleTreeNode} tree.root
+ * @param {number} tree.height
+ */
+export const toLink = ({ root, height }) =>
+  Piece.toLink({ root, height, padding: 0n })
+
 class AggregateBuilder {
   /**
    * @param {object} source
@@ -236,7 +245,11 @@ class Aggregate {
     this.limit = limit
     this.size = size
     this.offset = offset
-    this.link = Piece.toLink(this.tree)
+    this.link = Piece.toLink({
+      height: tree.height,
+      root: tree.root,
+      padding: 0n,
+    })
   }
 
   /**
@@ -253,6 +266,9 @@ class Aggregate {
    */
   get height() {
     return this.tree.height
+  }
+  get padding() {
+    return 0n
   }
   toJSON() {
     return Piece.toJSON(this)

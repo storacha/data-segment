@@ -39,7 +39,7 @@ export const pieces = sizes.map((n, index) => {
   const size = Piece.PaddedSize.from(n)
   const root = createNodeFromInt(index)
   const height = Piece.PaddedSize.toHeight(size)
-  const { link } = Piece.toInfo({ height, root })
+  const { link } = Piece.toInfo({ height, root, padding: 0n })
 
   return { size, link }
 })

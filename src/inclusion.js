@@ -4,6 +4,7 @@ import * as Proof from './proof.js'
 import * as Piece from './piece.js'
 import * as Inclusion from './inclusion.js'
 import * as Segment from './segment.js'
+import * as Aggregate from './aggregate.js'
 import { SHA256, CBOR } from './ipld.js'
 import * as IPLD from './ipld.js'
 
@@ -154,7 +155,7 @@ export const resolveAggregateFromProofIndex = ({ index, tree }, piece) => {
     }
   }
 
-  return { ok: Piece.toLink({ root, height }) }
+  return { ok: Aggregate.toLink({ root, height }) }
 }
 
 /**
@@ -178,5 +179,5 @@ export const resolveAggregateFromProofTree = ({ tree }, piece) => {
   // height of the piece (sub)tree.
   const height = piece.height + Proof.depth(tree)
 
-  return { ok: Piece.toLink({ root, height }) }
+  return { ok: Aggregate.toLink({ root, height }) }
 }

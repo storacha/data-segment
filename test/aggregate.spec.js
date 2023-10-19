@@ -109,6 +109,7 @@ export const testAggregate = {
         Piece.toJSON({
           root: build.root,
           height: Math.log2((1 << 20) / Node.Size),
+          padding: 0n,
         })
       )
     )

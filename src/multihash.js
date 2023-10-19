@@ -292,6 +292,9 @@ class Digest {
   get height() {
     return this.bytes[PREFIX.length]
   }
+  get padding() {
+    return 0n
+  }
 
   get size() {
     return size
