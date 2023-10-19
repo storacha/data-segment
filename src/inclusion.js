@@ -10,7 +10,7 @@ import * as IPLD from './ipld.js'
 export { Proof }
 
 /**
- * @param {API.PaddedPieceSize} size
+ * @param {API.PieceSize} size
  * @returns {API.uint64}
  */
 export const indexAreaStart = (size) =>

@@ -1,4 +1,5 @@
 import { PaddedSize, UnpaddedSize } from '@web3-storage/data-segment/piece'
+import { varint } from 'multiformats'
 
 // Tests here were ported from
 // @see https://github.com/filecoin-project/go-state-types/blob/master/abi/piece_test.go
@@ -145,6 +146,7 @@ export const testZeroPadding = {
       // [127 * 4 + 1, 8 * 4],
       [127 * 4 + 10, 127 * 8 - 127 * 4 - 10],
       [128 * 4, 504],
+      [17873661021126657n, 17873661021126655n],
     ].map(([size, expect]) => {
       return [
         `UnpaddedSize.requiredZeroPadding(${size}) === ${expect}`,
@@ -185,9 +187,30 @@ export const testWidth = {
       return [
         `UnpaddedSize.toWidth(${size}) === ${expect}`,
         (assert) => {
-          assert.equal(UnpaddedSize.toWidth(BigInt(size)), expect)
+          assert.equal(UnpaddedSize.toWidth(BigInt(size)), BigInt(expect))
         },
       ]
     })
   ),
+}
+
+/**
+ * @type {import("entail").Suite}
+ */
+export const testVarint = {
+  testVarintDecode: async (assert) => {
+    const [n, length] = varint.decode(
+      new Uint8Array([129, 128, 128, 128, 128, 128, 224, 31])
+    )
+
+    assert.ok(n > Number.MAX_SAFE_INTEGER)
+
+    const encoded = varint.encodeTo(n, new Uint8Array(length))
+  },
+
+  'skip NonSafeInteger': async (assert) => {
+    const bytes = varint.encodeTo(2 ** 63 - 1, new Uint8Array(9))
+
+    assert.deepEqual(varint.decode(bytes)[0], 2 ** 63 - 1)
+  },
 }

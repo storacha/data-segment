@@ -8,6 +8,8 @@ const BITS_PER_BYTE = 8
  */
 export const FRS_PER_QUAD = 4
 
+export const LEAFS_PER_QUAD = /** @type {4n} */ (BigInt(FRS_PER_QUAD))
+
 /**
  * The amount of bits in an Fr when not padded.
  */
@@ -25,6 +27,14 @@ export const OUT_BYTES_PER_QUAD =
   /** @type {128} */
   ((FRS_PER_QUAD * OUT_BITS_FR) / BITS_PER_BYTE)
 
+export const PADDED_BYTES_PER_QUAD = /** @type {127n} */ (
+  BigInt(IN_BYTES_PER_QUAD)
+)
+
+export const EXPANDED_BYTES_PER_QUAD = /** @type {128n} */ (
+  BigInt(OUT_BYTES_PER_QUAD)
+)
+
 export const BYTES_PER_FR =
   /** @type {32} */
   OUT_BYTES_PER_QUAD / FRS_PER_QUAD
@@ -37,6 +47,8 @@ export const FR_RATIO = IN_BITS_FR / OUT_BITS_FR
 export const NODE_SIZE =
   /** @type {32} */
   (OUT_BYTES_PER_QUAD / FRS_PER_QUAD)
+
+export const EXPANDED_BYTES_PER_NODE = /** @type {32n} */ (BigInt(NODE_SIZE))
 
 /**
  * The smallest amount of data for which FR32 padding has a defined result.

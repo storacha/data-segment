@@ -29,7 +29,7 @@ export { Tree }
 
 /**
  * @param {object} [options]
- * @param {API.PaddedPieceSize} [options.size] - Size of the aggregate in
+ * @param {API.PieceSize} [options.size] - Size of the aggregate in
  * (fr32 padded) bytes. If omitted default to 32 GiB. Note that sizes >=8GiB
  * are are too expensive for service providers and it may be challenging to
  * find a deal.
@@ -40,7 +40,7 @@ export const createBuilder = ({ size = DEFAULT_DEAL_SIZE } = {}) =>
 /**
  * @param {object} options
  * @param {API.Piece[]} options.pieces - Pieces to add to the aggregate
- * @param {API.PaddedPieceSize} [options.size] - Size of the aggregate in
+ * @param {API.PieceSize} [options.size] - Size of the aggregate in
  * (fr32 padded) bytes. If omitted default to 32 GiB
  */
 export const build = ({ pieces, size = DEFAULT_DEAL_SIZE }) => {
@@ -56,7 +56,7 @@ export const build = ({ pieces, size = DEFAULT_DEAL_SIZE }) => {
 class AggregateBuilder {
   /**
    * @param {object} source
-   * @param {API.PaddedPieceSize} source.size
+   * @param {API.PieceSize} source.size
    * @param {API.uint64} [source.offset]
    * @param {API.MerkleTreeNodeSource[]} [source.parts]
    * @param {number} [source.limit]
@@ -180,7 +180,7 @@ class AggregateBuilder {
 }
 
 /**
- * @param {API.PaddedPieceSize} size
+ * @param {API.PieceSize} size
  * @param {API.SegmentInfo[]} segments
  * @returns {Iterable<API.MerkleTreeNodeSource>}
  */
@@ -222,7 +222,7 @@ const createIndex = (parts) =>
 class Aggregate {
   /**
    * @param {object} source
-   * @param {API.PaddedPieceSize} source.size
+   * @param {API.PieceSize} source.size
    * @param {API.uint64} source.offset
    * @param {API.MerkleTreeNodeSource[]} source.parts
    * @param {API.IndexData} source.index
