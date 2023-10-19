@@ -15,7 +15,7 @@ export const testAggregate = {
         Aggregate.createBuilder({
           size: Aggregate.PaddedSize.from(1 << 20) + 1n,
         }),
-      /padded piece size must be a power of 2/
+      /Piece size must be a power of 2/
     )
   },
   'test empty': async (assert) => {
