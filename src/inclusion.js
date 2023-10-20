@@ -7,6 +7,7 @@ import * as Segment from './segment.js'
 import * as Aggregate from './aggregate.js'
 import { SHA256, CBOR } from './ipld.js'
 import * as IPLD from './ipld.js'
+import { Expanded } from './piece/size.js'
 
 export { Proof }
 
@@ -124,7 +125,7 @@ export const resolveAggregate = (proof, segmentPiece) => {
  */
 export const resolveAggregateFromProofIndex = ({ index, tree }, piece) => {
   // Derive piece size from it's tree height.
-  const size = Piece.PaddedSize.fromHeight(piece.height)
+  const size = Expanded.fromHeight(piece.height)
   // Derive piece root offset within the (aggregate) tree.
   const offset = Proof.offset(tree) * size
   // Encode segment which produces piece root bytes followed by it's index
@@ -143,7 +144,7 @@ export const resolveAggregateFromProofIndex = ({ index, tree }, piece) => {
   }
 
   // Compute index offset for this aggregate
-  const indexOffset = indexAreaStart(Piece.PaddedSize.fromHeight(height))
+  const indexOffset = indexAreaStart(Expanded.fromHeight(height))
 
   // Error if index offset is out of bounds for this aggregate
   const nodeOffset = Proof.offset(index) * EntrySize

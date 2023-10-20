@@ -7,7 +7,7 @@ import {
   MIN_PAYLOAD_SIZE,
 } from './constant.js'
 import { SHA256 } from './ipld.js'
-import { fromHeight as piceSizeFromHeight } from './piece/padded-size.js'
+import { fromHeight as piceSizeFromHeight } from './piece/size/expanded.js'
 
 /**
  * @see https://github.com/multiformats/multicodec/pull/331/files

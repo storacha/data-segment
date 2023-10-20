@@ -2,12 +2,12 @@ import * as API from './api.js'
 import { create as createDigest } from 'multiformats/hashes/digest'
 import * as Digest from './digest.js'
 import * as Link from 'multiformats/link'
-import * as UnpaddedSize from './piece/unpadded-size.js'
-import * as PaddedSize from './piece/padded-size.js'
+
 import * as Raw from 'multiformats/codecs/raw'
 import { digest, MAX_PAYLOAD_SIZE, code, name } from './multihash.js'
 
-export { MAX_PAYLOAD_SIZE }
+import * as Size from './piece/size.js'
+export { MAX_PAYLOAD_SIZE, Size }
 
 /**
  * @see https://github.com/multiformats/go-multihash/blob/dc3bd6897fcd17f6acd8d4d6ffd2cea3d4d3ebeb/multihash.go#L73
@@ -20,8 +20,6 @@ export const Sha256Trunc254Padded = 0x1012
  * @type {API.MulticodecCode<0xf101, 'fil-commitment-unsealed'>}
  */
 export const FilCommitmentUnsealed = 0xf101
-
-export { UnpaddedSize, PaddedSize }
 
 /**
  * @param {API.PieceDigest} digest
@@ -103,7 +101,7 @@ export const toInfo = (piece) => new Info(Digest.fromPiece(piece))
  */
 export const fromInfo = (info) =>
   toView({
-    height: PaddedSize.toHeight(info.size),
+    height: Size.toHeight(info.size),
     root: info.link.multihash.digest,
     padding: 0n,
   })
@@ -122,7 +120,7 @@ class Piece {
     return Digest.height(this.link.multihash)
   }
   get size() {
-    return PaddedSize.fromHeight(this.height)
+    return Size.fromHeight(this.height)
   }
   get root() {
     return Digest.root(this.link.multihash)
@@ -161,7 +159,7 @@ class Info {
     return this.piece.root
   }
   get size() {
-    return PaddedSize.fromHeight(this.height)
+    return Size.fromHeight(this.height)
   }
   get padding() {
     return this.piece.padding

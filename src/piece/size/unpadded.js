@@ -1,10 +1,10 @@
-import * as API from '../api.js'
+import * as API from '../../api.js'
 import {
   PADDED_BYTES_PER_QUAD,
   EXPANDED_BYTES_PER_QUAD,
   LEAFS_PER_QUAD,
-} from '../constant.js'
-import { log2Ceil } from '../uint64.js'
+} from '../../constant.js'
+import { log2Ceil } from '../../uint64.js'
 import * as Padded from './padded.js'
 
 /**

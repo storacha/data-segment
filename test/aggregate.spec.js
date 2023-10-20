@@ -4,6 +4,7 @@ import * as Piece from '../src/piece.js'
 import * as Link from 'multiformats/link'
 import * as Node from '../src/node.js'
 import * as API from '../src/api.js'
+import * as Size from '../src/piece/size.js'
 
 /**
  * @type {import("entail").Suite}
@@ -13,14 +14,14 @@ export const testAggregate = {
     assert.throws(
       () =>
         Aggregate.createBuilder({
-          size: Aggregate.PaddedSize.from(1 << 20) + 1n,
+          size: Aggregate.Size.from(1 << 20) + 1n,
         }),
       /Piece size must be a power of 2/
     )
   },
   'test empty': async (assert) => {
     const builder = Aggregate.createBuilder({
-      size: Aggregate.PaddedSize.from(34359738368),
+      size: Aggregate.Size.from(34359738368),
     })
     const build = builder.build()
 
@@ -34,7 +35,7 @@ export const testAggregate = {
 
   'single piece': async (assert) => {
     const builder = Aggregate.createBuilder({
-      size: Piece.PaddedSize.from(1 << 20),
+      size: Piece.Size.from(1 << 20),
     })
 
     builder.write(
@@ -42,7 +43,7 @@ export const testAggregate = {
         link: Link.parse(
           'baga6ea4seaqae5ysjdbsr4b5jhotaz5ooh62jrrdbxwygfpkkfjz44kvywycmgy'
         ),
-        size: Piece.UnpaddedSize.toPaddedSize(Piece.UnpaddedSize.from(520192)),
+        size: Piece.Size.fromPadded(520192n),
       })
     )
 
@@ -57,7 +58,7 @@ export const testAggregate = {
   },
   'basic with two pieces': async (assert) => {
     const builder = Aggregate.createBuilder({
-      size: Aggregate.PaddedSize.from(1 << 20),
+      size: Aggregate.Size.from(1 << 20),
     })
 
     builder.write(
@@ -65,7 +66,7 @@ export const testAggregate = {
         link: Link.parse(
           'baga6ea4seaqae5ysjdbsr4b5jhotaz5ooh62jrrdbxwygfpkkfjz44kvywycmgy'
         ),
-        size: Piece.UnpaddedSize.toPaddedSize(Piece.UnpaddedSize.from(520192)),
+        size: Piece.Size.fromPadded(520192n),
       })
     )
 
@@ -82,9 +83,7 @@ export const testAggregate = {
           link: Link.parse(
             'baga6ea4seaqnrm2n2g4m23t6rs26obxjw2tjtr7tcho24gepj2naqhevytduyoa'
           ),
-          size: Piece.UnpaddedSize.toPaddedSize(
-            Piece.UnpaddedSize.from(260096)
-          ),
+          size: Piece.Size.fromPadded(260096n),
         }).toJSON()
       )
     )
@@ -117,12 +116,12 @@ export const testAggregate = {
 
   'fails when pieces are too large to fit index': async (assert) => {
     const builder = Aggregate.createBuilder({
-      size: Aggregate.PaddedSize.from(1 << 20),
+      size: Aggregate.Size.from(1 << 20),
     })
 
     builder.write(
       Piece.fromInfo({
-        size: Piece.PaddedSize.from(131072),
+        size: Piece.Size.from(131072),
         link: Link.parse(
           `baga6ea4seaqievout3bskdb76gzldeidkhxo6z5zjrnl2jruvwfwvr2uvvpuwdi`
         ),
@@ -131,7 +130,7 @@ export const testAggregate = {
 
     const estimate = builder.estimate(
       Piece.fromInfo({
-        size: Piece.PaddedSize.from(524288),
+        size: Piece.Size.from(524288),
         link: Link.parse(
           `baga6ea4seaqkzsosscjqdegbhqrlequtm7pbjscwpeqwhrd53cxov5td34vfojy`
         ),
@@ -144,7 +143,7 @@ export const testAggregate = {
       () =>
         builder.write(
           Piece.fromInfo({
-            size: Piece.PaddedSize.from(524288),
+            size: Piece.Size.from(524288),
             link: Link.parse(
               `baga6ea4seaqkzsosscjqdegbhqrlequtm7pbjscwpeqwhrd53cxov5td34vfojy`
             ),
@@ -156,7 +155,7 @@ export const testAggregate = {
   'basic aggregate builder': async (assert) => {
     const pieces = [...Dataset.pieces].map(Piece.fromInfo)
     const builder = Aggregate.createBuilder({
-      size: Piece.PaddedSize.from(34359738368),
+      size: Piece.Size.from(34359738368),
     })
 
     for (const piece of pieces) {
@@ -180,31 +179,31 @@ export const testAggregate = {
         link: Link.parse(
           'baga6ea4seaqae5ysjdbsr4b5jhotaz5ooh62jrrdbxwygfpkkfjz44kvywycmgy'
         ),
-        size: Piece.PaddedSize.from(1 << 7),
+        size: Piece.Size.from(1 << 7),
       },
       {
         link: Link.parse(
           'baga6ea4seaqnrm2n2g4m23t6rs26obxjw2tjtr7tcho24gepj2naqhevytduyoa'
         ),
-        size: Piece.PaddedSize.from(1 << 7),
+        size: Piece.Size.from(1 << 7),
       },
       {
         link: Link.parse(
           'baga6ea4seaqa2dqkaeaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'
         ),
-        size: Piece.PaddedSize.from(1 << 7),
+        size: Piece.Size.from(1 << 7),
       },
       {
         link: Link.parse(
           'baga6ea4seaqa2dqkaeaacaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'
         ),
-        size: Piece.PaddedSize.from(1 << 7),
+        size: Piece.Size.from(1 << 7),
       },
       {
         link: Link.parse(
           'baga6ea4seaqa2dqkaeaagaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'
         ),
-        size: Piece.PaddedSize.from(1 << 7),
+        size: Piece.Size.from(1 << 7),
       },
     ]
     const pieces = source.map(Piece.fromInfo)
@@ -213,7 +212,7 @@ export const testAggregate = {
       () =>
         Aggregate.build({
           pieces,
-          size: Aggregate.PaddedSize.from(1 << 10),
+          size: Aggregate.Size.from(1 << 10),
         }),
       /too many pieces for a 1024 sized aggregate: 5 > 4/i
     )
@@ -226,18 +225,18 @@ export const testAggregate = {
         link: Link.parse(
           'baga6ea4seaqae5ysjdbsr4b5jhotaz5ooh62jrrdbxwygfpkkfjz44kvywycmgy'
         ),
-        size: Piece.UnpaddedSize.toPaddedSize(Piece.UnpaddedSize.from(520192)),
+        size: Piece.Size.fromPadded(520192n),
       },
       {
         link: Link.parse(
           'baga6ea4seaqnrm2n2g4m23t6rs26obxjw2tjtr7tcho24gepj2naqhevytduyoa'
         ),
-        size: Piece.UnpaddedSize.toPaddedSize(Piece.UnpaddedSize.from(260096)),
+        size: Piece.Size.fromPadded(260096n),
       },
     ]
     const build = Aggregate.build({
       pieces: source.map(Piece.fromInfo),
-      size: Aggregate.PaddedSize.from(1 << 20),
+      size: Aggregate.Size.from(1 << 20),
     })
 
     assert.deepEqual(

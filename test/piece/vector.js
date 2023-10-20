@@ -1,6 +1,7 @@
 import * as API from '../../src/api.js'
 import * as Piece from '../../src/piece.js'
 import * as Node from '../../src/node.js'
+import { Expanded } from '../../src/piece/size.js'
 
 export const sizes = [
   256 << 20,
@@ -36,9 +37,9 @@ export const createNodeFromInt = (n) => {
 }
 
 export const pieces = sizes.map((n, index) => {
-  const size = Piece.PaddedSize.from(n)
+  const size = Expanded.from(n)
   const root = createNodeFromInt(index)
-  const height = Piece.PaddedSize.toHeight(size)
+  const height = Expanded.toHeight(size)
   const { link } = Piece.toInfo({ height, root, padding: 0n })
 
   return { size, link }

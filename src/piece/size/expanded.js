@@ -1,11 +1,12 @@
-import * as API from '../api.js'
+import * as API from '../../api.js'
 import {
   EXPANDED_BYTES_PER_QUAD,
   EXPANDED_BYTES_PER_NODE,
-} from '../constant.js'
-import { log2Ceil, onesCount64 } from '../uint64.js'
+} from '../../constant.js'
+import { log2Ceil, onesCount64 } from '../../uint64.js'
 
 export { toExpanded as fromPadded, fromExpanded as toPadded } from './padded.js'
+export { toExpanded as fromUnpadded } from './unpadded.js'
 
 /**
  * Validates that given `size` is a valid {@link API.PieceSize} that is a

@@ -9,8 +9,8 @@ import * as ZeroPad from './zero-comm.js'
 import { computeNode } from './proof.js'
 import { split } from './piece/tree.js'
 import { pad } from './fr32.js'
-import { fromHeight as piceSizeFromHeight } from './piece/padded-size.js'
-import * as Piece from './piece.js'
+import { fromHeight as piceSizeFromHeight } from './piece/size/expanded.js'
+import { Unpadded } from './piece/size.js'
 import * as Digest from './digest.js'
 import { varint } from 'multiformats'
 
@@ -160,9 +160,7 @@ class Hasher {
     const tree = build([leaves, ...nodes])
     const height = tree.length - 1
     const [root] = tree[height]
-    const padding = Number(
-      Piece.UnpaddedSize.requiredZeroPadding(this.bytesWritten)
-    )
+    const padding = Number(Unpadded.toPadding(this.bytesWritten))
 
     const paddingLength = varint.encodingLength(
       /** @type {number & bigint} */ (padding)

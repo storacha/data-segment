@@ -1,10 +1,10 @@
-import * as API from '../api.js'
-import { log2Ceil, trailingZeros64 } from '../uint64.js'
+import * as API from '../../api.js'
+import { log2Ceil, trailingZeros64 } from '../../uint64.js'
 import {
   PADDED_BYTES_PER_QUAD,
   EXPANDED_BYTES_PER_QUAD,
   LEAFS_PER_QUAD,
-} from '../constant.js'
+} from '../../constant.js'
 
 /**
  * Validates that given `size` is a valid {@link API.UnpaddedPieceSize} and

@@ -99,7 +99,7 @@ export const setup = () => {
   ]
 
   const aggregate = Aggregate.build({
-    size: Piece.PaddedSize.from(1 << 30),
+    size: Piece.Size.from(1 << 30),
     pieces,
   })
 

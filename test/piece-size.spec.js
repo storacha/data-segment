@@ -1,5 +1,8 @@
-import { PaddedSize, UnpaddedSize } from '@web3-storage/data-segment/piece'
-import { Padded, Unpadded, Expanded } from '@web3-storage/data-segment/size'
+import {
+  Padded,
+  Unpadded,
+  Expanded,
+} from '@web3-storage/data-segment/piece/size'
 import { varint } from 'multiformats'
 
 // Tests here were ported from
@@ -18,39 +21,39 @@ const vector = [
 export const testPieceSize = {
   ...Object.fromEntries(
     vector.map(([size]) => [
-      `UnpaddedSize.from(${size})`,
+      `Padded.from(${size})`,
       (assert) => {
-        assert.deepEqual(UnpaddedSize.from(size), BigInt(size))
+        assert.deepEqual(Padded.from(size), BigInt(size))
       },
     ])
   ),
   ...Object.fromEntries(
     vector.map(([, size]) => [
-      `PaddedSize.from(${size})`,
+      `Expanded.from(${size})`,
       (assert) => {
-        assert.deepEqual(PaddedSize.from(size), BigInt(size))
+        assert.deepEqual(Expanded.from(size), BigInt(size))
       },
     ])
   ),
   // convert
   ...Object.fromEntries(
-    vector.map(([unpadded, padded]) => [
-      `PaddedSize.toUnpaddedSize(PaddedSize.from(${padded})) === ${unpadded}`,
+    vector.map(([padded, expanded]) => [
+      `Padded.fromExpanded(Expanded.from(${expanded})) === ${padded}`,
       (assert) => {
         assert.deepEqual(
-          PaddedSize.toUnpaddedSize(PaddedSize.from(padded)),
-          BigInt(unpadded)
+          Padded.fromExpanded(Expanded.from(expanded)),
+          BigInt(padded)
         )
       },
     ])
   ),
   ...Object.fromEntries(
-    vector.map(([unpadded, padded]) => [
-      `UnpaddedSize.toPaddedSize(UnpaddedSize.from(${unpadded})) === ${padded}`,
+    vector.map(([padded, expanded]) => [
+      `Padded.toExpanded(Padded.from(${padded})) === ${expanded}`,
       (assert) => {
         assert.deepEqual(
-          UnpaddedSize.toPaddedSize(UnpaddedSize.from(unpadded)),
-          BigInt(padded)
+          Padded.toExpanded(Padded.from(padded)),
+          BigInt(expanded)
         )
       },
     ])
@@ -58,12 +61,10 @@ export const testPieceSize = {
   // round trip
   ...Object.fromEntries(
     [127, 1016, 34091302912].map((size) => [
-      `PaddedSize.validate(UnpaddedSize.toPaddedSize(UnpaddedSize.from(${size})))`,
+      `Expanded.toPadded(Padded.toExpanded(Padded.from(${size})))`,
       (assert) => {
         assert.equal(
-          PaddedSize.toUnpaddedSize(
-            UnpaddedSize.toPaddedSize(UnpaddedSize.from(size))
-          ),
+          Expanded.toPadded(Padded.toExpanded(Padded.from(size))),
           BigInt(size)
         )
       },
@@ -71,12 +72,10 @@ export const testPieceSize = {
   ),
   ...Object.fromEntries(
     [128, 1024, 34359738368].map((size) => [
-      `UnpaddedSize.toPaddedSize(PaddedSize.toUnpaddedSize(PaddedSize.from(${size})))) === ${size}`,
+      `Padded.toExpanded(Expanded.toPadded(Expanded.from(${size}))) === ${size}`,
       (assert) => {
         assert.equal(
-          UnpaddedSize.toPaddedSize(
-            PaddedSize.toUnpaddedSize(PaddedSize.from(size))
-          ),
+          Padded.toExpanded(Expanded.toPadded(Expanded.from(size))),
           BigInt(size)
         )
       },
@@ -86,10 +85,10 @@ export const testPieceSize = {
   // to height - from height
   ...Object.fromEntries(
     [128, 1024, 34359738368].map((size) => [
-      `PaddedSize.fromHeight(PaddedSize.toHeight(PaddedSize.from(${size})))) === ${size}`,
+      `Expanded.fromHeight(Expanded.toHeight(Expanded.from(${size}))) === ${size}`,
       (assert) => {
         assert.equal(
-          PaddedSize.fromHeight(PaddedSize.toHeight(PaddedSize.from(size))),
+          Expanded.fromHeight(Expanded.toHeight(Expanded.from(size))),
           BigInt(size)
         )
       },
@@ -98,11 +97,11 @@ export const testPieceSize = {
 
   ...Object.fromEntries(
     [127, 1016, 34091302912].map((size) => [
-      `UnpaddedSize.toHeight(${size})`,
+      `Padded.toHeight(${size})`,
       (assert) => {
         assert.equal(
-          PaddedSize.fromHeight(UnpaddedSize.toHeight(UnpaddedSize.from(size))),
-          UnpaddedSize.toPaddedSize(UnpaddedSize.from(size))
+          Expanded.fromHeight(Padded.toHeight(Padded.from(size))),
+          Padded.toExpanded(Padded.from(size))
         )
       },
     ])
@@ -111,17 +110,17 @@ export const testPieceSize = {
   // throw
   ...Object.fromEntries(
     [9, 128, 99453687, 1016 + 0x1000000].map((size) => [
-      `UnpaddedSize.from(${size}) throws`,
+      `Padded.from(${size}) throws`,
       (assert) => {
-        assert.throws(() => UnpaddedSize.from(size))
+        assert.throws(() => Padded.from(size))
       },
     ])
   ),
   ...Object.fromEntries(
     [8, 127, 99453687, 0xc00, 1025].map((size) => [
-      `PaddedSize.from(${size}) throws`,
+      `Expanded.from(${size}) throws`,
       (assert) => {
-        assert.throws(() => PaddedSize.from(size))
+        assert.throws(() => Expanded.from(size))
       },
     ])
   ),
@@ -150,12 +149,9 @@ export const testZeroPadding = {
       [17873661021126657n, 17873661021126655n],
     ].map(([size, expect]) => {
       return [
-        `UnpaddedSize.requiredZeroPadding(${size}) === ${expect}`,
+        `Unpadded.toPadding(${size}) === ${expect}`,
         (assert) => {
-          assert.equal(
-            UnpaddedSize.requiredZeroPadding(BigInt(size)),
-            BigInt(expect)
-          )
+          assert.equal(Unpadded.toPadding(BigInt(size)), BigInt(expect))
         },
       ]
     })
@@ -186,9 +182,9 @@ export const testWidth = {
       [128 * 8 + 1, 64],
     ].map(([size, expect]) => {
       return [
-        `UnpaddedSize.toWidth(${size}) === ${expect}`,
+        `Unpadded.toWidth(${size}) === ${expect}`,
         (assert) => {
-          assert.equal(UnpaddedSize.toWidth(BigInt(size)), BigInt(expect))
+          assert.equal(Unpadded.toWidth(BigInt(size)), BigInt(expect))
         },
       ]
     })

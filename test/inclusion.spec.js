@@ -38,7 +38,7 @@ export const testInclusionProof = {
       'bafkzcibcaag5rm2n2g4m23t6rs26obxjw2tjtr7tcho24gepj2naqhevytduyoa'
     )
 
-    const dealSize = Piece.PaddedSize.from(1 << 30)
+    const dealSize = Piece.Size.from(1 << 30)
     const aggregate = Aggregate.build({
       size: dealSize,
       pieces: [a, b],

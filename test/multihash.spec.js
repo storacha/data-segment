@@ -448,7 +448,7 @@ export const testSpecCompat = {
       `bafkzcibcaapao7s73y24kcutaosvacpdjgfe5pw76ooefnyqw4ynr3d2y6x2mpq`
     )
     // Empty 32 GiB piece
-    const height = Piece.PaddedSize.toHeight(Uint64.pow2(35n))
+    const height = Piece.Size.toHeight(Uint64.pow2(35n))
     // create empty digest we will mutate it manually
     const digest = Hasher.digest(new Uint8Array(127))
     const { bytes } = digest
@@ -472,7 +472,7 @@ export const testSpecCompat = {
       `bafkzcibcaap6mqafu276g53zko4k23xzh4h4uecjwicbmvhsuqi7o4bhthhm4aq`
     )
     // Empty 64 GiB piece
-    const height = Piece.PaddedSize.toHeight(Uint64.pow2(36n))
+    const height = Piece.Size.toHeight(Uint64.pow2(36n))
 
     // create empty digest we will mutate it manually
     const digest = Hasher.digest(new Uint8Array(127))
@@ -500,7 +500,7 @@ export const testMultihash = {
       async (assert) => {
         const payload = deriveBuffer(data.in.contentSize)
         const root = parseLink(data.out.cid).multihash.digest
-        const height = Piece.PaddedSize.toHeight(BigInt(data.out.paddedSize))
+        const height = Piece.Size.toHeight(BigInt(data.out.paddedSize))
 
         {
           const digest = Hasher.digest(payload)

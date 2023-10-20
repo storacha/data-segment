@@ -10,7 +10,6 @@ import { create as createLink, parse as parseLink } from 'multiformats/link'
  * @see https://github.com/hugomrdias/playwright-test/issues/544
  */
 import vector from './commp/vector.js'
-import { PaddedSize } from '../src/piece.js'
 
 /**
  * @type {import("entail").Suite}
@@ -112,7 +111,7 @@ export const testPiece = {
     )
     const piece = Piece.fromInfo({
       link: legacyLink,
-      size: PaddedSize.from(size),
+      size: Piece.Size.from(size),
     })
 
     const info = piece.toInfo()

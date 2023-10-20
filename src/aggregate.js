@@ -7,12 +7,14 @@ import * as Node from './node.js'
 import { log2Ceil } from './uint64.js'
 import { indexAreaStart } from './inclusion.js'
 import * as Bytes from 'multiformats/bytes'
+import { Expanded } from './piece/size.js'
+export { Expanded as Size } from './piece/size.js'
 
 import * as InclusionProof from './inclusion.js'
 
 const NodeSize = BigInt(Node.Size)
 const EntrySize = Number(Index.EntrySize)
-export const MAX_CAPACITY = Piece.PaddedSize.fromHeight(Tree.MAX_HEIGHT)
+export const MAX_CAPACITY = Expanded.fromHeight(Tree.MAX_HEIGHT)
 export { InclusionProof }
 export const Proof = InclusionProof.Proof
 
@@ -22,9 +24,8 @@ export const Proof = InclusionProof.Proof
 // Default is chosen based on our current average rate of 30GiB per hour.
 // The 16GiB may also be a viable option, however given our current rate
 // 32GiB is better default.
-export const DEFAULT_DEAL_SIZE = Piece.PaddedSize.from(2n ** 35n)
+export const DEFAULT_DEAL_SIZE = Expanded.from(2n ** 35n)
 
-export const { PaddedSize, UnpaddedSize } = Piece
 export { Tree }
 
 /**
@@ -76,7 +77,7 @@ class AggregateBuilder {
     offset = 0n,
     parts = [],
   }) {
-    this.size = PaddedSize.from(size)
+    this.size = Expanded.from(size)
     this.offset = offset
     this.parts = parts
 
@@ -161,7 +162,7 @@ class AggregateBuilder {
       }
     }
 
-    const size = PaddedSize.fromHeight(piece.height)
+    const size = Expanded.fromHeight(piece.height)
     const sizeInNodes = size / NodeSize
     const level = log2Ceil(sizeInNodes)
 
@@ -293,7 +294,7 @@ class Aggregate {
  */
 export const resolveSegment = (aggregate, piece) => {
   const { height, root } = piece
-  const size = PaddedSize.fromHeight(height)
+  const size = Expanded.fromHeight(height)
   for (const [n, segment] of aggregate.index.entries()) {
     if (size === segment.size && Bytes.equals(root, segment.root)) {
       return { ok: [n, segment] }
