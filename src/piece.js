@@ -1,17 +1,11 @@
 import * as API from './api.js'
-import * as Digest from 'multiformats/hashes/digest'
+import { create as createDigest } from 'multiformats/hashes/digest'
+import * as Digest from './digest.js'
 import * as Link from 'multiformats/link'
 import * as UnpaddedSize from './piece/unpadded-size.js'
 import * as PaddedSize from './piece/padded-size.js'
 import * as Raw from 'multiformats/codecs/raw'
-import {
-  PREFIX,
-  toDigest,
-  digest,
-  MAX_PAYLOAD_SIZE,
-  code,
-  name,
-} from './multihash.js'
+import { digest, MAX_PAYLOAD_SIZE, code, name } from './multihash.js'
 
 export { MAX_PAYLOAD_SIZE }
 
@@ -86,21 +80,21 @@ export const fromPayload = (payload) => fromDigest(digest(payload))
  * @param {API.Piece} piece
  * @returns {API.PieceView}
  */
-export const toView = (piece) => fromDigest(toDigest(piece))
+export const toView = (piece) => fromDigest(Digest.fromPiece(piece))
 
 /**
  *
  * @param {API.Piece} piece
  * @returns {API.PieceLink}
  */
-export const toLink = (piece) => Link.create(Raw.code, toDigest(piece))
+export const toLink = (piece) => Link.create(Raw.code, Digest.fromPiece(piece))
 
 /**
  *
  * @param {API.Piece} piece
  * @returns {API.PieceInfoView}
  */
-export const toInfo = (piece) => new Info(toDigest(piece))
+export const toInfo = (piece) => new Info(Digest.fromPiece(piece))
 
 /**
  *
@@ -122,16 +116,16 @@ class Piece {
     this.link = link
   }
   get padding() {
-    return 0n
+    return Digest.padding(this.link.multihash)
   }
   get height() {
-    return this.link.multihash.bytes[PREFIX.length]
+    return Digest.height(this.link.multihash)
   }
   get size() {
     return PaddedSize.fromHeight(this.height)
   }
   get root() {
-    return this.link.multihash.bytes.subarray(PREFIX.length + 1)
+    return Digest.root(this.link.multihash)
   }
 
   toJSON() {
@@ -177,7 +171,7 @@ class Info {
     if (this._link == null) {
       this._link = Link.create(
         FilCommitmentUnsealed,
-        Digest.create(Sha256Trunc254Padded, this.root)
+        createDigest(Sha256Trunc254Padded, this.root)
       )
     }
 

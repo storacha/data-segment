@@ -32,10 +32,10 @@ export const testInclusionProof = {
 
   'test resolveAggregate': async (assert) => {
     const a = Piece.fromString(
-      'bafkzcibbbybhoesiymupapkj3uygpltr7wsmmiyn5wbrl2srkophcvofwatbw'
+      'bafkzcibcaahae5ysjdbsr4b5jhotaz5ooh62jrrdbxwygfpkkfjz44kvywycmgy'
     )
     const b = Piece.fromString(
-      'bafkzcibbbxmlgtorxdgw47umwxtqn2nwu2m4p4yr3wxbrd2otiebzfoey5gdq'
+      'bafkzcibcaag5rm2n2g4m23t6rs26obxjw2tjtr7tcho24gepj2naqhevytduyoa'
     )
 
     const dealSize = Piece.PaddedSize.from(1 << 30)

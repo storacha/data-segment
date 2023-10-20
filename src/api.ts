@@ -78,7 +78,6 @@ export interface StreamingHasher<
   Size extends number,
   Digest = StreamDigest<Code, Size>
 > {
-  size: Size
   code: Code
   name: string
   /**
@@ -95,8 +94,10 @@ export interface StreamingHasher<
    * Computes the digest of the given input and writes it into the given output
    * at the given offset. Unless `asMultihash` is `false` multihash is
    * written otherwise only the digest (without multihash prefix) is written.
+   *
+   * Returns the offset + number of bytes written.
    */
-  digestInto(output: Uint8Array, offset?: number, asMultihash?: boolean): this
+  digestInto(output: Uint8Array, offset?: number, asMultihash?: boolean): number
 
   /**
    * Writes bytes to be digested.
@@ -237,8 +238,17 @@ export type Fr23Padded = New<{ Fr23Padded: Uint8Array }>
 
 export interface IndexData extends Array<SegmentInfo> {}
 
-export interface MerkleTree<I extends uint64 | number = uint64 | number>
-  extends Piece {
+export interface MerkleTree<I extends uint64 | number = uint64 | number> {
+  /**
+   * Root node of this Merkle tree.
+   */
+  root: MerkleTreeNode
+
+  /**
+   * Height of the tree.
+   */
+  height: number
+
   /**
    * Amount of leafs in this Merkle tree.
    */
@@ -267,7 +277,7 @@ export interface Piece {
   /**
    * Padding that was applied to the payload to make this piece.
    */
-  padding: number
+  padding: uint64
 }
 
 export interface MerkleTreeBuilder<

@@ -16,19 +16,6 @@ import { PaddedSize } from '../src/piece.js'
  * @type {import("entail").Suite}
  */
 export const testPiece = {
-  'size shorter than allowed': async (assert) => {
-    const source = deriveBuffer(64)
-    let result = null
-    try {
-      result = await Piece.fromPayload(source)
-    } catch (error) {
-      result = error
-    }
-
-    assert.ok(
-      String(result).includes('not defined for payloads smaller than 65 bytes')
-    )
-  },
   ...Object.fromEntries(
     Object.values(vector).map((data) => [
       `${data.in.contentSize}\t\t${data.in.cid}`,
@@ -46,6 +33,39 @@ export const testPiece = {
       },
     ])
   ),
+
+  'test empty': async (assert) => {
+    const piece = await Piece.fromPayload(new Uint8Array(0))
+    assert.deepEqual(piece.size, 128n)
+    assert.deepEqual(piece.height, 2)
+    assert.deepEqual(piece.padding, 127n)
+    assert.deepEqual(
+      piece.link.toString(),
+      'bafkzcibcp4bdomn3tgwgrh3g532zopskstnbrd2n3sxfqbze7rxt7vqn7veigmy'
+    )
+  },
+
+  '127 bytes': async (assert) => {
+    const piece = Piece.fromPayload(new Uint8Array(127).fill(0))
+    assert.deepEqual(piece.size, 128n)
+    assert.deepEqual(piece.height, 2)
+    assert.deepEqual(piece.padding, 0n)
+    assert.deepEqual(
+      piece.link.toString(),
+      'bafkzcibcaabdomn3tgwgrh3g532zopskstnbrd2n3sxfqbze7rxt7vqn7veigmy'
+    )
+  },
+
+  '128 bytes': async (assert) => {
+    const piece = Piece.fromPayload(new Uint8Array(128).fill(0))
+    assert.deepEqual(piece.size, 256n)
+    assert.deepEqual(piece.height, 3)
+    assert.deepEqual(piece.padding, 126n)
+    assert.deepEqual(
+      piece.link.toString(),
+      'bafkzcibcpybwiktap34inmaex4wbs6cghlq5i2j2yd2bb2zndn5ep7ralzphkdy'
+    )
+  },
 
   'toString <-> fromString': async (assert) => {
     const source = deriveBuffer(128)
@@ -98,6 +118,7 @@ export const testPiece = {
     const info = piece.toInfo()
     assert.deepEqual(info.height, height)
     assert.deepEqual(info.size, size)
+    assert.deepEqual(info.padding, 0n)
 
     assert.deepEqual(JSON.parse(JSON.stringify(info)), {
       link: { '/': legacyLink.toString() },
