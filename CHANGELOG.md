@@ -1,5 +1,25 @@
 # Changelog
 
+## [4.0.0](https://github.com/web3-storage/data-segment/compare/v3.2.0...v4.0.0) (2023-10-20)
+
+
+### ⚠ BREAKING CHANGES
+
+* arbitrary payload support (Updated Piece V2) ([#36](https://github.com/web3-storage/data-segment/issues/36))
+
+### Features
+
+* arbitrary payload support (Updated Piece V2) ([#36](https://github.com/web3-storage/data-segment/issues/36)) ([6ee655a](https://github.com/web3-storage/data-segment/commit/6ee655a00caa879d39b37872e1bf5a2cb6c38a05))
+* calculate width / 0padding from payload size ([5760435](https://github.com/web3-storage/data-segment/commit/5760435f2cd33a8b377511535324c94d38649d49))
+
+
+### Bug Fixes
+
+* get 100 coverage ([15e801a](https://github.com/web3-storage/data-segment/commit/15e801a0989b83275634496eb01b4042c2add507))
+* refactor modules ([9d993df](https://github.com/web3-storage/data-segment/commit/9d993dfe8a5b5ae708d20badee2c95205e19ba2d))
+* resolve type errors ([3d3aa57](https://github.com/web3-storage/data-segment/commit/3d3aa575c96ab3562149f5e14ad1aea3c9be2738))
+* tests that were failed ([809a98d](https://github.com/web3-storage/data-segment/commit/809a98d9db5db84f832378099b3771bd072d9ac6))
+
 ## [3.2.0](https://github.com/web3-storage/data-segment/compare/v3.1.0...v3.2.0) (2023-10-05)
 
 
