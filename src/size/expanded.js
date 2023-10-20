@@ -69,19 +69,6 @@ export const fromHeight = (height) => fromWidth(2n ** BigInt(height))
 export const toHeight = (size) => log2Ceil(toWidth(size))
 
 /**
- * Takes piece size and calculates number of quads it consists of.
- *
- * @param {API.PieceSize} size
- */
-export const toQauds = (size) => size / EXPANDED_BYTES_PER_QUAD
-
-/**
- * @param {API.uint64} count
- * @returns {API.PieceSize}
- */
-export const fromQuads = (count) => count * EXPANDED_BYTES_PER_QUAD
-
-/**
  * Takes piece tree width (leaf count) and returns corresponding
  * {@link API.PieceSize}.
  *

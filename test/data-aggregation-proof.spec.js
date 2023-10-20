@@ -1,8 +1,6 @@
 import * as Aggregate from '../src/aggregate.js'
 import * as Piece from '../src/piece.js'
 import * as Proof from '../src/proof.js'
-import * as Link from 'multiformats/link'
-import { base64 } from 'multiformats/bases/base64'
 import {
   DataAggregationProof,
   Inclusion,

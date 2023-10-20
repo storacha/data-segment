@@ -61,6 +61,10 @@
     "./piece": {
       "types": "./dist/src/piece.d.ts",
       "import": "./src/piece.js"
+    },
+    "./size": {
+      "types": "./dist/src/size.d.ts",
+      "import": "./src/size.js"
     }
   },
   "c8": {

@@ -1,4 +1,5 @@
 import { PaddedSize, UnpaddedSize } from '@web3-storage/data-segment/piece'
+import { Padded, Unpadded, Expanded } from '@web3-storage/data-segment/size'
 import { varint } from 'multiformats'
 
 // Tests here were ported from
@@ -192,6 +193,55 @@ export const testWidth = {
       ]
     })
   ),
+}
+
+/**
+ * @type {import("entail").Suite}
+ */
+export const testUnpadded = {
+  'test fromPiece': async (assert) => {
+    assert.deepEqual(
+      Unpadded.fromPiece({
+        height: 2,
+        padding: 15n,
+      }),
+      127n - 15n
+    )
+  },
+
+  toExpanded: async (assert) => {
+    assert.deepEqual(Unpadded.toExpanded(0n), 128n)
+    assert.deepEqual(Unpadded.toExpanded(1n), 128n)
+    assert.deepEqual(Unpadded.toExpanded(127n), 128n)
+    assert.deepEqual(Unpadded.toExpanded(128n), 256n)
+  },
+
+  toHeight: async (assert) => {
+    assert.deepEqual(Unpadded.toHeight(0n), 2)
+    assert.deepEqual(Unpadded.toHeight(127n), 2)
+    assert.deepEqual(Unpadded.toHeight(128n), 3)
+    assert.deepEqual(Unpadded.toHeight(256n), 4)
+  },
+}
+
+/**
+ * @type {import("entail").Suite}
+ */
+export const testExpanded = {}
+
+/**
+ * @type {import("entail").Suite}
+ */
+export const testPadded = {
+  fromHeight: async (assert) => {
+    assert.deepEqual(Padded.fromHeight(2), 127n)
+    assert.deepEqual(Padded.fromHeight(3), (256n / 128n) * 127n)
+    assert.deepEqual(Padded.fromHeight(4), (512n / 128n) * 127n)
+  },
+  fromWidth: async (assert) => {
+    assert.deepEqual(Padded.fromWidth(4n), 127n)
+    assert.deepEqual(Padded.fromWidth(8n), (256n / 128n) * 127n)
+  },
 }
 
 /**
