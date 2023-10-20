@@ -113,7 +113,7 @@ export const toBytes = ({ digest }) => {
 
   // if digest is view within a buffer that has enough bytes in front to
   // fit the prefix it may be already include a prefix in which case we
-  // will simply will use a larger slice.
+  // will simply use a larger slice.
   if (digest.byteOffset >= prefixByteLength) {
     const bytes = new Uint8Array(
       digest.buffer,
