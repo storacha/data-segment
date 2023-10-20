@@ -1,8 +1,6 @@
 import * as Aggregate from '../src/aggregate.js'
 import * as Piece from '../src/piece.js'
 import * as Proof from '../src/proof.js'
-import * as Link from 'multiformats/link'
-import { base64 } from 'multiformats/bases/base64'
 import {
   DataAggregationProof,
   Inclusion,
@@ -93,15 +91,15 @@ export const testDataAggregationProof = {
 export const setup = () => {
   const pieces = [
     Piece.fromString(
-      'bafkzcibbbybhoesiymupapkj3uygpltr7wsmmiyn5wbrl2srkophcvofwatbw'
+      'bafkzcibcaahae5ysjdbsr4b5jhotaz5ooh62jrrdbxwygfpkkfjz44kvywycmgy'
     ),
     Piece.fromString(
-      'bafkzcibbbxmlgtorxdgw47umwxtqn2nwu2m4p4yr3wxbrd2otiebzfoey5gdq'
+      'bafkzcibcaag5rm2n2g4m23t6rs26obxjw2tjtr7tcho24gepj2naqhevytduyoa'
     ),
   ]
 
   const aggregate = Aggregate.build({
-    size: Piece.PaddedSize.from(1 << 30),
+    size: Piece.Size.from(1 << 30),
     pieces,
   })
 

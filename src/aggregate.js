@@ -7,12 +7,14 @@ import * as Node from './node.js'
 import { log2Ceil } from './uint64.js'
 import { indexAreaStart } from './inclusion.js'
 import * as Bytes from 'multiformats/bytes'
+import { Expanded } from './piece/size.js'
+export { Expanded as Size } from './piece/size.js'
 
 import * as InclusionProof from './inclusion.js'
 
 const NodeSize = BigInt(Node.Size)
 const EntrySize = Number(Index.EntrySize)
-export const MAX_CAPACITY = Piece.PaddedSize.fromHeight(Tree.MAX_HEIGHT)
+export const MAX_CAPACITY = Expanded.fromHeight(Tree.MAX_HEIGHT)
 export { InclusionProof }
 export const Proof = InclusionProof.Proof
 
@@ -22,14 +24,13 @@ export const Proof = InclusionProof.Proof
 // Default is chosen based on our current average rate of 30GiB per hour.
 // The 16GiB may also be a viable option, however given our current rate
 // 32GiB is better default.
-export const DEFAULT_DEAL_SIZE = Piece.PaddedSize.from(2n ** 35n)
+export const DEFAULT_DEAL_SIZE = Expanded.from(2n ** 35n)
 
-export const { PaddedSize, UnpaddedSize } = Piece
 export { Tree }
 
 /**
  * @param {object} [options]
- * @param {API.PaddedPieceSize} [options.size] - Size of the aggregate in
+ * @param {API.PieceSize} [options.size] - Size of the aggregate in
  * (fr32 padded) bytes. If omitted default to 32 GiB. Note that sizes >=8GiB
  * are are too expensive for service providers and it may be challenging to
  * find a deal.
@@ -40,7 +41,7 @@ export const createBuilder = ({ size = DEFAULT_DEAL_SIZE } = {}) =>
 /**
  * @param {object} options
  * @param {API.Piece[]} options.pieces - Pieces to add to the aggregate
- * @param {API.PaddedPieceSize} [options.size] - Size of the aggregate in
+ * @param {API.PieceSize} [options.size] - Size of the aggregate in
  * (fr32 padded) bytes. If omitted default to 32 GiB
  */
 export const build = ({ pieces, size = DEFAULT_DEAL_SIZE }) => {
@@ -53,10 +54,19 @@ export const build = ({ pieces, size = DEFAULT_DEAL_SIZE }) => {
   return builder.build()
 }
 
+/**
+ *
+ * @param {object} tree
+ * @param {API.MerkleTreeNode} tree.root
+ * @param {number} tree.height
+ */
+export const toLink = ({ root, height }) =>
+  Piece.toLink({ root, height, padding: 0n })
+
 class AggregateBuilder {
   /**
    * @param {object} source
-   * @param {API.PaddedPieceSize} source.size
+   * @param {API.PieceSize} source.size
    * @param {API.uint64} [source.offset]
    * @param {API.MerkleTreeNodeSource[]} [source.parts]
    * @param {number} [source.limit]
@@ -67,7 +77,7 @@ class AggregateBuilder {
     offset = 0n,
     parts = [],
   }) {
-    this.size = PaddedSize.from(size)
+    this.size = Expanded.from(size)
     this.offset = offset
     this.parts = parts
 
@@ -152,7 +162,7 @@ class AggregateBuilder {
       }
     }
 
-    const size = PaddedSize.fromHeight(piece.height)
+    const size = Expanded.fromHeight(piece.height)
     const sizeInNodes = size / NodeSize
     const level = log2Ceil(sizeInNodes)
 
@@ -180,7 +190,7 @@ class AggregateBuilder {
 }
 
 /**
- * @param {API.PaddedPieceSize} size
+ * @param {API.PieceSize} size
  * @param {API.SegmentInfo[]} segments
  * @returns {Iterable<API.MerkleTreeNodeSource>}
  */
@@ -222,7 +232,7 @@ const createIndex = (parts) =>
 class Aggregate {
   /**
    * @param {object} source
-   * @param {API.PaddedPieceSize} source.size
+   * @param {API.PieceSize} source.size
    * @param {API.uint64} source.offset
    * @param {API.MerkleTreeNodeSource[]} source.parts
    * @param {API.IndexData} source.index
@@ -236,7 +246,11 @@ class Aggregate {
     this.limit = limit
     this.size = size
     this.offset = offset
-    this.link = Piece.toLink(this.tree)
+    this.link = Piece.toLink({
+      height: tree.height,
+      root: tree.root,
+      padding: 0n,
+    })
   }
 
   /**
@@ -253,6 +267,9 @@ class Aggregate {
    */
   get height() {
     return this.tree.height
+  }
+  get padding() {
+    return 0n
   }
   toJSON() {
     return Piece.toJSON(this)
@@ -277,7 +294,7 @@ class Aggregate {
  */
 export const resolveSegment = (aggregate, piece) => {
   const { height, root } = piece
-  const size = PaddedSize.fromHeight(height)
+  const size = Expanded.fromHeight(height)
   for (const [n, segment] of aggregate.index.entries()) {
     if (size === segment.size && Bytes.equals(root, segment.root)) {
       return { ok: [n, segment] }

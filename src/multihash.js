@@ -9,8 +9,12 @@ import * as ZeroPad from './zero-comm.js'
 import { computeNode } from './proof.js'
 import { split } from './piece/tree.js'
 import { pad } from './fr32.js'
-import { fromHeight as piceSizeFromHeight } from './piece/padded-size.js'
-import * as Piece from './piece.js'
+import { fromHeight as piceSizeFromHeight } from './piece/size/expanded.js'
+import { Unpadded } from './piece/size.js'
+import * as Digest from './digest.js'
+import { varint } from 'multiformats'
+
+export { Digest }
 
 /**
  * @see https://github.com/multiformats/multicodec/pull/331/files
@@ -24,15 +28,6 @@ export const name = /** @type {const} */ (
  * @see https://github.com/multiformats/multicodec/pull/331/files
  */
 export const code = 0x1011
-
-/**
- * The digest for the multihash is 33 bytes. The first byte defines the height
- * of the tree and the remaining 32 bytes are the sha-256 digest of the root
- * node.
- *
- * @type {33}
- */
-export const size = 33
 
 /**
  * Since first byte in the digest is the tree height, the maximum height is 255.
@@ -65,14 +60,14 @@ export const digest = (payload) => {
  * Creates a streaming hasher that can be used to consumer larger streams
  * of data than it would be practical to load into memory all at once.
  *
- * @returns {API.StreamingHasher<typeof code, typeof size, API.PieceDigest>}
+ * @returns {API.StreamingHasher<typeof code, number, API.PieceDigest>}
  */
 export const create = () => new Hasher()
 
 /**
  * @typedef {[API.MerkleTreeNode[], ...API.MerkleTreeNode[][]]} Layers
  *
- * @implements {API.StreamingHasher<typeof code, typeof size, API.PieceDigest>}
+ * @implements {API.StreamingHasher<typeof code, number, API.PieceDigest>}
  */
 class Hasher {
   constructor() {
@@ -133,9 +128,9 @@ class Hasher {
    * written from the very beginning.
    */
   digest() {
-    const digest = createDigest()
-    this.digestInto(digest.bytes)
-    return digest
+    const bytes = new Uint8Array(Digest.MAX_SIZE)
+    const count = this.digestInto(bytes, 0, true)
+    return Digest.fromBytes(bytes.subarray(0, count))
   }
 
   /**
@@ -149,13 +144,7 @@ class Hasher {
    * @param {boolean} asMultihash
    */
   digestInto(output, byteOffset = 0, asMultihash = true) {
-    const { buffer, layers, offset } = this
-
-    if (this.bytesWritten < MIN_PAYLOAD_SIZE) {
-      throw new RangeError(
-        `Algorithm is not defined for payloads smaller than ${MIN_PAYLOAD_SIZE} bytes`
-      )
-    }
+    const { buffer, layers, offset, bytesWritten } = this
 
     // We do not want to mutate the layers, so we create a shallow copy of it
     // which we will use to compute the root.
@@ -164,27 +153,42 @@ class Hasher {
     // If we have some bytes in the buffer we fill rest with zeros and compute
     // leaves from it. Note that it is safe to mutate the buffer here as bytes
     // past `offset` are considered dirty and should not be read.
-    if (offset > 0) {
+    if (offset > 0 || bytesWritten === 0n) {
       leaves = [...leaves, ...split(pad(buffer.fill(0, offset)))]
     }
 
     const tree = build([leaves, ...nodes])
     const height = tree.length - 1
     const [root] = tree[height]
+    const padding = Number(Unpadded.toPadding(this.bytesWritten))
+
+    const paddingLength = varint.encodingLength(
+      /** @type {number & bigint} */ (padding)
+    )
 
     // Write the multihash prefix if requested
     if (asMultihash) {
-      output.set(PREFIX, byteOffset)
-      byteOffset += PREFIX.length
+      varint.encodeTo(code, output, byteOffset)
+      byteOffset += Digest.TAG_SIZE
+
+      const size = paddingLength + Digest.HEIGHT_SIZE + Digest.ROOT_SIZE
+      const sizeLength = varint.encodingLength(size)
+      varint.encodeTo(size, output, byteOffset)
+      byteOffset += sizeLength
     }
+
+    varint.encodeTo(padding, output, byteOffset)
+    byteOffset += paddingLength
 
     // Write the tree height as the first byte of the digest
     output[byteOffset] = height
     byteOffset += 1
+
     // Write the root as the remaining 32 bytes of the digest
     output.set(root, byteOffset)
+    byteOffset += root.length
 
-    return this
+    return byteOffset
   }
   /**
    * @param {Uint8Array} bytes
@@ -265,65 +269,10 @@ class Hasher {
   get code() {
     return code
   }
-  get size() {
-    return size
-  }
   get name() {
     return name
   }
 }
-
-/**
- * Byte encoded {@link code} and the {@link size} of the digest.
- */
-export const PREFIX = new Uint8Array([145, 32, size])
-
-const MULTIHASH_SIZE = PREFIX.length + size
-
-class Digest {
-  /**
-   * @param {Uint8Array} bytes
-   */
-  constructor(bytes) {
-    this.bytes = bytes
-    this.digest = bytes.subarray(PREFIX.length)
-    this.root = bytes.subarray(PREFIX.length + 1)
-  }
-  get height() {
-    return this.bytes[PREFIX.length]
-  }
-
-  get size() {
-    return size
-  }
-  get name() {
-    return name
-  }
-  get code() {
-    return code
-  }
-}
-
-/**
- * @param {API.Piece} piece
- * @returns {API.PieceDigest}
- */
-export const toDigest = ({ height, root }) => {
-  const bytes = new Uint8Array(MULTIHASH_SIZE)
-  let byteOffset = 0
-  bytes.set(PREFIX, byteOffset)
-  byteOffset += PREFIX.length
-
-  // Write the tree height as the first byte of the digest
-  bytes[byteOffset] = height
-  byteOffset += 1
-  // Write the root as the remaining 32 bytes of the digest
-  bytes.set(root, byteOffset)
-
-  return new Digest(bytes)
-}
-
-export const createDigest = () => new Digest(new Uint8Array(MULTIHASH_SIZE))
 
 /**
  * Prunes layers by combining node pairs into nodes in the next layer and

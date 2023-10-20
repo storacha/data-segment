@@ -15,17 +15,17 @@ export const testPieceInclusionProofs = {
         link: Link.parse(
           'baga6ea4seaqae5ysjdbsr4b5jhotaz5ooh62jrrdbxwygfpkkfjz44kvywycmgy'
         ),
-        size: Piece.UnpaddedSize.toPaddedSize(520192n),
+        size: Piece.Size.fromUnpadded(520192n),
       }),
       Piece.fromInfo({
         link: Link.parse(
           'baga6ea4seaqnrm2n2g4m23t6rs26obxjw2tjtr7tcho24gepj2naqhevytduyoa'
         ),
-        size: Piece.UnpaddedSize.toPaddedSize(260096n),
+        size: Piece.Size.fromUnpadded(260096n),
       }),
     ]
 
-    const dealSize = Piece.PaddedSize.from(1 << 30)
+    const dealSize = Piece.Size.from(1 << 30)
     const aggregate = Aggregate.build({
       size: dealSize,
       pieces,
@@ -161,17 +161,17 @@ export const testPieceInclusionProofs = {
         link: Link.parse(
           'baga6ea4seaqae5ysjdbsr4b5jhotaz5ooh62jrrdbxwygfpkkfjz44kvywycmgy'
         ),
-        size: Piece.UnpaddedSize.toPaddedSize(520192n),
+        size: Piece.Size.fromUnpadded(520192n),
       }),
       Piece.fromInfo({
         link: Link.parse(
           'baga6ea4seaqnrm2n2g4m23t6rs26obxjw2tjtr7tcho24gepj2naqhevytduyoa'
         ),
-        size: Piece.UnpaddedSize.toPaddedSize(260096n),
+        size: Piece.Size.fromUnpadded(260096n),
       }),
     ]
 
-    const dealSize = Piece.PaddedSize.from(1 << 30)
+    const dealSize = Piece.Size.from(1 << 30)
     const aggregate = Aggregate.build({
       size: dealSize,
       pieces,

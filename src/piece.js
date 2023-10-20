@@ -1,19 +1,13 @@
 import * as API from './api.js'
-import * as Digest from 'multiformats/hashes/digest'
+import { create as createDigest } from 'multiformats/hashes/digest'
+import * as Digest from './digest.js'
 import * as Link from 'multiformats/link'
-import * as UnpaddedSize from './piece/unpadded-size.js'
-import * as PaddedSize from './piece/padded-size.js'
-import * as Raw from 'multiformats/codecs/raw'
-import {
-  PREFIX,
-  toDigest,
-  digest,
-  MAX_PAYLOAD_SIZE,
-  code,
-  name,
-} from './multihash.js'
 
-export { MAX_PAYLOAD_SIZE }
+import * as Raw from 'multiformats/codecs/raw'
+import { digest, MAX_PAYLOAD_SIZE, code, name } from './multihash.js'
+
+import * as Size from './piece/size.js'
+export { MAX_PAYLOAD_SIZE, Size }
 
 /**
  * @see https://github.com/multiformats/go-multihash/blob/dc3bd6897fcd17f6acd8d4d6ffd2cea3d4d3ebeb/multihash.go#L73
@@ -26,8 +20,6 @@ export const Sha256Trunc254Padded = 0x1012
  * @type {API.MulticodecCode<0xf101, 'fil-commitment-unsealed'>}
  */
 export const FilCommitmentUnsealed = 0xf101
-
-export { UnpaddedSize, PaddedSize }
 
 /**
  * @param {API.PieceDigest} digest
@@ -86,21 +78,21 @@ export const fromPayload = (payload) => fromDigest(digest(payload))
  * @param {API.Piece} piece
  * @returns {API.PieceView}
  */
-export const toView = (piece) => fromDigest(toDigest(piece))
+export const toView = (piece) => fromDigest(Digest.fromPiece(piece))
 
 /**
  *
  * @param {API.Piece} piece
  * @returns {API.PieceLink}
  */
-export const toLink = (piece) => Link.create(Raw.code, toDigest(piece))
+export const toLink = (piece) => Link.create(Raw.code, Digest.fromPiece(piece))
 
 /**
  *
  * @param {API.Piece} piece
  * @returns {API.PieceInfoView}
  */
-export const toInfo = (piece) => new Info(toDigest(piece))
+export const toInfo = (piece) => new Info(Digest.fromPiece(piece))
 
 /**
  *
@@ -109,8 +101,9 @@ export const toInfo = (piece) => new Info(toDigest(piece))
  */
 export const fromInfo = (info) =>
   toView({
-    height: PaddedSize.toHeight(info.size),
+    height: Size.toHeight(info.size),
     root: info.link.multihash.digest,
+    padding: 0n,
   })
 
 class Piece {
@@ -120,14 +113,17 @@ class Piece {
   constructor(link) {
     this.link = link
   }
+  get padding() {
+    return Digest.padding(this.link.multihash)
+  }
   get height() {
-    return this.link.multihash.bytes[PREFIX.length]
+    return Digest.height(this.link.multihash)
   }
   get size() {
-    return PaddedSize.fromHeight(this.height)
+    return Size.fromHeight(this.height)
   }
   get root() {
-    return this.link.multihash.bytes.subarray(PREFIX.length + 1)
+    return Digest.root(this.link.multihash)
   }
 
   toJSON() {
@@ -163,14 +159,17 @@ class Info {
     return this.piece.root
   }
   get size() {
-    return PaddedSize.fromHeight(this.height)
+    return Size.fromHeight(this.height)
+  }
+  get padding() {
+    return this.piece.padding
   }
 
   get link() {
     if (this._link == null) {
       this._link = Link.create(
         FilCommitmentUnsealed,
-        Digest.create(Sha256Trunc254Padded, this.root)
+        createDigest(Sha256Trunc254Padded, this.root)
       )
     }
 

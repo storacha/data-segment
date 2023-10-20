@@ -78,7 +78,6 @@ export interface StreamingHasher<
   Size extends number,
   Digest = StreamDigest<Code, Size>
 > {
-  size: Size
   code: Code
   name: string
   /**
@@ -95,8 +94,10 @@ export interface StreamingHasher<
    * Computes the digest of the given input and writes it into the given output
    * at the given offset. Unless `asMultihash` is `false` multihash is
    * written otherwise only the digest (without multihash prefix) is written.
+   *
+   * Returns the offset + number of bytes written.
    */
-  digestInto(output: Uint8Array, offset?: number, asMultihash?: boolean): this
+  digestInto(output: Uint8Array, offset?: number, asMultihash?: boolean): number
 
   /**
    * Writes bytes to be digested.
@@ -132,7 +133,7 @@ export interface PieceView extends Piece {
   /**
    * Size is the number of padded bytes that is contained in this piece.
    */
-  size: PaddedPieceSize
+  size: PieceSize
   toInfo(): PieceInfoView
   toJSON(): { '/': ToString<PieceLink> }
   toString(): ToString<PieceLink>
@@ -208,10 +209,27 @@ export interface Vector<T> extends Iterable<T> {
 
 export type uint64 = bigint
 
-export type PaddedPieceSize = New<{ PaddedPieceSize: uint64 }>
+/**
+ * Represents a filecoin piece size which MUST satisfy certain invariants to
+ * allow for perfect binary tree construction, specifically size must be
+ * `2 ^ N * 128` which implies that minimum piece size is `128` bytes, enough
+ * for a (perfect) binary tree with `4` leaves.
+ */
+export type PieceSize = New<{ PieceSize: uint64 }>
+
+/**
+ * Represents size of the 0-padded payload of from which filecoin piece is
+ * derived. This is a size pre fr32 expansion that must satisfy certain
+ * so that size after FR32 expansion will meet {@link PieceSize} requirements.
+ *
+ * Specifically size must be `2 ^ N * 127` which implies that minimum piece
+ * size is `127` bytes, enough for a (perfect) binary tree with `4` leaves.
+ */
+export type PaddedSize = New<{ FR32ExpandedSize: uint64 }>
 
 /**
  * `UnpaddedPieceSize` is the size of a piece, in bytes.
+ *
  * @see https://github.com/filecoin-project/go-state-types/blob/ff2ed169ff566458f2acd8b135d62e8ca27e7d0c/abi/piece.go#L10C4-L11
  */
 export type UnpaddedPieceSize = New<{ UnpaddedPieceSize: uint64 }>
@@ -220,8 +238,17 @@ export type Fr23Padded = New<{ Fr23Padded: Uint8Array }>
 
 export interface IndexData extends Array<SegmentInfo> {}
 
-export interface MerkleTree<I extends uint64 | number = uint64 | number>
-  extends Piece {
+export interface MerkleTree<I extends uint64 | number = uint64 | number> {
+  /**
+   * Root node of this Merkle tree.
+   */
+  root: MerkleTreeNode
+
+  /**
+   * Height of the tree.
+   */
+  height: number
+
   /**
    * Amount of leafs in this Merkle tree.
    */
@@ -241,10 +268,16 @@ export interface Piece {
    * Root node of this Merkle tree.
    */
   root: MerkleTreeNode
+
   /**
    * Height of the tree.
    */
   height: number
+
+  /**
+   * Padding that was applied to the payload to make this piece.
+   */
+  padding: uint64
 }
 
 export interface MerkleTreeBuilder<
@@ -277,13 +310,13 @@ export interface PieceInfo {
   /**
    * Size is the number of padded bytes that is contained in this piece.
    */
-  size: PaddedPieceSize
+  size: PieceSize
 }
 
 export interface PieceInfoView extends PieceInfo, Piece {}
 
 export interface PieceDigest
-  extends StreamDigest<FR32_SHA2_256_TRUNC254_PADDED_BINARY_TREE, 33>,
+  extends StreamDigest<FR32_SHA2_256_TRUNC254_PADDED_BINARY_TREE>,
     Piece {
   name: typeof Multihash.name
 }

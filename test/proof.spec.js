@@ -174,7 +174,7 @@ export const testProof = {
     const piece = Piece.fromPayload(payload)
     const aggregate = Aggregate.build({
       pieces: [piece],
-      size: Piece.PaddedSize.from(2n ** 12n),
+      size: Piece.Size.from(2n ** 12n),
     })
 
     const inclusion = aggregate.resolveProof(piece.link)
