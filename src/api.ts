@@ -95,7 +95,7 @@ export interface StreamingHasher<
    * at the given offset. Unless `asMultihash` is `false` multihash is
    * written otherwise only the digest (without multihash prefix) is written.
    *
-   * Returns the offset + number of bytes written.
+   * Returns the number of bytes that were written.
    */
   digestInto(output: Uint8Array, offset?: number, asMultihash?: boolean): number
 

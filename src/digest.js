@@ -37,10 +37,11 @@ export const HEIGHT_SIZE = 1
  * Amount of bytes used to store the tree root.
  */
 export const ROOT_SIZE = SHA256.size
+
 /**
  * Size of the multihash digest in bytes.
  */
-const MAX_DIGEST_SIZE = MAX_PADDING_SIZE + HEIGHT_SIZE + SHA256.size
+export const MAX_DIGEST_SIZE = MAX_PADDING_SIZE + HEIGHT_SIZE + SHA256.size
 
 export const TAG_SIZE = varint.encodingLength(code)
 

@@ -166,29 +166,31 @@ class Hasher {
       /** @type {number & bigint} */ (padding)
     )
 
+    let endOffset = byteOffset
     // Write the multihash prefix if requested
     if (asMultihash) {
-      varint.encodeTo(code, output, byteOffset)
-      byteOffset += Digest.TAG_SIZE
+      varint.encodeTo(code, output, endOffset)
+      endOffset += Digest.TAG_SIZE
 
       const size = paddingLength + Digest.HEIGHT_SIZE + Digest.ROOT_SIZE
       const sizeLength = varint.encodingLength(size)
-      varint.encodeTo(size, output, byteOffset)
-      byteOffset += sizeLength
+      varint.encodeTo(size, output, endOffset)
+      endOffset += sizeLength
     }
 
-    varint.encodeTo(padding, output, byteOffset)
-    byteOffset += paddingLength
+    varint.encodeTo(padding, output, endOffset)
+    endOffset += paddingLength
 
     // Write the tree height as the first byte of the digest
-    output[byteOffset] = height
-    byteOffset += 1
+    output[endOffset] = height
+    endOffset += 1
 
     // Write the root as the remaining 32 bytes of the digest
-    output.set(root, byteOffset)
-    byteOffset += root.length
+    output.set(root, endOffset)
+    endOffset += root.length
 
-    return byteOffset
+    // Return number of bytes written
+    return endOffset - byteOffset
   }
   /**
    * @param {Uint8Array} bytes
