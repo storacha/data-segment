@@ -1,5 +1,18 @@
 # Changelog
 
+## [5.0.0](https://github.com/web3-storage/data-segment/compare/v4.0.0...v5.0.0) (2023-10-26)
+
+
+### ⚠ BREAKING CHANGES
+
+* `digestInto` returns bytes written ([#38](https://github.com/web3-storage/data-segment/issues/38))
+* `digestInto` returns bytes written
+
+### Features
+
+* `digestInto` returns bytes written ([968aace](https://github.com/web3-storage/data-segment/commit/968aace3a188677be40bd328ef0f417e2a56032a))
+* `digestInto` returns bytes written ([#38](https://github.com/web3-storage/data-segment/issues/38)) ([6e0634e](https://github.com/web3-storage/data-segment/commit/6e0634e74475a40d2641b5fb7634dc85378bdeff))
+
 ## [4.0.0](https://github.com/web3-storage/data-segment/compare/v3.2.0...v4.0.0) (2023-10-20)
 
 
