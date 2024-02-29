@@ -18,7 +18,7 @@ const cid = piece.link.toSting()
 
 ## Prior Art
 
-Sstarted as fork of [js-fil-utils] modernizing it to use ES modules and web crypto APIs in place of node APIs.
+Started as fork of [js-fil-utils] modernizing it to use ES modules and web crypto APIs in place of node APIs.
 
 However, [js-fil-utils] produces different results from the more widely used go implementation which is why it got some heavy lifting inspired by [go-data-segment] and [go-fil-commp-hashhash] libraries.
 
