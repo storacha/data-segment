@@ -65,6 +65,10 @@
     "./piece/size": {
       "types": "./dist/src/piece/size.d.ts",
       "import": "./src/piece/size.js"
+    },
+    "./multihash": {
+      "types": "./dist/src/multihash.d.ts",
+      "import": "./src/multihash.js"
     }
   },
   "c8": {
