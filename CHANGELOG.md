@@ -1,5 +1,18 @@
 # Changelog
 
+## [5.1.0](https://github.com/web3-storage/data-segment/compare/v5.0.0...v5.1.0) (2024-03-01)
+
+
+### Features
+
+* export JS hasher ([c2a956c](https://github.com/web3-storage/data-segment/commit/c2a956c8da20937d69a9f0977eb1974d542b8510))
+* export JS hasher ([#41](https://github.com/web3-storage/data-segment/issues/41)) ([6a63e68](https://github.com/web3-storage/data-segment/commit/6a63e68de729dceb8be9490c1e3fe7c78dd0a62b))
+
+
+### Bug Fixes
+
+* typo ([373aeb5](https://github.com/web3-storage/data-segment/commit/373aeb5ad7b16664dd8a992b1e2f57a9efef2bb1))
+
 ## [5.0.0](https://github.com/web3-storage/data-segment/compare/v4.0.0...v5.0.0) (2023-10-26)
 
 
