@@ -34,18 +34,20 @@ export { Tree }
  * (fr32 padded) bytes. If omitted default to 32 GiB. Note that sizes >=8GiB
  * are are too expensive for service providers and it may be challenging to
  * find a deal.
+ * @param {API.SyncMultihashHasher<API.SHA256_CODE>} [options.hasher] - A sync sha256 hasher.
  */
-export const createBuilder = ({ size = DEFAULT_DEAL_SIZE } = {}) =>
-  new AggregateBuilder({ size })
+export const createBuilder = ({ size = DEFAULT_DEAL_SIZE, hasher } = {}) =>
+  new AggregateBuilder({ size, hasher })
 
 /**
  * @param {object} options
  * @param {API.Piece[]} options.pieces - Pieces to add to the aggregate
  * @param {API.PieceSize} [options.size] - Size of the aggregate in
  * (fr32 padded) bytes. If omitted default to 32 GiB
+ * @param {API.SyncMultihashHasher<API.SHA256_CODE>} [options.hasher] - A sync sha256 hasher.
  */
-export const build = ({ pieces, size = DEFAULT_DEAL_SIZE }) => {
-  const builder = createBuilder({ size })
+export const build = ({ pieces, size = DEFAULT_DEAL_SIZE, hasher }) => {
+  const builder = createBuilder({ size, hasher })
 
   for (const piece of pieces) {
     builder.write(piece)
@@ -70,12 +72,14 @@ class AggregateBuilder {
    * @param {API.uint64} [source.offset]
    * @param {API.MerkleTreeNodeSource[]} [source.parts]
    * @param {number} [source.limit]
+   * @param {API.SyncMultihashHasher<API.SHA256_CODE>} [source.hasher]
    */
   constructor({
     size,
     limit = Index.maxIndexEntriesInDeal(size),
     offset = 0n,
     parts = [],
+    hasher
   }) {
     this.size = Expanded.from(size)
     this.offset = offset
@@ -85,6 +89,7 @@ class AggregateBuilder {
      * Maximum number of pieces that could be added to this aggregate.
      */
     this.limit = limit
+    this.hasher = hasher
   }
 
   /**
@@ -102,14 +107,13 @@ class AggregateBuilder {
   }
 
   /**
-   *
    * @returns {API.AggregateView}
    */
   build() {
-    const { size, parts, limit, offset, height } = this
+    const { size, parts, limit, offset, height, hasher } = this
     const index = createIndex(parts)
 
-    const tree = Tree.create(height)
+    const tree = Tree.create(height, { hasher })
     Tree.batchSet(tree, parts)
     Tree.batchSet(tree, createIndexNodes(size, index))
 
