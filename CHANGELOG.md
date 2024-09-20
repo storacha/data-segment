@@ -1,5 +1,12 @@
 # Changelog
 
+## [5.2.0](https://github.com/storacha/data-segment/compare/v5.1.0...v5.2.0) (2024-09-20)
+
+
+### Features
+
+* custom SHA256 hashing function for aggregate builder ([#42](https://github.com/storacha/data-segment/issues/42)) ([cac9fc1](https://github.com/storacha/data-segment/commit/cac9fc147d103c77d029255f6c755d41fc1024d4))
+
 ## [5.1.0](https://github.com/web3-storage/data-segment/compare/v5.0.0...v5.1.0) (2024-03-01)
 
 
