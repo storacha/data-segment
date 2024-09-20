@@ -32,7 +32,7 @@
     "check": "tsc --build"
   },
   "dependencies": {
-    "@ipld/dag-cbor": "^9.0.5",
+    "@ipld/dag-cbor": "^9.2.1",
     "multiformats": "^13.3.0",
     "sync-multihash-sha2": "^1.0.0"
   },

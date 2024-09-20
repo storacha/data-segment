@@ -9,11 +9,11 @@ importers:
   .:
     dependencies:
       '@ipld/dag-cbor':
-        specifier: ^9.0.5
-        version: 9.0.5
+        specifier: ^9.2.1
+        version: 9.2.1
       multiformats:
-        specifier: ^11.0.2
-        version: 11.0.2
+        specifier: ^13.3.0
+        version: 13.3.0
       sync-multihash-sha2:
         specifier: ^1.0.0
         version: 1.0.0
@@ -272,8 +272,8 @@ packages:
     cpu: [x64]
     os: [win32]
 
-  '@ipld/dag-cbor@9.0.5':
-    resolution: {integrity: sha512-TyqgtxEojc98rvxg4NGM+73JzQeM4+tK2VQes/in2mdyhO+1wbGuBijh1tvi9BErQ/dEblxs9v4vEQSX8mFCIw==}
+  '@ipld/dag-cbor@9.2.1':
+    resolution: {integrity: sha512-nyY48yE7r3dnJVlxrdaimrbloh4RokQaNRdI//btfTkcTEZbpmSrbYcBQ4VKTf8ZxXAOUJy4VsRpkJo+y9RTnA==}
     engines: {node: '>=16.0.0', npm: '>=7.0.0'}
 
   '@istanbuljs/load-nyc-config@1.1.0':
@@ -952,13 +952,8 @@ packages:
   ms@2.1.2:
     resolution: {integrity: sha512-sGkPx+VjMtmA6MX27oA4FBFELFCZZ4S4XqeGOXCv68tT+jb3vk/RyaKWP0PTKyWtmLSM0b+adUTEvbs1PEaH2w==}
 
-  multiformats@11.0.2:
-    resolution: {integrity: sha512-b5mYMkOkARIuVZCpvijFj9a6m5wMVLC7cf/jIPd5D/ARDOfLC5+IFkbgDXQgcU2goIsTD/O9NY4DI/Mt4OGvlg==}
-    engines: {node: '>=16.0.0', npm: '>=7.0.0'}
-
-  multiformats@12.1.1:
-    resolution: {integrity: sha512-GBSToTmri2vJYs8wqcZQ8kB21dCaeTOzHTIAlr8J06C1eL6UbzqURXFZ5Fl0EYm9GAFz1IlYY8SxGOs9G9NJRg==}
-    engines: {node: '>=16.0.0', npm: '>=7.0.0'}
+  multiformats@13.3.0:
+    resolution: {integrity: sha512-CBiqvsufgmpo01VT5ze94O+uc+Pbf6f/sThlvWss0sBZmAOu6GQn5usrYV2sf2mr17FWYc0rO8c/CNe2T90QAA==}
 
   nanoid@4.0.2:
     resolution: {integrity: sha512-7ZtY5KTCNheRGfEFxnedV5zFiORN1+Y1N6zvPTnHQd8ENUvfaDBeuJDZb2bN/oXwXxu3qkTXDzy57W5vAmDTBw==}
@@ -1608,10 +1603,10 @@ snapshots:
   '@esbuild/win32-x64@0.18.11':
     optional: true
 
-  '@ipld/dag-cbor@9.0.5':
+  '@ipld/dag-cbor@9.2.1':
     dependencies:
       cborg: 4.0.3
-      multiformats: 12.1.1
+      multiformats: 13.3.0
 
   '@istanbuljs/load-nyc-config@1.1.0':
     dependencies:
@@ -2298,9 +2293,7 @@ snapshots:
 
   ms@2.1.2: {}
 
-  multiformats@11.0.2: {}
-
-  multiformats@12.1.1: {}
+  multiformats@13.3.0: {}
 
   nanoid@4.0.2: {}
 
