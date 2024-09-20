@@ -8,8 +8,10 @@ import type {
 } from 'multiformats'
 import type * as Multihash from './multihash.js'
 import type { Sha256Trunc254Padded, FilCommitmentUnsealed } from './piece.js'
+import { SHA256 } from './ipld.js'
 
 export type RAW_CODE = MulticodecCode<0x55, 'raw'>
+export type SHA256_CODE = typeof SHA256.code
 
 /**
  * Type describes a byte representation of a `Data` encoded using

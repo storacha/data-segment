@@ -87,23 +87,28 @@ export function resolveRoot(proof, node) {
 
 /**
  * @param {Uint8Array} payload
+ * @param {object} [options]
+ * @param {API.SyncMultihashHasher<API.SHA256_CODE>} [options.hasher]
  * @returns {API.MerkleTreeNode}
  */
-export function truncatedHash(payload) {
-  const { digest } = SHA256.digest(payload)
+export function truncatedHash(payload, options = {}) {
+  const hasher = options.hasher || SHA256
+  const { digest } = hasher.digest(payload)
   return truncate(digest)
 }
 
 /**
  * @param {API.MerkleTreeNode} left
  * @param {API.MerkleTreeNode} right
+ * @param {object} [options]
+ * @param {API.SyncMultihashHasher<API.SHA256_CODE>} [options.hasher]
  * @returns {API.MerkleTreeNode}
  */
-export const computeNode = (left, right) => {
+export const computeNode = (left, right, options) => {
   const payload = new Uint8Array(left.length + right.length)
   payload.set(left, 0)
   payload.set(right, left.length)
-  return truncatedHash(payload)
+  return truncatedHash(payload, options)
 }
 
 /**

@@ -2,9 +2,9 @@ import * as Aggregate from '../src/aggregate.js'
 import * as Dataset from './piece/vector.js'
 import * as Piece from '../src/piece.js'
 import * as Link from 'multiformats/link'
+import * as SHA256 from 'sync-multihash-sha2/sha256'
 import * as Node from '../src/node.js'
 import * as API from '../src/api.js'
-import * as Size from '../src/piece/size.js'
 
 /**
  * @type {import("entail").Suite}
@@ -249,5 +249,40 @@ export const testAggregate = {
     assert.equal(build.size, 1n << 20n)
     assert.deepEqual(build.limit, 8)
     assert.deepEqual(build.indexSize, 512)
+  },
+  'custom hasher': async (assert) => {
+    let customHasherUsed = false
+    const builder = Aggregate.createBuilder({
+      size: Piece.Size.from(1 << 20),
+      /** @param {Uint8Array} bytes */
+      hasher: {
+        name: SHA256.name,
+        code: SHA256.code,
+        digest: bytes => {
+          customHasherUsed = true
+          return SHA256.digest(bytes)
+        }
+      }
+    })
+
+    builder.write(
+      Piece.fromInfo({
+        link: Link.parse(
+          'baga6ea4seaqae5ysjdbsr4b5jhotaz5ooh62jrrdbxwygfpkkfjz44kvywycmgy'
+        ),
+        size: Piece.Size.fromPadded(520192n),
+      })
+    )
+
+    const build = builder.build()
+
+    assert.deepEqual(
+      Link.parse(
+        'baga6ea4seaqko3i6w4rij37dqerctuv4kbakbcylpe6weeu3tjp26fqyd6txcjy'
+      ).toString(),
+      build.toInfo().link.toString()
+    )
+
+    assert.ok(customHasherUsed)
   },
 }

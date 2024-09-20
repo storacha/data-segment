@@ -14,9 +14,11 @@ export const MAX_HEIGHT = 60
  * Creates a new tree with a given tree `height`.
  *
  * @param {number} height
+ * @param {object} [options]
+ * @param {API.SyncMultihashHasher<API.SHA256_CODE>} [options.hasher]
  * @returns {API.AggregateTree}
  */
-export const create = (height) => {
+export const create = (height, options) => {
   if (height > MAX_HEIGHT) {
     throw new RangeError(`too many leafs: 2 ** ${height}`)
   }
@@ -25,7 +27,7 @@ export const create = (height) => {
     throw new RangeError(`cannot have negative log2Leafs`)
   }
 
-  return new AggregateTree(height)
+  return new AggregateTree(height, options)
 }
 
 /**
@@ -34,18 +36,20 @@ export const create = (height) => {
 class AggregateTree {
   /**
    * @param {number} height
-   * @param {SparseArray<API.MerkleTreeNode>} data
+   * @param {object} [options]
+   * @param {SparseArray<API.MerkleTreeNode>} [options.data]
+   * @param {API.SyncMultihashHasher<API.SHA256_CODE>} [options.hasher]
    */
-
-  constructor(height, data = new SparseArray()) {
+  constructor(height, options = {}) {
     /**
      * The sparse array contains the data of the tree. Levels of the tree are
      * counted from the leaf layer (layer 0).
      *
      * Where the leaf layer lands depends on the `height` of the tree.
      */
-    this.data = data
+    this.data = options.data || new SparseArray()
     this.height = height
+    this.hasher = options.hasher
   }
 
   get leafCount() {
@@ -130,7 +134,8 @@ class AggregateTree {
           ? Node.empty()
           : Proof.computeNode(
               left || ZeroComm.fromLevel(n),
-              right || ZeroComm.fromLevel(n)
+              right || ZeroComm.fromLevel(n),
+              { hasher: this.hasher }
             )
 
       this.data.set(idxFor(this.height, n + 1, nextIndex), node)
