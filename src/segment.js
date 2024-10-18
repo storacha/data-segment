@@ -16,19 +16,23 @@ export const Uint64Size = 64 / 8
 /**
  *
  * @param {API.Segment} segment
+ * @param {object} [options]
+ * @param {API.SyncMultihashHasher<API.SHA256_CODE>} [options.hasher] - A sync sha256 hasher.
  * @returns {API.Checksum<API.Segment, typeof ChecksumSize>}
  */
-export const computeChecksum = (segment) =>
+export const computeChecksum = (segment, options) =>
   /** Take only the first {@link ChecksumSize} bytes */
-  toBytes(segment).subarray(NodeSize + Uint64Size + Uint64Size)
+  toBytes(segment, options).subarray(NodeSize + Uint64Size + Uint64Size)
 
 /**
  * @param {API.Segment} segment
+ * @param {object} [options]
+ * @param {API.SyncMultihashHasher<API.SHA256_CODE>} [options.hasher] - A sync sha256 hasher.
  * @returns {API.SegmentInfo}
  */
-export const withChecksum = (segment) => ({
+export const withChecksum = (segment, options) => ({
   ...segment,
-  checksum: computeChecksum(segment),
+  checksum: computeChecksum(segment, options),
 })
 
 /**
@@ -59,9 +63,11 @@ export const toSource = (segment) => {
 
 /**
  * @param {API.MerkleTreeNodeSource} source
+ * @param {object} [options]
+ * @param {API.SyncMultihashHasher<API.SHA256_CODE>} [options.hasher] - A sync sha256 hasher.
  */
-export const fromSourceWithChecksum = (source) =>
-  withChecksum(fromSource(source))
+export const fromSourceWithChecksum = (source, options) =>
+  withChecksum(fromSource(source), options)
 
 /**
  * Calculates the `index` in the leaf layer corresponding to the given
@@ -85,9 +91,11 @@ export const toIndexNode = (segment) => toBytes(segment).subarray(NodeSize)
  * @see https://github.com/filecoin-project/go-data-segment/blob/e3257b64fa2c84e0df95df35de409cfed7a38438/datasegment/index.go#L232-L248
  *
  * @param {(API.Segment & {checksum?: undefined}) |API.SegmentInfo} segment
+ * @param {object} [options]
+ * @param {API.SyncMultihashHasher<API.SHA256_CODE>} [options.hasher] - A sync sha256 hasher.
  * @returns {API.ByteView<API.SegmentInfo, API.RAW_CODE>}
  */
-export const toBytes = ({ root, size, offset, checksum }) => {
+export const toBytes = ({ root, size, offset, checksum }, options = {}) => {
   const buffer = new Uint8Array(
     NodeSize + Uint64Size + Uint64Size + ChecksumSize
   )
@@ -97,7 +105,8 @@ export const toBytes = ({ root, size, offset, checksum }) => {
   view.setBigUint64(NodeSize + Uint64Size, BigInt(size), true)
 
   if (!checksum) {
-    const { digest } = SHA256.digest(buffer)
+    const hasher = options.hasher || SHA256
+    const { digest } = hasher.digest(buffer)
     checksum = digest.subarray(0, ChecksumSize)
     // Truncate to  126 bits
     checksum[ChecksumSize - 1] &= 0b00111111
