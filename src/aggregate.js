@@ -111,7 +111,7 @@ class AggregateBuilder {
    */
   build() {
     const { size, parts, limit, offset, height, hasher } = this
-    const index = createIndex(parts)
+    const index = createIndex(parts, { hasher })
 
     const tree = Tree.create(height, { hasher })
     Tree.batchSet(tree, parts)
@@ -225,10 +225,12 @@ const createIndexNodes = function* (size, segments) {
 
 /**
  * @param {API.MerkleTreeNodeSource[]} parts
+ * @param {object} [options]
+ * @param {API.SyncMultihashHasher<API.SHA256_CODE>} [options.hasher] - A sync sha256 hasher.
  * @returns {API.IndexData}
  */
-const createIndex = (parts) =>
-  parts.map((part) => Segment.fromSourceWithChecksum(part))
+const createIndex = (parts, options) =>
+  parts.map((part) => Segment.fromSourceWithChecksum(part, options))
 
 /**
  * @implements {API.AggregateView}
